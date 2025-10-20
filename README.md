@@ -5,11 +5,16 @@ A comprehensive Elixir library for defining, executing, and backtesting trading 
 ## Features
 
 - **Declarative DSL**: Define trading strategies using an intuitive, macro-based syntax
-- **Indicator Integration**: Seamless integration with the [trading-indicators](https://github.com/rzcastilho/trading-indicators) library
+- **Indicator Integration**: Seamless integration with the [trading-indicators](https://github.com/rzcastilho/trading-indicators) library (22 indicators across 4 categories)
+  - Automatic parameter validation
+  - Data sufficiency checks
+  - Streaming support for real-time updates
+  - Graceful fallback from streaming to batch calculation
+- **Decimal Precision**: All financial calculations use `Decimal` for exact precision (no floating-point errors)
 - **Boolean Logic**: Combine conditions with AND/OR/NOT operators for complex entry/exit rules
-- **Pattern Recognition**: Automatic detection of candlestick patterns (hammer, engulfing, doji, etc.)
+- **Pattern Recognition**: Automatic detection of 11 candlestick patterns (hammer, engulfing, doji, etc.)
 - **Multi-timeframe Analysis**: Analyze multiple timeframes simultaneously
-- **GenServer-based Engine**: Real-time strategy execution with state management
+- **GenServer-based Engine**: Real-time strategy execution with state management and indicator streaming
 - **Backtesting Framework**: Comprehensive performance metrics including win rate, profit factor, Sharpe ratio, and drawdown analysis
 - **Position Management**: Automatic tracking of open/closed positions with P&L calculations
 
@@ -38,10 +43,10 @@ defmodule MyStrategy do
   defstrategy :ma_crossover do
     description "Moving average crossover with RSI confirmation"
 
-    # Define indicators
-    indicator :sma_fast, TradingIndicators.SMA, period: 10
-    indicator :sma_slow, TradingIndicators.SMA, period: 30
-    indicator :rsi, TradingIndicators.RSI, period: 14
+    # Define indicators from trading-indicators library
+    indicator :sma_fast, TradingIndicators.Trend.SMA, period: 10, source: :close
+    indicator :sma_slow, TradingIndicators.Trend.SMA, period: 30, source: :close
+    indicator :rsi, TradingIndicators.Momentum.RSI, period: 14, source: :close
 
     # Entry signal
     entry_signal :long do
@@ -298,11 +303,59 @@ final_state = TradingStrategy.get_state(engine)
 IO.inspect(final_state.positions, label: "All Positions")
 ```
 
+## Important: Decimal Precision
+
+**All price values in OHLCV data MUST use `Decimal` types** for exact financial precision. Never use floats for price data as they introduce rounding errors.
+
+### Creating OHLCV Data
+
+```elixir
+# Using the helper function (recommended)
+alias TradingStrategy.Types
+
+candle = Types.new_ohlcv(
+  100,    # open
+  105,    # high
+  95,     # low
+  102,    # close
+  1000,   # volume
+  ~U[2025-01-01 00:00:00Z]  # timestamp (optional)
+)
+
+# Manual creation with Decimal
+candle = %{
+  open: Decimal.new("100.0"),
+  high: Decimal.new("105.0"),
+  low: Decimal.new("95.0"),
+  close: Decimal.new("102.0"),
+  volume: 1000,
+  timestamp: ~U[2025-01-01 00:00:00Z]
+}
+```
+
+### Why Decimal?
+
+- **Financial Accuracy**: Prevents floating-point rounding errors
+- **Regulatory Compliance**: Exact arithmetic required for financial applications
+- **Indicator Precision**: All indicators receive and return `Decimal` values
+- **Comparison Safety**: Use `Decimal.compare/2` for reliable price comparisons
+
+```elixir
+# ❌ WRONG - Don't use floats
+candle = %{close: 100.50, high: 101.25, ...}
+
+# ✅ CORRECT - Use Decimal
+candle = %{close: Decimal.new("100.50"), high: Decimal.new("101.25"), ...}
+
+# ✅ CORRECT - Use helper (converts to Decimal automatically)
+candle = Types.new_ohlcv(100.50, 101.25, 99.75, 100.80, 1000)
+```
+
 ## DSL Reference
 
 ### Indicators
 
-Define indicators to use in your strategy:
+Define indicators to use in your strategy. All indicators come from the [trading-indicators](https://github.com/rzcastilho/trading-indicators) library and follow the `TradingIndicators.Behaviour` contract.
 
 ```elixir
 indicator :name, Module, option1: value1, option2: value2
@@ -310,10 +363,46 @@ indicator :name, Module, option1: value1, option2: value2
 
 Examples:
 ```elixir
-indicator :sma, TradingIndicators.SMA, period: 20
-indicator :rsi, TradingIndicators.RSI, period: 14
-indicator :macd, TradingIndicators.MACD, fast: 12, slow: 26, signal: 9
+# Trend indicators
+indicator :sma, TradingIndicators.Trend.SMA, period: 20, source: :close
+indicator :ema, TradingIndicators.Trend.EMA, period: 12, source: :close
+indicator :macd, TradingIndicators.Trend.MACD, fast: 12, slow: 26, signal: 9
+
+# Momentum indicators
+indicator :rsi, TradingIndicators.Momentum.RSI, period: 14, source: :close
+indicator :stoch, TradingIndicators.Momentum.Stochastic, period: 14
+
+# Volatility indicators
+indicator :bb, TradingIndicators.Volatility.BollingerBands, period: 20, std_dev: 2
+indicator :atr, TradingIndicators.Volatility.ATR, period: 14
+
+# Volume indicators
+indicator :obv, TradingIndicators.Volume.OBV
+indicator :vwap, TradingIndicators.Volume.VWAP
 ```
+
+#### Available Indicators (22 total)
+
+**Trend (6):** SMA, EMA, WMA, HMA, KAMA, MACD
+**Momentum (6):** RSI, Stochastic, Williams %R, CCI, ROC, Momentum
+**Volatility (4):** Bollinger Bands, ATR, Standard Deviation, Volatility Index
+**Volume (4):** OBV, VWAP, A/D Line, CMF
+
+#### Common Parameters
+
+- `:period` - Number of periods for calculation (e.g., `period: 14`)
+- `:source` - Price field to use: `:open`, `:high`, `:low`, `:close` (default: `:close`)
+
+#### Indicator Integration
+
+The library automatically:
+- **Validates parameters** before calculation using `validate_params/1`
+- **Checks data sufficiency** using `required_periods/0` or `required_periods/1`
+- **Uses streaming updates** when available for real-time processing (better performance)
+- **Falls back to batch calculation** if streaming fails or isn't supported
+- **Returns `nil`** during warmup period when insufficient data is available (this is normal)
+
+**Note:** You may see "Insufficient data" debug messages for the first few candles - this is expected behavior during the warmup period while the indicator accumulates enough data.
 
 ### Entry Signals
 
@@ -472,13 +561,64 @@ See the `examples/` directory for complete strategy examples:
 ### Core Components
 
 - **`TradingStrategy.DSL`** - Macro-based DSL for strategy definition
-- **`TradingStrategy.Engine`** - GenServer-based execution engine
+- **`TradingStrategy.Engine`** - GenServer-based execution engine with indicator streaming support
 - **`TradingStrategy.Backtest`** - Historical backtesting framework
-- **`TradingStrategy.Indicators`** - Indicator calculation and caching
+- **`TradingStrategy.Indicators`** - Indicator integration layer with automatic validation and streaming
 - **`TradingStrategy.ConditionEvaluator`** - Boolean logic evaluation engine
-- **`TradingStrategy.Patterns`** - Candlestick pattern recognition
+- **`TradingStrategy.Patterns`** - Candlestick pattern recognition (11 patterns)
 - **`TradingStrategy.Signal`** - Trading signal representation
-- **`TradingStrategy.Position`** - Position tracking and P&L calculation
+- **`TradingStrategy.Position`** - Position tracking and P&L calculation with Decimal precision
+- **`TradingStrategy.Types`** - OHLCV type definitions and Decimal conversion utilities
+
+### Indicator Integration Layer
+
+The `TradingStrategy.Indicators` module provides a robust integration with the trading-indicators library:
+
+**Features:**
+- Automatic parameter validation using `validate_params/1` callback
+- Data sufficiency checks using `required_periods/0` or `required_periods/1` callback
+- Proper handling of `{:ok, results}` and `{:error, reason}` tuples
+- Value extraction from structured result format
+- Streaming support with `init_state/1` and `update_state/2` for real-time updates
+- Graceful fallback from streaming to batch calculation on errors
+- Module loading and introspection with `Code.ensure_loaded/1`
+
+**Helper Functions:**
+```elixir
+# Validate indicator parameters
+Indicators.validate_indicator_params(TradingIndicators.Trend.SMA, period: 20, source: :close)
+# => {:ok, :valid} or {:error, reason}
+
+# Check data sufficiency
+Indicators.check_sufficient_data(TradingIndicators.Trend.SMA, market_data, period: 20)
+# => :ok or :insufficient_data
+
+# Get parameter metadata
+Indicators.get_parameter_metadata(TradingIndicators.Trend.SMA)
+# => [%ParamMetadata{name: :period, type: :integer, ...}, ...]
+
+# Check streaming support
+Indicators.supports_streaming?(TradingIndicators.Trend.SMA)
+# => true or false
+```
+
+### Streaming vs Batch Processing
+
+The Engine automatically uses the most efficient calculation method:
+
+**Streaming Mode (Real-time):**
+- Uses `init_state/1` and `update_state/2` for incremental updates
+- Better performance for live trading
+- Maintains indicator state across candles
+- Automatically initialized for indicators that support it
+
+**Batch Mode (Historical):**
+- Uses `calculate/2` for full recalculation
+- Used during backtesting
+- Fallback when streaming fails
+- No state maintenance required
+
+The system seamlessly switches between modes based on availability and errors.
 
 ## Contributing
 

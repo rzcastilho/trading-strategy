@@ -62,6 +62,7 @@ defmodule TradingStrategy.Engine do
   - `:market_data` - Historical candle data
   - `:indicator_values` - Current indicator values (Decimal)
   - `:historical_indicators` - Past indicator values for cross detection
+  - `:indicator_states` - Streaming state for indicators that support it
   - `:config` - Engine configuration (capital, position size, etc.)
 
   All market data and indicator values use Decimal for exact precision.
@@ -85,6 +86,7 @@ defmodule TradingStrategy.Engine do
           market_data: list(map()),
           indicator_values: map(),
           historical_indicators: map(),
+          indicator_states: map(),
           config: map()
         }
 
@@ -152,6 +154,9 @@ defmodule TradingStrategy.Engine do
     max_positions = Keyword.get(opts, :max_positions, 1)
     position_size = Keyword.get(opts, :position_size, 1.0)
 
+    # Initialize streaming state for indicators that support it
+    indicator_states = initialize_indicator_states(strategy)
+
     state = %{
       strategy: strategy,
       positions: [],
@@ -159,6 +164,7 @@ defmodule TradingStrategy.Engine do
       market_data: [],
       indicator_values: %{},
       historical_indicators: %{},
+      indicator_states: indicator_states,
       config: %{
         symbol: symbol,
         initial_capital: initial_capital,
@@ -177,8 +183,9 @@ defmodule TradingStrategy.Engine do
     # Append new market data
     updated_market_data = state.market_data ++ [new_data]
 
-    # Calculate indicators
-    indicator_values = Indicators.calculate_all(state.strategy, updated_market_data)
+    # Update indicators (using streaming when available, batch otherwise)
+    {indicator_values, updated_indicator_states} =
+      update_indicators(state.strategy, new_data, updated_market_data, state.indicator_states)
 
     # Calculate historical indicators for cross detection
     historical_indicators = Indicators.calculate_historical(state.strategy, updated_market_data)
@@ -205,6 +212,7 @@ defmodule TradingStrategy.Engine do
       | market_data: updated_market_data,
         indicator_values: indicator_values,
         historical_indicators: historical_indicators,
+        indicator_states: updated_indicator_states,
         positions: updated_positions,
         signals: state.signals ++ all_signals
     }
@@ -328,4 +336,93 @@ defmodule TradingStrategy.Engine do
   defp via_tuple(name) do
     {:via, Registry, {TradingStrategy.EngineRegistry, name}}
   end
+
+  # Streaming indicator support
+
+  @doc false
+  defp initialize_indicator_states(%Definition{indicators: indicators}) do
+    Enum.reduce(indicators, %{}, fn {name, config}, acc ->
+      if Indicators.supports_streaming?(config.module) do
+        # Try init_state/1 first, then init_state/0
+        result =
+          cond do
+            function_exported?(config.module, :init_state, 1) ->
+              apply(config.module, :init_state, [config.params])
+
+            function_exported?(config.module, :init_state, 0) ->
+              apply(config.module, :init_state, [])
+
+            true ->
+              {:error, :no_init_state}
+          end
+
+        case result do
+          {:ok, state} ->
+            Map.put(acc, name, state)
+
+          state when is_map(state) ->
+            # Some indicators return state directly without {:ok, state} tuple
+            Map.put(acc, name, state)
+
+          {:error, reason} ->
+            Logger.warning(
+              "Failed to initialize streaming for #{inspect(config.module)}: #{inspect(reason)}"
+            )
+
+            acc
+
+          _ ->
+            acc
+        end
+      else
+        acc
+      end
+    end)
+  end
+
+  @doc false
+  defp update_indicators(strategy, new_data, all_market_data, indicator_states) do
+    Enum.reduce(strategy.indicators, {%{}, indicator_states}, fn {name, config},
+                                                                  {values_acc, states_acc} ->
+      # Try streaming update first if state exists
+      case Map.get(states_acc, name) do
+        nil ->
+          # No streaming state - use batch calculation
+          value = Indicators.calculate_indicator(config, all_market_data)
+          {Map.put(values_acc, name, value), states_acc}
+
+        streaming_state ->
+          # Try streaming update - pass the entire candle, not just the price
+          # The indicator will extract the appropriate price based on :source parameter
+          case apply(config.module, :update_state, [streaming_state, new_data]) do
+            {:ok, new_state, indicator_result} ->
+              # Extract value from indicator result
+              value =
+                case indicator_result do
+                  %{value: v} -> v
+                  v when is_struct(v, Decimal) -> v
+                  v when is_number(v) -> Decimal.new("#{v}")
+                  _ -> nil
+                end
+
+              {Map.put(values_acc, name, value), Map.put(states_acc, name, new_state)}
+
+            {:error, reason} ->
+              Logger.warning(
+                "Streaming update failed for #{inspect(config.module)}: #{inspect(reason)}, falling back to batch"
+              )
+
+              # Fall back to batch calculation
+              value = Indicators.calculate_indicator(config, all_market_data)
+              {Map.put(values_acc, name, value), Map.delete(states_acc, name)}
+
+            _ ->
+              # Unexpected return - fall back to batch
+              value = Indicators.calculate_indicator(config, all_market_data)
+              {Map.put(values_acc, name, value), Map.delete(states_acc, name)}
+          end
+      end
+    end)
+  end
+
 end

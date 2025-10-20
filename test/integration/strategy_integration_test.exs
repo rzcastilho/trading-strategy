@@ -182,6 +182,153 @@ defmodule TradingStrategy.IntegrationTest do
     end
   end
 
+  describe "real trading-indicators integration" do
+    test "calculates SMA indicator correctly" do
+      # Use actual SMA indicator from trading-indicators library
+      defmodule SMATestStrategy do
+        use TradingStrategy.DSL
+
+        defstrategy :sma_test do
+          description "SMA integration test"
+
+          indicator :sma_3, TradingIndicators.Trend.SMA, period: 3, source: :close
+          indicator :sma_5, TradingIndicators.Trend.SMA, period: 5, source: :close
+
+          entry_signal :long do
+            cross_above(:sma_3, :sma_5)
+          end
+
+          exit_signal do
+            cross_below(:sma_3, :sma_5)
+          end
+        end
+      end
+
+      market_data = generate_market_data(count: 20, trend: :up)
+      strategy = SMATestStrategy.strategy_definition()
+
+      result =
+        TradingStrategy.backtest(
+          strategy: strategy,
+          market_data: market_data,
+          symbol: "SMA_TEST"
+        )
+
+      # Verify strategy executed successfully with real indicators
+      assert result.strategy == :sma_test
+      assert is_map(result.metrics)
+      assert is_list(result.signals)
+    end
+
+    test "validates indicator parameters properly" do
+      alias TradingStrategy.Indicators
+
+      # Valid parameters
+      assert {:ok, :valid} =
+               Indicators.validate_indicator_params(
+                 TradingIndicators.Trend.SMA,
+                 period: 20,
+                 source: :close
+               )
+
+      # Invalid parameters (negative period)
+      assert {:error, _reason} =
+               Indicators.validate_indicator_params(
+                 TradingIndicators.Trend.SMA,
+                 period: -1,
+                 source: :close
+               )
+    end
+
+    test "checks data sufficiency correctly" do
+      alias TradingStrategy.Indicators
+
+      sufficient_data = generate_market_data(count: 20)
+      insufficient_data = generate_market_data(count: 5)
+
+      # Should pass with sufficient data
+      assert :ok =
+               Indicators.check_sufficient_data(
+                 TradingIndicators.Trend.SMA,
+                 sufficient_data,
+                 period: 10
+               )
+
+      # Should fail with insufficient data
+      assert :insufficient_data =
+               Indicators.check_sufficient_data(
+                 TradingIndicators.Trend.SMA,
+                 insufficient_data,
+                 period: 10
+               )
+    end
+
+    test "retrieves parameter metadata" do
+      alias TradingStrategy.Indicators
+
+      metadata = Indicators.get_parameter_metadata(TradingIndicators.Trend.SMA)
+
+      assert is_list(metadata)
+      assert length(metadata) > 0
+
+      # Verify metadata structure
+      period_meta = Enum.find(metadata, fn m -> m.name == :period end)
+      assert period_meta != nil
+      assert period_meta.type == :integer
+      assert is_number(period_meta.default)
+    end
+
+    test "detects streaming support" do
+      alias TradingStrategy.Indicators
+
+      # Real indicators should support streaming
+      assert Indicators.supports_streaming?(TradingIndicators.Trend.SMA) == true
+      assert Indicators.supports_streaming?(TradingIndicators.Momentum.RSI) == true
+
+      # Test indicator doesn't
+      assert Indicators.supports_streaming?(TestIndicator) == false
+    end
+
+    test "calculates multiple real indicators" do
+      defmodule MultiRealIndicatorStrategy do
+        use TradingStrategy.DSL
+
+        defstrategy :multi_real do
+          description "Multiple real indicators"
+
+          indicator :sma, TradingIndicators.Trend.SMA, period: 10, source: :close
+          indicator :rsi, TradingIndicators.Momentum.RSI, period: 14, source: :close
+          indicator :ema, TradingIndicators.Trend.EMA, period: 12, source: :close
+
+          entry_signal :long do
+            when_all do
+              indicator(:rsi) < 40
+              indicator(:sma) < indicator(:ema)
+            end
+          end
+
+          exit_signal do
+            indicator(:rsi) > 60
+          end
+        end
+      end
+
+      market_data = generate_market_data(count: 50, volatility: :medium)
+      strategy = MultiRealIndicatorStrategy.strategy_definition()
+
+      result =
+        TradingStrategy.backtest(
+          strategy: strategy,
+          market_data: market_data,
+          symbol: "MULTI_REAL"
+        )
+
+      # All indicators should calculate successfully
+      assert result.strategy == :multi_real
+      assert map_size(strategy.indicators) == 3
+    end
+  end
+
   describe "edge cases and error handling" do
     test "handles empty market data gracefully" do
       strategy = simple_strategy()

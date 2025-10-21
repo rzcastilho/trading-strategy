@@ -27,7 +27,7 @@ defmodule Examples.RsiReversal do
     description "RSI reversal strategy with candlestick pattern confirmation"
 
     # Define indicators
-    indicator :rsi, TradingIndicators.RSI, period: 14
+    indicator :rsi, TradingIndicators.Momentum.RSI, period: 14, source: :close
 
     # Long entry signal (oversold reversal)
     entry_signal :long do

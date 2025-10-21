@@ -5,7 +5,7 @@ defmodule TradingStrategy.Position do
   Tracks entry/exit points, profit/loss, and position metadata.
   """
 
-  alias TradingStrategy.Signal
+  alias TradingStrategy.{Signal, Types}
 
   @type status :: :open | :closed
   @type t :: %__MODULE__{
@@ -90,22 +90,46 @@ defmodule TradingStrategy.Position do
   Calculates the current or final profit/loss for a position.
   """
   def calculate_pnl(%__MODULE__{direction: :long} = position, exit_price) do
-    (exit_price - position.entry_price) * position.quantity
+    # Ensure both values are Decimal for arithmetic
+    exit = Types.to_decimal(exit_price)
+    entry = Types.to_decimal(position.entry_price)
+    qty = Types.to_decimal(position.quantity)
+
+    Decimal.mult(Decimal.sub(exit, entry), qty) |> Decimal.to_float()
   end
 
   def calculate_pnl(%__MODULE__{direction: :short} = position, exit_price) do
-    (position.entry_price - exit_price) * position.quantity
+    # Ensure both values are Decimal for arithmetic
+    exit = Types.to_decimal(exit_price)
+    entry = Types.to_decimal(position.entry_price)
+    qty = Types.to_decimal(position.quantity)
+
+    Decimal.mult(Decimal.sub(entry, exit), qty) |> Decimal.to_float()
   end
 
   @doc """
   Calculates the profit/loss percentage for a position.
   """
   def calculate_pnl_percent(%__MODULE__{direction: :long} = position, exit_price) do
-    ((exit_price - position.entry_price) / position.entry_price) * 100
+    # Ensure both values are Decimal for arithmetic
+    exit = Types.to_decimal(exit_price)
+    entry = Types.to_decimal(position.entry_price)
+
+    Decimal.sub(exit, entry)
+    |> Decimal.div(entry)
+    |> Decimal.mult(Decimal.new("100"))
+    |> Decimal.to_float()
   end
 
   def calculate_pnl_percent(%__MODULE__{direction: :short} = position, exit_price) do
-    ((position.entry_price - exit_price) / position.entry_price) * 100
+    # Ensure both values are Decimal for arithmetic
+    exit = Types.to_decimal(exit_price)
+    entry = Types.to_decimal(position.entry_price)
+
+    Decimal.sub(entry, exit)
+    |> Decimal.div(entry)
+    |> Decimal.mult(Decimal.new("100"))
+    |> Decimal.to_float()
   end
 
   @doc """

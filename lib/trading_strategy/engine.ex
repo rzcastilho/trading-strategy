@@ -187,8 +187,8 @@ defmodule TradingStrategy.Engine do
     {indicator_values, updated_indicator_states} =
       update_indicators(state.strategy, new_data, updated_market_data, state.indicator_states)
 
-    # Calculate historical indicators for cross detection
-    historical_indicators = Indicators.calculate_historical(state.strategy, updated_market_data)
+    # Update historical indicators incrementally (shift and append new values)
+    historical_indicators = update_historical_indicators(state.historical_indicators, indicator_values)
 
     # Build evaluation context
     context =
@@ -377,6 +377,20 @@ defmodule TradingStrategy.Engine do
       else
         acc
       end
+    end)
+  end
+
+  # Update historical indicators incrementally instead of recalculating from scratch
+  # This changes complexity from O(N²) to O(N) for processing N candles
+  defp update_historical_indicators(historical_indicators, new_indicator_values, lookback \\ 2) do
+    Enum.reduce(new_indicator_values, historical_indicators, fn {name, value}, acc ->
+      # Get current historical values for this indicator
+      current_history = Map.get(acc, name, [])
+
+      # Append new value and keep only last N values
+      updated_history = (current_history ++ [value]) |> Enum.take(-lookback)
+
+      Map.put(acc, name, updated_history)
     end)
   end
 

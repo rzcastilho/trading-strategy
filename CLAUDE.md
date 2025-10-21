@@ -234,12 +234,17 @@ The `Indicators` module provides the integration layer that:
 
 #### Adding an Indicator to Your Strategy
 
+**CRITICAL: Module Namespacing**
+All indicator modules are namespaced by their category. You **MUST** use the full module path:
+- ❌ `TradingIndicators.SMA` - **WRONG** (will cause UndefinedFunctionError)
+- ✅ `TradingIndicators.Trend.SMA` - **CORRECT**
+
 ```elixir
 defmodule MyStrategy do
   use TradingStrategy.DSL
 
   defstrategy :my_strategy do
-    # Add indicators with proper module and parameters
+    # Add indicators with proper module and parameters (note the category namespace!)
     indicator :sma_20, TradingIndicators.Trend.SMA, period: 20, source: :close
     indicator :rsi_14, TradingIndicators.Momentum.RSI, period: 14, source: :close
     indicator :ema_12, TradingIndicators.Trend.EMA, period: 12, source: :close

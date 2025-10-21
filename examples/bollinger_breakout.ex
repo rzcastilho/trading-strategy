@@ -27,14 +27,14 @@ defmodule Examples.BollingerBreakout do
     description "Bollinger Bands breakout with volume confirmation"
 
     # Define indicators
-    indicator :bb_upper, TradingIndicators.BollingerBands, period: 20, deviation: 2, band: :upper
-    indicator :bb_middle, TradingIndicators.BollingerBands,
+    indicator :bb_upper, TradingIndicators.Volatility.BollingerBands, period: 20, deviation: 2, band: :upper
+    indicator :bb_middle, TradingIndicators.Volatility.BollingerBands,
       period: 20,
       deviation: 2,
       band: :middle
 
-    indicator :bb_lower, TradingIndicators.BollingerBands, period: 20, deviation: 2, band: :lower
-    indicator :volume_sma, TradingIndicators.SMA, period: 20, source: :volume
+    indicator :bb_lower, TradingIndicators.Volatility.BollingerBands, period: 20, deviation: 2, band: :lower
+    indicator :volume_sma, TradingIndicators.Trend.SMA, period: 20, source: :volume
 
     # Long entry signal (upper band breakout)
     entry_signal :long do

@@ -179,8 +179,16 @@ defmodule TradingStrategy.Backtest do
       # Apply commission and slippage
       adjusted_positions =
         Enum.map(closed_positions, fn pos ->
-          commission_cost = pos.entry_price * pos.quantity * commission * 2
-          slippage_cost = pos.entry_price * pos.quantity * slippage * 2
+          # Convert entry_price to float if it's Decimal
+          entry_price_float =
+            if is_struct(pos.entry_price, Decimal) do
+              Decimal.to_float(pos.entry_price)
+            else
+              pos.entry_price
+            end
+
+          commission_cost = entry_price_float * pos.quantity * commission * 2
+          slippage_cost = entry_price_float * pos.quantity * slippage * 2
           adjusted_pnl = pos.pnl - commission_cost - slippage_cost
           %{pos | pnl: adjusted_pnl}
         end)

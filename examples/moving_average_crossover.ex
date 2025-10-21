@@ -26,9 +26,9 @@ defmodule Examples.MovingAverageCrossover do
     description "Moving average crossover with RSI confirmation"
 
     # Define indicators
-    indicator :sma_fast, TradingIndicators.SMA, period: 10
-    indicator :sma_slow, TradingIndicators.SMA, period: 30
-    indicator :rsi, TradingIndicators.RSI, period: 14
+    indicator :sma_fast, TradingIndicators.Trend.SMA, period: 10, source: :close
+    indicator :sma_slow, TradingIndicators.Trend.SMA, period: 30, source: :close
+    indicator :rsi, TradingIndicators.Momentum.RSI, period: 14, source: :close
 
     # Long entry signal
     entry_signal :long do

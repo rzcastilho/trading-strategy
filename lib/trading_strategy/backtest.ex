@@ -55,7 +55,7 @@ defmodule TradingStrategy.Backtest do
   realistic and accurate results.
   """
 
-  alias TradingStrategy.{Engine, Position}
+  alias TradingStrategy.{Engine, Position, Types}
 
   @type backtest_result :: %{
           strategy: atom(),
@@ -176,20 +176,38 @@ defmodule TradingStrategy.Backtest do
         total_slippage: 0.0
       }
     else
-      # Apply commission and slippage
+      # Apply commission and slippage using Decimal arithmetic
       adjusted_positions =
         Enum.map(closed_positions, fn pos ->
-          # Convert entry_price to float if it's Decimal
-          entry_price_float =
-            if is_struct(pos.entry_price, Decimal) do
-              Decimal.to_float(pos.entry_price)
-            else
-              pos.entry_price
-            end
+          # Use Decimal for all calculations
+          entry_price_dec = Types.to_decimal(pos.entry_price)
+          quantity_dec = Types.to_decimal(pos.quantity)
+          pnl_dec = Types.to_decimal(pos.pnl)
+          commission_dec = Types.to_decimal(commission)
+          slippage_dec = Types.to_decimal(slippage)
+          two_dec = Decimal.new(2)
 
-          commission_cost = entry_price_float * pos.quantity * commission * 2
-          slippage_cost = entry_price_float * pos.quantity * slippage * 2
-          adjusted_pnl = pos.pnl - commission_cost - slippage_cost
+          # commission_cost = entry_price * quantity * commission * 2
+          commission_cost =
+            entry_price_dec
+            |> Decimal.mult(quantity_dec)
+            |> Decimal.mult(commission_dec)
+            |> Decimal.mult(two_dec)
+
+          # slippage_cost = entry_price * quantity * slippage * 2
+          slippage_cost =
+            entry_price_dec
+            |> Decimal.mult(quantity_dec)
+            |> Decimal.mult(slippage_dec)
+            |> Decimal.mult(two_dec)
+
+          # adjusted_pnl = pnl - commission_cost - slippage_cost
+          adjusted_pnl =
+            pnl_dec
+            |> Decimal.sub(commission_cost)
+            |> Decimal.sub(slippage_cost)
+            |> Decimal.to_float()
+
           %{pos | pnl: adjusted_pnl}
         end)
 

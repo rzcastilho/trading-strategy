@@ -93,7 +93,7 @@ defmodule TradingStrategy.Position do
     # Ensure both values are Decimal for arithmetic
     exit = Types.to_decimal(exit_price)
     entry = Types.to_decimal(position.entry_price)
-    qty = Decimal.new("#{position.quantity}")
+    qty = Types.to_decimal(position.quantity)
 
     Decimal.mult(Decimal.sub(exit, entry), qty) |> Decimal.to_float()
   end
@@ -102,7 +102,7 @@ defmodule TradingStrategy.Position do
     # Ensure both values are Decimal for arithmetic
     exit = Types.to_decimal(exit_price)
     entry = Types.to_decimal(position.entry_price)
-    qty = Decimal.new("#{position.quantity}")
+    qty = Types.to_decimal(position.quantity)
 
     Decimal.mult(Decimal.sub(entry, exit), qty) |> Decimal.to_float()
   end

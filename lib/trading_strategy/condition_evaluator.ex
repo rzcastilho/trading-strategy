@@ -161,24 +161,51 @@ defmodule TradingStrategy.ConditionEvaluator do
 
   def get_indicator_value(indicator_name, context) when is_atom(indicator_name) do
     indicators = Map.get(context, :indicators, %{})
-    value = Map.get(indicators, indicator_name, 0.0)
 
-    # Check if this is a multi-value indicator being accessed without component
-    if is_map(value) and not is_struct(value, Decimal) do
-      available = Map.keys(value) |> Enum.map(&inspect/1) |> Enum.join(", ")
+    # First, try to get from calculated indicators
+    case Map.get(indicators, indicator_name) do
+      nil ->
+        # If not found in indicators, check if it's a price/volume field from candle
+        get_candle_field(indicator_name, context)
 
-      raise ArgumentError, """
-      Indicator #{inspect(indicator_name)} returns multiple values: #{available}
+      value when is_map(value) and not is_struct(value, Decimal) ->
+        # Multi-value indicator being accessed without component
+        available = Map.keys(value) |> Enum.map(&inspect/1) |> Enum.join(", ")
 
-      You must specify which component to use:
-        indicator(:#{indicator_name}, :component_name)
+        raise ArgumentError, """
+        Indicator #{inspect(indicator_name)} returns multiple values: #{available}
 
-      Example: indicator(:#{indicator_name}, :#{Map.keys(value) |> List.first})
-      """
+        You must specify which component to use:
+          indicator(:#{indicator_name}, :component_name)
+
+        Example: indicator(:#{indicator_name}, :#{Map.keys(value) |> List.first})
+        """
+
+      value ->
+        value
     end
-
-    value
   end
+
+  # Extract a field from the current candle (for price/volume access)
+  defp get_candle_field(field_name, context) when field_name in [:open, :high, :low, :close, :volume] do
+    candles = Map.get(context, :candles)
+
+    cond do
+      # If candles is a list, get the last candle
+      is_list(candles) and length(candles) > 0 ->
+        current_candle = List.last(candles)
+        Map.get(current_candle, field_name, Decimal.new(0))
+
+      # If candles is a single candle map
+      is_map(candles) and not is_list(candles) ->
+        Map.get(candles, field_name, Decimal.new(0))
+
+      true ->
+        Decimal.new(0)
+    end
+  end
+
+  defp get_candle_field(_field_name, _context), do: Decimal.new(0)
 
   @doc """
   Gets the previous value of an indicator from the context.
@@ -225,10 +252,34 @@ defmodule TradingStrategy.ConditionEvaluator do
     values = Map.get(historical, indicator_name, [])
 
     case values do
-      [prev | _] -> prev
-      [] -> 0.0
+      [prev | _] ->
+        prev
+
+      [] ->
+        # If not found in historical indicators, check if it's a price/volume field
+        # Try to get from previous candle if candles is a list
+        get_previous_candle_field(indicator_name, context)
     end
   end
+
+  # Extract a field from the previous candle (for cross detection with price/volume)
+  defp get_previous_candle_field(field_name, context)
+       when field_name in [:open, :high, :low, :close, :volume] do
+    candles = Map.get(context, :candles)
+
+    cond do
+      # If candles is a list with at least 2 elements, get the second-to-last
+      is_list(candles) and length(candles) >= 2 ->
+        prev_candle = Enum.at(candles, -2)
+        Map.get(prev_candle, field_name, Decimal.new(0))
+
+      # If candles is a single candle (not a list), we don't have previous data
+      true ->
+        Decimal.new(0)
+    end
+  end
+
+  defp get_previous_candle_field(_field_name, _context), do: Decimal.new(0)
 
   @doc """
   Builds an evaluation context from market data and calculated indicators.
@@ -264,22 +315,27 @@ defmodule TradingStrategy.ConditionEvaluator do
 
   # Compare two values, handling Decimal comparisons properly
   defp compare_values(left, right, op) do
-    # Convert to comparable values
-    left_val = to_comparable(left)
-    right_val = to_comparable(right)
+    # Normalize both values to Decimal for consistent comparison
+    left_decimal = to_decimal(left)
+    right_decimal = to_decimal(right)
+
+    # Use Decimal.compare/2 for all comparisons
+    comparison = Decimal.compare(left_decimal, right_decimal)
 
     case op do
-      :> -> left_val > right_val
-      :>= -> left_val >= right_val
-      :< -> left_val < right_val
-      :<= -> left_val <= right_val
-      :== -> left_val == right_val
-      :!= -> left_val != right_val
+      :> -> comparison == :gt
+      :>= -> comparison in [:gt, :eq]
+      :< -> comparison == :lt
+      :<= -> comparison in [:lt, :eq]
+      :== -> comparison == :eq
+      :!= -> comparison != :eq
     end
   end
 
-  # Convert Decimal to float for comparison, leave other types as-is
-  defp to_comparable(%Decimal{} = decimal), do: Decimal.to_float(decimal)
-  defp to_comparable(value) when is_number(value), do: value
-  defp to_comparable(value), do: value
+  # Convert values to Decimal for comparison
+  defp to_decimal(%Decimal{} = decimal), do: decimal
+  defp to_decimal(value) when is_integer(value), do: Decimal.new(value)
+  defp to_decimal(value) when is_float(value), do: Decimal.from_float(value)
+  defp to_decimal(value) when is_binary(value), do: Decimal.new(value)
+  defp to_decimal(value), do: Decimal.new(0)
 end

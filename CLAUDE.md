@@ -374,6 +374,42 @@ Some indicators support additional parameters:
 - `:hlc3` - (High + Low + Close) / 3
 - `:ohlc4` - (Open + High + Low + Close) / 4
 
+#### Volume-Based Indicators
+
+You can apply indicators to volume data by using `source: :volume`. This is useful for analyzing volume patterns.
+
+**Important Implementation Note:** Most indicator modules (SMA, EMA, etc.) only validate price-based sources (`:close`, `:open`, `:high`, `:low`) in their parameter schemas. When using `source: :volume`, the TradingStrategy integration layer automatically handles this by:
+
+1. Removing `:volume` from validation parameters (avoiding schema errors)
+2. Extracting volume data correctly via `extract_data_series/2`
+3. Converting volume values to Decimal for precision consistency
+4. Passing the volume data to the indicator's calculation function
+
+This workaround is transparent to users and allows volume-based indicators to work seamlessly.
+
+**Example:**
+
+```elixir
+defstrategy :volume_analysis do
+  # Apply SMA to volume data
+  indicator :volume_sma, TradingIndicators.Trend.SMA, period: 20, source: :volume
+  indicator :price_sma, TradingIndicators.Trend.SMA, period: 20, source: :close
+
+  entry_signal :long do
+    when_all do
+      # Volume above average
+      indicator(:volume) > indicator(:volume_sma)
+      # Price above SMA
+      price(:close) > indicator(:price_sma)
+    end
+  end
+end
+```
+
+**Technical Details:**
+
+The implementation is in `lib/trading_strategy/indicators.ex` at lines 144-161, where the `calculate_indicator/3` function detects `source: :volume` and modifies validation parameters accordingly. See inline comments in that file for the complete explanation.
+
 #### Helper Functions
 
 The `Indicators` module provides helper functions:

@@ -50,6 +50,52 @@ defmodule TradingStrategy.Indicators do
   alias TradingStrategy.{Definition, Types, DecimalHelpers}
   require Logger
 
+  @typedoc """
+  Result from a single-value indicator calculation.
+
+  Single-value indicators (e.g., SMA, RSI, EMA) return a single Decimal value.
+  """
+  @type single_value_result :: Decimal.t() | nil
+
+  @typedoc """
+  Result from a multi-value indicator calculation.
+
+  Multi-value indicators (e.g., BollingerBands, MACD, Stochastic) return
+  a map with named components, where each component is a Decimal value.
+
+  ## Examples
+
+      # BollingerBands result
+      %{
+        upper_band: Decimal.t(),
+        middle_band: Decimal.t(),
+        lower_band: Decimal.t(),
+        percent_b: Decimal.t(),
+        bandwidth: Decimal.t()
+      }
+
+      # MACD result
+      %{
+        macd: Decimal.t(),
+        signal: Decimal.t(),
+        histogram: Decimal.t()
+      }
+
+      # Stochastic result
+      %{
+        k: Decimal.t(),
+        d: Decimal.t()
+      }
+  """
+  @type multi_value_result :: %{atom() => Decimal.t()} | nil
+
+  @typedoc """
+  Result from any indicator calculation.
+
+  Can be either a single Decimal value or a map of component values.
+  """
+  @type indicator_result :: single_value_result() | multi_value_result()
+
   @doc """
   Calculates all indicators defined in a strategy for given market data.
 
@@ -68,6 +114,9 @@ defmodule TradingStrategy.Indicators do
         rsi: 55.2
       }
   """
+  @spec calculate_all(Definition.t(), [Types.ohlcv()], keyword()) :: %{
+          atom() => indicator_result()
+        }
   def calculate_all(%Definition{indicators: indicators}, market_data, opts \\ []) do
     Enum.reduce(indicators, %{}, fn {name, config}, acc ->
       value = calculate_indicator(config, market_data, opts)
@@ -89,6 +138,8 @@ defmodule TradingStrategy.Indicators do
     since most indicators only accept price-based sources
   - Volume data is extracted and passed directly to the indicator
   """
+  @spec calculate_indicator(%{module: module(), params: keyword()}, [Types.ohlcv()], keyword()) ::
+          indicator_result()
   def calculate_indicator(%{module: module, params: params}, market_data, _opts \\ []) do
     # Special handling for volume source: Most indicators (e.g., SMA, EMA) only validate
     # price-based sources (:close, :open, :high, :low) in their parameter schemas.

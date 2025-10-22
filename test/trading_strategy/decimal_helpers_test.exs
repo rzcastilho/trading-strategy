@@ -86,15 +86,14 @@ defmodule TradingStrategy.DecimalHelpersTest do
     end
 
     test "handles special float values - infinity" do
-      # Infinity should be handled gracefully (return nil)
-      result = DecimalHelpers.ensure_decimal(:math.pow(10, 1000))
+      # Infinity atoms should be handled gracefully (return nil)
+      result = DecimalHelpers.ensure_decimal(:infinity)
       assert result == nil
     end
 
     test "handles special float values - NaN" do
-      # NaN should be handled gracefully (return nil)
-      nan = :math.sqrt(-1)
-      result = DecimalHelpers.ensure_decimal(nan)
+      # NaN atoms should be handled gracefully (return nil)
+      result = DecimalHelpers.ensure_decimal(:nan)
       assert result == nil
     end
   end

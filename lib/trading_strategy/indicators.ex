@@ -47,7 +47,7 @@ defmodule TradingStrategy.Indicators do
   See `TradingStrategy.Types` for OHLCV data format details.
   """
 
-  alias TradingStrategy.{Definition, Types}
+  alias TradingStrategy.{Definition, Types, DecimalHelpers}
   require Logger
 
   @doc """
@@ -90,8 +90,11 @@ defmodule TradingStrategy.Indicators do
   - Volume data is extracted and passed directly to the indicator
   """
   def calculate_indicator(%{module: module, params: params}, market_data, _opts \\ []) do
-    # Special handling for volume source: don't validate it as most indicators
-    # only accept price sources. Instead, extract volume data and remove source from params.
+    # Special handling for volume source: Most indicators (e.g., SMA, EMA) only validate
+    # price-based sources (:close, :open, :high, :low) in their parameter schemas.
+    # When using volume as a source (e.g., `indicator :volume_sma, SMA, period: 20, source: :volume`),
+    # we need to remove :volume from validation params to avoid schema errors, while still
+    # extracting volume data correctly via extract_data_series/2.
     validation_params =
       case Keyword.get(params, :source) do
         :volume ->
@@ -417,20 +420,6 @@ defmodule TradingStrategy.Indicators do
     _error -> false
   end
 
-  # Private helpers for ensuring Decimal precision
-
-  # Ensures a value is converted to Decimal for precision
-  defp ensure_decimal(%Decimal{} = value), do: value
-  defp ensure_decimal(value) when is_integer(value), do: Decimal.new(value)
-  defp ensure_decimal(value) when is_float(value), do: Decimal.from_float(value)
-  defp ensure_decimal(value) when is_binary(value), do: Decimal.new(value)
-  defp ensure_decimal(_), do: nil
-
-  # Ensures all values in a map are Decimal
-  defp ensure_decimal_components(map) when is_map(map) do
-    Map.new(map, fn {k, v} -> {k, ensure_decimal(v)} end)
-  end
-
   # Private helper: Extract indicator value from result
   defp extract_indicator_value([]), do: nil
 
@@ -439,7 +428,7 @@ defmodule TradingStrategy.Indicators do
       # Standard single-value indicator with :value key
       %{value: value} ->
         # Ensure the value is Decimal regardless of what the indicator returned
-        ensure_decimal(value)
+        DecimalHelpers.ensure_decimal(value)
 
       # Multi-value indicator (e.g., BollingerBands, MACD)
       # These have component keys directly in the map (no :value wrapper)
@@ -448,19 +437,19 @@ defmodule TradingStrategy.Indicators do
         result
         |> Map.delete(:timestamp)
         |> Map.delete(:metadata)
-        |> ensure_decimal_components()
+        |> DecimalHelpers.ensure_decimal_components()
 
       # Plain Decimal value
       value when is_struct(value, Decimal) -> value
 
       # Plain number - convert to Decimal
-      value when is_number(value) -> ensure_decimal(value)
+      value when is_number(value) -> DecimalHelpers.ensure_decimal(value)
 
       _ -> nil
     end
   end
 
   defp extract_indicator_value(value) when is_struct(value, Decimal), do: value
-  defp extract_indicator_value(value) when is_number(value), do: ensure_decimal(value)
+  defp extract_indicator_value(value) when is_number(value), do: DecimalHelpers.ensure_decimal(value)
   defp extract_indicator_value(_), do: nil
 end

@@ -76,7 +76,8 @@ defmodule TradingStrategy.Engine do
     Signal,
     Position,
     Indicators,
-    ConditionEvaluator
+    ConditionEvaluator,
+    DecimalHelpers
   }
 
   @type state :: %{
@@ -142,20 +143,6 @@ defmodule TradingStrategy.Engine do
   """
   def stop(engine) do
     GenServer.stop(engine)
-  end
-
-  # Private helpers for ensuring Decimal precision
-
-  # Ensures a value is converted to Decimal for precision
-  defp ensure_decimal(%Decimal{} = value), do: value
-  defp ensure_decimal(value) when is_integer(value), do: Decimal.new(value)
-  defp ensure_decimal(value) when is_float(value), do: Decimal.from_float(value)
-  defp ensure_decimal(value) when is_binary(value), do: Decimal.new(value)
-  defp ensure_decimal(_), do: nil
-
-  # Ensures all values in a map are Decimal
-  defp ensure_decimal_components(map) when is_map(map) do
-    Map.new(map, fn {k, v} -> {k, ensure_decimal(v)} end)
   end
 
   # Server Callbacks
@@ -430,7 +417,7 @@ defmodule TradingStrategy.Engine do
                   # Standard single-value indicator with :value key
                   %{value: v} ->
                     # Ensure the value is Decimal regardless of what the indicator returned
-                    ensure_decimal(v)
+                    DecimalHelpers.ensure_decimal(v)
 
                   # Multi-value indicator (e.g., BollingerBands, MACD)
                   # These have component keys directly in the map (no :value wrapper)
@@ -439,13 +426,13 @@ defmodule TradingStrategy.Engine do
                     result
                     |> Map.delete(:timestamp)
                     |> Map.delete(:metadata)
-                    |> ensure_decimal_components()
+                    |> DecimalHelpers.ensure_decimal_components()
 
                   # Plain Decimal value
                   v when is_struct(v, Decimal) -> v
 
                   # Plain number - convert to Decimal
-                  v when is_number(v) -> ensure_decimal(v)
+                  v when is_number(v) -> DecimalHelpers.ensure_decimal(v)
 
                   _ -> nil
                 end

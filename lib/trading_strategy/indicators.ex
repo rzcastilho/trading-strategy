@@ -83,13 +83,33 @@ defmodule TradingStrategy.Indicators do
   2. Checks data sufficiency using `required_periods/0` or `required_periods/1`
   3. Handles `{:ok, results}` and `{:error, reason}` tuples
   4. Extracts value from result struct
+
+  Special handling for volume data:
+  - When `source: :volume` is specified, the source is removed from validation params
+    since most indicators only accept price-based sources
+  - Volume data is extracted and passed directly to the indicator
   """
   def calculate_indicator(%{module: module, params: params}, market_data, _opts \\ []) do
-    with {:ok, _} <- validate_indicator_params(module, params),
+    # Special handling for volume source: don't validate it as most indicators
+    # only accept price sources. Instead, extract volume data and remove source from params.
+    validation_params =
+      case Keyword.get(params, :source) do
+        :volume ->
+          # Remove source from validation params since indicators expect price sources
+          # The data series will be volume anyway due to extract_data_series
+          Keyword.delete(params, :source)
+
+        _ ->
+          # For price sources, use params as-is for both validation and calculation
+          params
+      end
+
+    with {:ok, _} <- validate_indicator_params(module, validation_params),
          :ok <- check_sufficient_data(module, market_data, params),
          data <- extract_data_series(market_data, params) do
       # Call the indicator's calculate function
-      case apply(module, :calculate, [data, params]) do
+      # Use validation_params (without volume source) to avoid parameter errors
+      case apply(module, :calculate, [data, validation_params]) do
         {:ok, results} ->
           # Real indicator that follows TradingIndicators.Behaviour
           extract_indicator_value(results)
@@ -170,7 +190,10 @@ defmodule TradingStrategy.Indicators do
         Enum.map(market_data, &Types.to_decimal(&1.low))
 
       :volume ->
-        Enum.map(market_data, & &1.volume)
+        # Convert volume to Decimal for precision consistency
+        Enum.map(market_data, fn candle ->
+          Decimal.new(candle.volume)
+        end)
 
       :hl2 ->
         Enum.map(market_data, fn candle ->
@@ -394,20 +417,50 @@ defmodule TradingStrategy.Indicators do
     _error -> false
   end
 
+  # Private helpers for ensuring Decimal precision
+
+  # Ensures a value is converted to Decimal for precision
+  defp ensure_decimal(%Decimal{} = value), do: value
+  defp ensure_decimal(value) when is_integer(value), do: Decimal.new(value)
+  defp ensure_decimal(value) when is_float(value), do: Decimal.from_float(value)
+  defp ensure_decimal(value) when is_binary(value), do: Decimal.new(value)
+  defp ensure_decimal(_), do: nil
+
+  # Ensures all values in a map are Decimal
+  defp ensure_decimal_components(map) when is_map(map) do
+    Map.new(map, fn {k, v} -> {k, ensure_decimal(v)} end)
+  end
+
   # Private helper: Extract indicator value from result
   defp extract_indicator_value([]), do: nil
 
   defp extract_indicator_value(results) when is_list(results) do
     case List.last(results) do
-      %{value: value} when is_struct(value, Decimal) -> value
-      %{value: value} -> value
+      # Standard single-value indicator with :value key
+      %{value: value} ->
+        # Ensure the value is Decimal regardless of what the indicator returned
+        ensure_decimal(value)
+
+      # Multi-value indicator (e.g., BollingerBands, MACD)
+      # These have component keys directly in the map (no :value wrapper)
+      %{timestamp: _, metadata: _} = result ->
+        # Remove timestamp and metadata, ensure all components are Decimal
+        result
+        |> Map.delete(:timestamp)
+        |> Map.delete(:metadata)
+        |> ensure_decimal_components()
+
+      # Plain Decimal value
       value when is_struct(value, Decimal) -> value
-      value when is_number(value) -> Decimal.new("#{value}")
+
+      # Plain number - convert to Decimal
+      value when is_number(value) -> ensure_decimal(value)
+
       _ -> nil
     end
   end
 
   defp extract_indicator_value(value) when is_struct(value, Decimal), do: value
-  defp extract_indicator_value(value) when is_number(value), do: Decimal.new("#{value}")
+  defp extract_indicator_value(value) when is_number(value), do: ensure_decimal(value)
   defp extract_indicator_value(_), do: nil
 end

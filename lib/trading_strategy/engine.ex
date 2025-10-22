@@ -144,6 +144,20 @@ defmodule TradingStrategy.Engine do
     GenServer.stop(engine)
   end
 
+  # Private helpers for ensuring Decimal precision
+
+  # Ensures a value is converted to Decimal for precision
+  defp ensure_decimal(%Decimal{} = value), do: value
+  defp ensure_decimal(value) when is_integer(value), do: Decimal.new(value)
+  defp ensure_decimal(value) when is_float(value), do: Decimal.from_float(value)
+  defp ensure_decimal(value) when is_binary(value), do: Decimal.new(value)
+  defp ensure_decimal(_), do: nil
+
+  # Ensures all values in a map are Decimal
+  defp ensure_decimal_components(map) when is_map(map) do
+    Map.new(map, fn {k, v} -> {k, ensure_decimal(v)} end)
+  end
+
   # Server Callbacks
 
   @impl true
@@ -410,12 +424,29 @@ defmodule TradingStrategy.Engine do
           # The indicator will extract the appropriate price based on :source parameter
           case apply(config.module, :update_state, [streaming_state, new_data]) do
             {:ok, new_state, indicator_result} ->
-              # Extract value from indicator result
+              # Extract value from indicator result with Decimal precision
               value =
                 case indicator_result do
-                  %{value: v} -> v
+                  # Standard single-value indicator with :value key
+                  %{value: v} ->
+                    # Ensure the value is Decimal regardless of what the indicator returned
+                    ensure_decimal(v)
+
+                  # Multi-value indicator (e.g., BollingerBands, MACD)
+                  # These have component keys directly in the map (no :value wrapper)
+                  %{timestamp: _, metadata: _} = result ->
+                    # Remove timestamp and metadata, ensure all components are Decimal
+                    result
+                    |> Map.delete(:timestamp)
+                    |> Map.delete(:metadata)
+                    |> ensure_decimal_components()
+
+                  # Plain Decimal value
                   v when is_struct(v, Decimal) -> v
-                  v when is_number(v) -> Decimal.new("#{v}")
+
+                  # Plain number - convert to Decimal
+                  v when is_number(v) -> ensure_decimal(v)
+
                   _ -> nil
                 end
 

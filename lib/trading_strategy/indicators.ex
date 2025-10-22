@@ -47,8 +47,54 @@ defmodule TradingStrategy.Indicators do
   See `TradingStrategy.Types` for OHLCV data format details.
   """
 
-  alias TradingStrategy.{Definition, Types}
+  alias TradingStrategy.{Definition, Types, DecimalHelpers}
   require Logger
+
+  @typedoc """
+  Result from a single-value indicator calculation.
+
+  Single-value indicators (e.g., SMA, RSI, EMA) return a single Decimal value.
+  """
+  @type single_value_result :: Decimal.t() | nil
+
+  @typedoc """
+  Result from a multi-value indicator calculation.
+
+  Multi-value indicators (e.g., BollingerBands, MACD, Stochastic) return
+  a map with named components, where each component is a Decimal value.
+
+  ## Examples
+
+      # BollingerBands result
+      %{
+        upper_band: Decimal.t(),
+        middle_band: Decimal.t(),
+        lower_band: Decimal.t(),
+        percent_b: Decimal.t(),
+        bandwidth: Decimal.t()
+      }
+
+      # MACD result
+      %{
+        macd: Decimal.t(),
+        signal: Decimal.t(),
+        histogram: Decimal.t()
+      }
+
+      # Stochastic result
+      %{
+        k: Decimal.t(),
+        d: Decimal.t()
+      }
+  """
+  @type multi_value_result :: %{atom() => Decimal.t()} | nil
+
+  @typedoc """
+  Result from any indicator calculation.
+
+  Can be either a single Decimal value or a map of component values.
+  """
+  @type indicator_result :: single_value_result() | multi_value_result()
 
   @doc """
   Calculates all indicators defined in a strategy for given market data.
@@ -68,6 +114,9 @@ defmodule TradingStrategy.Indicators do
         rsi: 55.2
       }
   """
+  @spec calculate_all(Definition.t(), [Types.ohlcv()], keyword()) :: %{
+          atom() => indicator_result()
+        }
   def calculate_all(%Definition{indicators: indicators}, market_data, opts \\ []) do
     Enum.reduce(indicators, %{}, fn {name, config}, acc ->
       value = calculate_indicator(config, market_data, opts)
@@ -83,13 +132,38 @@ defmodule TradingStrategy.Indicators do
   2. Checks data sufficiency using `required_periods/0` or `required_periods/1`
   3. Handles `{:ok, results}` and `{:error, reason}` tuples
   4. Extracts value from result struct
+
+  Special handling for volume data:
+  - When `source: :volume` is specified, the source is removed from validation params
+    since most indicators only accept price-based sources
+  - Volume data is extracted and passed directly to the indicator
   """
+  @spec calculate_indicator(%{module: module(), params: keyword()}, [Types.ohlcv()], keyword()) ::
+          indicator_result()
   def calculate_indicator(%{module: module, params: params}, market_data, _opts \\ []) do
-    with {:ok, _} <- validate_indicator_params(module, params),
+    # Special handling for volume source: Most indicators (e.g., SMA, EMA) only validate
+    # price-based sources (:close, :open, :high, :low) in their parameter schemas.
+    # When using volume as a source (e.g., `indicator :volume_sma, SMA, period: 20, source: :volume`),
+    # we need to remove :volume from validation params to avoid schema errors, while still
+    # extracting volume data correctly via extract_data_series/2.
+    validation_params =
+      case Keyword.get(params, :source) do
+        :volume ->
+          # Remove source from validation params since indicators expect price sources
+          # The data series will be volume anyway due to extract_data_series
+          Keyword.delete(params, :source)
+
+        _ ->
+          # For price sources, use params as-is for both validation and calculation
+          params
+      end
+
+    with {:ok, _} <- validate_indicator_params(module, validation_params),
          :ok <- check_sufficient_data(module, market_data, params),
          data <- extract_data_series(market_data, params) do
       # Call the indicator's calculate function
-      case apply(module, :calculate, [data, params]) do
+      # Use validation_params (without volume source) to avoid parameter errors
+      case apply(module, :calculate, [data, validation_params]) do
         {:ok, results} ->
           # Real indicator that follows TradingIndicators.Behaviour
           extract_indicator_value(results)
@@ -170,7 +244,10 @@ defmodule TradingStrategy.Indicators do
         Enum.map(market_data, &Types.to_decimal(&1.low))
 
       :volume ->
-        Enum.map(market_data, & &1.volume)
+        # Convert volume to Decimal for precision consistency
+        Enum.map(market_data, fn candle ->
+          Decimal.new(candle.volume)
+        end)
 
       :hl2 ->
         Enum.map(market_data, fn candle ->
@@ -399,15 +476,31 @@ defmodule TradingStrategy.Indicators do
 
   defp extract_indicator_value(results) when is_list(results) do
     case List.last(results) do
-      %{value: value} when is_struct(value, Decimal) -> value
-      %{value: value} -> value
+      # Standard single-value indicator with :value key
+      %{value: value} ->
+        # Ensure the value is Decimal regardless of what the indicator returned
+        DecimalHelpers.ensure_decimal(value)
+
+      # Multi-value indicator (e.g., BollingerBands, MACD)
+      # These have component keys directly in the map (no :value wrapper)
+      %{timestamp: _, metadata: _} = result ->
+        # Remove timestamp and metadata, ensure all components are Decimal
+        result
+        |> Map.delete(:timestamp)
+        |> Map.delete(:metadata)
+        |> DecimalHelpers.ensure_decimal_components()
+
+      # Plain Decimal value
       value when is_struct(value, Decimal) -> value
-      value when is_number(value) -> Decimal.new("#{value}")
+
+      # Plain number - convert to Decimal
+      value when is_number(value) -> DecimalHelpers.ensure_decimal(value)
+
       _ -> nil
     end
   end
 
   defp extract_indicator_value(value) when is_struct(value, Decimal), do: value
-  defp extract_indicator_value(value) when is_number(value), do: Decimal.new("#{value}")
+  defp extract_indicator_value(value) when is_number(value), do: DecimalHelpers.ensure_decimal(value)
   defp extract_indicator_value(_), do: nil
 end

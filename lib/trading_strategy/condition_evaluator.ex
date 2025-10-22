@@ -337,5 +337,5 @@ defmodule TradingStrategy.ConditionEvaluator do
   defp to_decimal(value) when is_integer(value), do: Decimal.new(value)
   defp to_decimal(value) when is_float(value), do: Decimal.from_float(value)
   defp to_decimal(value) when is_binary(value), do: Decimal.new(value)
-  defp to_decimal(value), do: Decimal.new(0)
+  defp to_decimal(_value), do: Decimal.new(0)
 end

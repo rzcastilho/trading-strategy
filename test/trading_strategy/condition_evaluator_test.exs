@@ -319,9 +319,9 @@ defmodule TradingStrategy.ConditionEvaluatorTest do
       assert ConditionEvaluator.get_indicator_value(:sma, context) == 100.0
     end
 
-    test "returns 0.0 for missing indicator" do
+    test "returns Decimal 0 for missing indicator" do
       context = %{indicators: %{}}
-      assert ConditionEvaluator.get_indicator_value(:missing, context) == 0.0
+      assert ConditionEvaluator.get_indicator_value(:missing, context) == Decimal.new("0")
     end
   end
 
@@ -336,14 +336,14 @@ defmodule TradingStrategy.ConditionEvaluatorTest do
       assert ConditionEvaluator.get_previous_indicator_value(:rsi, context) == 50.0
     end
 
-    test "returns 0.0 for missing historical data" do
+    test "returns Decimal 0 for missing historical data" do
       context = %{historical_indicators: %{}}
-      assert ConditionEvaluator.get_previous_indicator_value(:missing, context) == 0.0
+      assert ConditionEvaluator.get_previous_indicator_value(:missing, context) == Decimal.new("0")
     end
 
-    test "returns 0.0 for empty historical data" do
+    test "returns Decimal 0 for empty historical data" do
       context = %{historical_indicators: %{rsi: []}}
-      assert ConditionEvaluator.get_previous_indicator_value(:rsi, context) == 0.0
+      assert ConditionEvaluator.get_previous_indicator_value(:rsi, context) == Decimal.new("0")
     end
   end
 

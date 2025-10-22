@@ -295,6 +295,73 @@ From the trading-indicators library (22 indicators across 4 categories):
 - `TradingIndicators.Volume.ADLine` - Accumulation/Distribution Line
 - `TradingIndicators.Volume.CMF` - Chaikin Money Flow
 
+#### Multi-Value Indicators
+
+Some indicators return multiple components in a single calculation. Instead of defining separate indicators for each component, define the indicator once and reference specific components in conditions.
+
+**Indicators with Multiple Components:**
+
+- **MACD** (`TradingIndicators.Trend.MACD`):
+  - `:macd` - MACD line (fast EMA - slow EMA)
+  - `:signal` - Signal line (EMA of MACD line)
+  - `:histogram` - Histogram (MACD - Signal)
+
+- **Bollinger Bands** (`TradingIndicators.Volatility.BollingerBands`):
+  - `:upper_band` - Upper band (SMA + deviation × StdDev)
+  - `:middle_band` - Middle band (SMA)
+  - `:lower_band` - Lower band (SMA - deviation × StdDev)
+  - `:percent_b` - %B indicator (price position within bands)
+  - `:bandwidth` - Band width (distance between upper and lower bands)
+
+- **Stochastic** (`TradingIndicators.Momentum.Stochastic`):
+  - `:k` - %K line (fast stochastic)
+  - `:d` - %D line (slow stochastic, SMA of %K)
+
+**Usage Example:**
+
+```elixir
+defstrategy :multi_value_example do
+  # Define indicators once
+  indicator :macd, TradingIndicators.Trend.MACD, fast: 12, slow: 26, signal: 9, source: :close
+  indicator :bb, TradingIndicators.Volatility.BollingerBands, period: 20, deviation: 2, source: :close
+
+  entry_signal :long do
+    when_all do
+      # Access specific components using indicator(name, component)
+      indicator(:macd, :histogram) > 0
+      cross_above(indicator(:macd, :macd), indicator(:macd, :signal))
+      price(:close) > indicator(:bb, :middle_band)
+      indicator(:bb, :percent_b) < 0.2  # Oversold within bands
+    end
+  end
+
+  exit_signal do
+    when_any do
+      indicator(:macd, :histogram) < 0
+      price(:close) > indicator(:bb, :upper_band)
+    end
+  end
+end
+```
+
+**Error Handling:**
+
+The system provides helpful error messages:
+
+- Using a multi-value indicator without specifying a component:
+  ```
+  Indicator :macd returns multiple values: :macd, :signal, :histogram
+  You must specify which component to use: indicator(:macd, :component)
+  Example: indicator(:macd, :histogram)
+  ```
+
+- Accessing a non-existent component:
+  ```
+  Invalid component :invalid for indicator :macd.
+  Available components: :macd, :signal, :histogram
+  Example usage: indicator(:macd, :histogram)
+  ```
+
 #### Common Parameters
 
 Most indicators support these parameters:

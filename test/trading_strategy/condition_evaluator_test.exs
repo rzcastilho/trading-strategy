@@ -378,4 +378,157 @@ defmodule TradingStrategy.ConditionEvaluatorTest do
       assert context.timestamp == timestamp
     end
   end
+
+  describe "multi-value indicator support" do
+    test "accesses component of multi-value indicator (MACD)" do
+      macd_value = %{
+        macd: Decimal.new("0.5"),
+        signal: Decimal.new("0.3"),
+        histogram: Decimal.new("0.2")
+      }
+
+      context = %{indicators: %{macd: macd_value}}
+
+      # Test histogram component access
+      histogram_ref = %{type: :indicator_ref, name: :macd, component: :histogram}
+      assert ConditionEvaluator.get_indicator_value(histogram_ref, context) == Decimal.new("0.2")
+
+      # Test macd line component access
+      macd_ref = %{type: :indicator_ref, name: :macd, component: :macd}
+      assert ConditionEvaluator.get_indicator_value(macd_ref, context) == Decimal.new("0.5")
+
+      # Test signal component access
+      signal_ref = %{type: :indicator_ref, name: :macd, component: :signal}
+      assert ConditionEvaluator.get_indicator_value(signal_ref, context) == Decimal.new("0.3")
+    end
+
+    test "accesses component of multi-value indicator (Bollinger Bands)" do
+      bb_value = %{
+        upper_band: Decimal.new("110"),
+        middle_band: Decimal.new("100"),
+        lower_band: Decimal.new("90"),
+        percent_b: Decimal.new("0.5"),
+        bandwidth: Decimal.new("20")
+      }
+
+      context = %{indicators: %{bb: bb_value}}
+
+      # Test each component
+      upper_ref = %{type: :indicator_ref, name: :bb, component: :upper_band}
+      assert ConditionEvaluator.get_indicator_value(upper_ref, context) == Decimal.new("110")
+
+      middle_ref = %{type: :indicator_ref, name: :bb, component: :middle_band}
+      assert ConditionEvaluator.get_indicator_value(middle_ref, context) == Decimal.new("100")
+
+      lower_ref = %{type: :indicator_ref, name: :bb, component: :lower_band}
+      assert ConditionEvaluator.get_indicator_value(lower_ref, context) == Decimal.new("90")
+    end
+
+    test "raises error when accessing multi-value indicator without component" do
+      macd_value = %{
+        macd: Decimal.new("0.5"),
+        signal: Decimal.new("0.3"),
+        histogram: Decimal.new("0.2")
+      }
+
+      context = %{indicators: %{macd: macd_value}}
+
+      assert_raise ArgumentError, ~r/Indicator :macd returns multiple values/, fn ->
+        ConditionEvaluator.get_indicator_value(:macd, context)
+      end
+    end
+
+    test "raises error when accessing invalid component" do
+      macd_value = %{
+        macd: Decimal.new("0.5"),
+        signal: Decimal.new("0.3"),
+        histogram: Decimal.new("0.2")
+      }
+
+      context = %{indicators: %{macd: macd_value}}
+      invalid_ref = %{type: :indicator_ref, name: :macd, component: :invalid}
+
+      assert_raise ArgumentError, ~r/Invalid component :invalid for indicator :macd/, fn ->
+        ConditionEvaluator.get_indicator_value(invalid_ref, context)
+      end
+    end
+
+    test "raises error when using component access on single-value indicator" do
+      context = %{indicators: %{rsi: Decimal.new("70")}}
+      component_ref = %{type: :indicator_ref, name: :rsi, component: :value}
+
+      assert_raise ArgumentError, ~r/Indicator :rsi is not a multi-value indicator/, fn ->
+        ConditionEvaluator.get_indicator_value(component_ref, context)
+      end
+    end
+
+    test "evaluates comparison with multi-value indicator component" do
+      macd_value = %{
+        macd: Decimal.new("0.5"),
+        signal: Decimal.new("0.3"),
+        histogram: Decimal.new("0.2")
+      }
+
+      context = %{indicators: %{macd: macd_value}}
+
+      # Test: histogram > 0
+      condition = {:>, [], [%{type: :indicator_ref, name: :macd, component: :histogram}, 0]}
+      assert ConditionEvaluator.evaluate(condition, context)
+
+      # Test: histogram < 0.5
+      condition = {:<, [], [%{type: :indicator_ref, name: :macd, component: :histogram}, 0.5]}
+      assert ConditionEvaluator.evaluate(condition, context)
+    end
+
+    test "supports cross detection with multi-value indicator components" do
+      macd_current = %{
+        macd: Decimal.new("0.5"),
+        signal: Decimal.new("0.3"),
+        histogram: Decimal.new("0.2")
+      }
+
+      macd_previous = %{
+        macd: Decimal.new("0.25"),
+        signal: Decimal.new("0.3"),
+        histogram: Decimal.new("-0.05")
+      }
+
+      context = %{
+        indicators: %{macd: macd_current},
+        historical_indicators: %{macd: [macd_previous]}
+      }
+
+      # Test cross above: MACD line crossed above signal line
+      macd_ref = %{type: :indicator_ref, name: :macd, component: :macd}
+      signal_ref = %{type: :indicator_ref, name: :macd, component: :signal}
+
+      condition = %{type: :cross_above, indicator1: macd_ref, indicator2: signal_ref}
+      assert ConditionEvaluator.evaluate(condition, context)
+    end
+
+    test "accesses previous component values for cross detection" do
+      bb_current = %{
+        upper_band: Decimal.new("110"),
+        middle_band: Decimal.new("100"),
+        lower_band: Decimal.new("90")
+      }
+
+      bb_previous = %{
+        upper_band: Decimal.new("108"),
+        middle_band: Decimal.new("98"),
+        lower_band: Decimal.new("88")
+      }
+
+      context = %{
+        indicators: %{bb: bb_current},
+        historical_indicators: %{bb: [bb_previous]}
+      }
+
+      # Get previous middle band value
+      middle_ref = %{type: :indicator_ref, name: :bb, component: :middle_band}
+      previous_value = ConditionEvaluator.get_previous_indicator_value(middle_ref, context)
+
+      assert previous_value == Decimal.new("98")
+    end
+  end
 end

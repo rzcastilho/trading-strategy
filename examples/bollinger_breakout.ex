@@ -27,19 +27,13 @@ defmodule Examples.BollingerBreakout do
     description "Bollinger Bands breakout with volume confirmation"
 
     # Define indicators
-    indicator :bb_upper, TradingIndicators.Volatility.BollingerBands, period: 20, deviation: 2, band: :upper
-    indicator :bb_middle, TradingIndicators.Volatility.BollingerBands,
-      period: 20,
-      deviation: 2,
-      band: :middle
-
-    indicator :bb_lower, TradingIndicators.Volatility.BollingerBands, period: 20, deviation: 2, band: :lower
+    indicator :bb, TradingIndicators.Volatility.BollingerBands, period: 20, deviation: 2, source: :close
     indicator :volume_sma, TradingIndicators.Trend.SMA, period: 20, source: :volume
 
     # Long entry signal (upper band breakout)
     entry_signal :long do
       when_all do
-        indicator(:close) > indicator(:bb_upper)
+        indicator(:close) > indicator(:bb, :upper_band)
         indicator(:volume) > indicator(:volume_sma)
       end
     end
@@ -47,7 +41,7 @@ defmodule Examples.BollingerBreakout do
     # Short entry signal (lower band breakout)
     entry_signal :short do
       when_all do
-        indicator(:close) < indicator(:bb_lower)
+        indicator(:close) < indicator(:bb, :lower_band)
         indicator(:volume) > indicator(:volume_sma)
       end
     end
@@ -57,11 +51,11 @@ defmodule Examples.BollingerBreakout do
       when_any do
         # Long exit: price falls back to middle band
         when_all do
-          cross_below(:close, :bb_middle)
+          cross_below(:close, indicator(:bb, :middle_band))
         end
         # Short exit: price rises back to middle band
         when_all do
-          cross_above(:close, :bb_middle)
+          cross_above(:close, indicator(:bb, :middle_band))
         end
       end
     end

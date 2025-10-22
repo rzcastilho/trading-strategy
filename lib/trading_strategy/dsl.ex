@@ -75,15 +75,17 @@ defmodule TradingStrategy.DSL do
 
   ## Examples
 
-      indicator :sma, TradingIndicators.SMA, period: 20
-      indicator :rsi, TradingIndicators.RSI, period: 14, source: :close
+      indicator :sma, TradingIndicators.Trend.SMA, period: 20
+      indicator :rsi, TradingIndicators.Momentum.RSI, period: 14, source: :close
+      indicator :macd, TradingIndicators.Trend.MACD, []  # explicit empty params
   """
-  defmacro indicator(name, module, params \\ []) do
+  defmacro indicator(name, {:__aliases__, _, _} = module_alias, params) do
+    # This is a strategy indicator definition (module is an alias)
     quote do
       @strategy_definition Definition.add_indicator(
                              @strategy_definition,
                              unquote(name),
-                             unquote(module),
+                             unquote(module_alias),
                              unquote(params)
                            )
     end
@@ -214,6 +216,45 @@ defmodule TradingStrategy.DSL do
       %{
         type: :indicator_ref,
         name: unquote(name)
+      }
+    end
+  end
+
+  @doc """
+  References a specific component of a multi-value indicator.
+
+  Multi-value indicators like MACD and Bollinger Bands return maps with multiple
+  components. Use this form to access a specific component in conditions.
+
+  ## Multi-Value Indicators
+
+  - **MACD**: `:macd`, `:signal`, `:histogram`
+  - **Bollinger Bands**: `:upper_band`, `:middle_band`, `:lower_band`, `:percent_b`, `:bandwidth`
+  - **Stochastic**: `:k`, `:d`
+
+  ## Examples
+
+      # MACD histogram crossing above zero
+      indicator(:macd, :histogram) > 0
+
+      # MACD line crossing above signal line
+      cross_above(indicator(:macd, :macd), indicator(:macd, :signal))
+
+      # Price breaking above upper Bollinger Band
+      price(:close) > indicator(:bb, :upper_band)
+
+      # Price between Bollinger Bands
+      when_all do
+        price(:close) > indicator(:bb, :lower_band)
+        price(:close) < indicator(:bb, :upper_band)
+      end
+  """
+  defmacro indicator(name, component) do
+    quote do
+      %{
+        type: :indicator_ref,
+        name: unquote(name),
+        component: unquote(component)
       }
     end
   end

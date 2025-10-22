@@ -34,24 +34,24 @@ defmodule TradingStrategy.ConditionEvaluator do
 
   # Cross Above: Check if indicator1 crosses above indicator2
   def evaluate(%{type: :cross_above, indicator1: ind1, indicator2: ind2}, context) do
-    current_val1 = get_indicator_value(ind1, context)
-    current_val2 = get_indicator_value(ind2, context)
-    previous_val1 = get_previous_indicator_value(ind1, context)
-    previous_val2 = get_previous_indicator_value(ind2, context)
+    current_val1 = resolve_indicator_or_value(ind1, context)
+    current_val2 = resolve_indicator_or_value(ind2, context)
+    previous_val1 = resolve_previous_indicator_or_value(ind1, context)
+    previous_val2 = resolve_previous_indicator_or_value(ind2, context)
 
-    # Cross above: was below, now above
-    previous_val1 <= previous_val2 and current_val1 > current_val2
+    # Cross above: was below or equal, now above
+    compare_values(previous_val1, previous_val2, :<=) and compare_values(current_val1, current_val2, :>)
   end
 
   # Cross Below: Check if indicator1 crosses below indicator2
   def evaluate(%{type: :cross_below, indicator1: ind1, indicator2: ind2}, context) do
-    current_val1 = get_indicator_value(ind1, context)
-    current_val2 = get_indicator_value(ind2, context)
-    previous_val1 = get_previous_indicator_value(ind1, context)
-    previous_val2 = get_previous_indicator_value(ind2, context)
+    current_val1 = resolve_indicator_or_value(ind1, context)
+    current_val2 = resolve_indicator_or_value(ind2, context)
+    previous_val1 = resolve_previous_indicator_or_value(ind1, context)
+    previous_val2 = resolve_previous_indicator_or_value(ind2, context)
 
-    # Cross below: was above, now below
-    previous_val1 >= previous_val2 and current_val1 < current_val2
+    # Cross below: was above or equal, now below
+    compare_values(previous_val1, previous_val2, :>=) and compare_values(current_val1, current_val2, :<)
   end
 
   # Pattern Match
@@ -62,32 +62,32 @@ defmodule TradingStrategy.ConditionEvaluator do
 
   # Comparison: Greater Than
   def evaluate({:>, _, [left, right]}, context) do
-    eval_value(left, context) > eval_value(right, context)
+    compare_values(eval_value(left, context), eval_value(right, context), :>)
   end
 
   # Comparison: Greater Than or Equal
   def evaluate({:>=, _, [left, right]}, context) do
-    eval_value(left, context) >= eval_value(right, context)
+    compare_values(eval_value(left, context), eval_value(right, context), :>=)
   end
 
   # Comparison: Less Than
   def evaluate({:<, _, [left, right]}, context) do
-    eval_value(left, context) < eval_value(right, context)
+    compare_values(eval_value(left, context), eval_value(right, context), :<)
   end
 
   # Comparison: Less Than or Equal
   def evaluate({:<=, _, [left, right]}, context) do
-    eval_value(left, context) <= eval_value(right, context)
+    compare_values(eval_value(left, context), eval_value(right, context), :<=)
   end
 
   # Comparison: Equal
   def evaluate({:==, _, [left, right]}, context) do
-    eval_value(left, context) == eval_value(right, context)
+    compare_values(eval_value(left, context), eval_value(right, context), :==)
   end
 
   # Comparison: Not Equal
   def evaluate({:!=, _, [left, right]}, context) do
-    eval_value(left, context) != eval_value(right, context)
+    compare_values(eval_value(left, context), eval_value(right, context), :!=)
   end
 
   # Literal boolean
@@ -100,8 +100,8 @@ defmodule TradingStrategy.ConditionEvaluator do
   @doc """
   Evaluates a value expression (for use in comparisons).
   """
-  def eval_value(%{type: :indicator_ref, name: name}, context) do
-    get_indicator_value(name, context)
+  def eval_value(%{type: :indicator_ref} = ref, context) do
+    get_indicator_value(ref, context)
   end
 
   def eval_value(value, _context) when is_number(value), do: value
@@ -118,16 +118,109 @@ defmodule TradingStrategy.ConditionEvaluator do
 
   @doc """
   Gets the current value of an indicator from the context.
+
+  Supports both single-value indicators and component access for multi-value indicators.
   """
-  def get_indicator_value(indicator_name, context) do
+  def get_indicator_value(%{name: name, component: component}, context) do
     indicators = Map.get(context, :indicators, %{})
-    Map.get(indicators, indicator_name, 0.0)
+    value = Map.get(indicators, name)
+
+    case value do
+      # Component exists and is a Decimal
+      %{^component => comp_value} when is_struct(comp_value, Decimal) ->
+        comp_value
+
+      # Component exists and is a number
+      %{^component => comp_value} when is_number(comp_value) ->
+        Decimal.new("#{comp_value}")
+
+      # Value is a map but component doesn't exist
+      map when is_map(map) and not is_struct(map, Decimal) ->
+        available = Map.keys(map) |> Enum.map(&inspect/1) |> Enum.join(", ")
+
+        raise ArgumentError, """
+        Invalid component #{inspect(component)} for indicator #{inspect(name)}.
+        Available components: #{available}
+
+        Example usage: indicator(:#{name}, :#{Map.keys(map) |> List.first})
+        """
+
+      # Value is not a map (single-value indicator being accessed with component)
+      _ ->
+        raise ArgumentError, """
+        Indicator #{inspect(name)} is not a multi-value indicator.
+        Use indicator(:#{name}) instead of indicator(:#{name}, :#{component})
+        """
+    end
+  end
+
+  # Handle indicator ref maps without component (single-value indicators)
+  def get_indicator_value(%{name: name} = _ref, context) do
+    get_indicator_value(name, context)
+  end
+
+  def get_indicator_value(indicator_name, context) when is_atom(indicator_name) do
+    indicators = Map.get(context, :indicators, %{})
+    value = Map.get(indicators, indicator_name, 0.0)
+
+    # Check if this is a multi-value indicator being accessed without component
+    if is_map(value) and not is_struct(value, Decimal) do
+      available = Map.keys(value) |> Enum.map(&inspect/1) |> Enum.join(", ")
+
+      raise ArgumentError, """
+      Indicator #{inspect(indicator_name)} returns multiple values: #{available}
+
+      You must specify which component to use:
+        indicator(:#{indicator_name}, :component_name)
+
+      Example: indicator(:#{indicator_name}, :#{Map.keys(value) |> List.first})
+      """
+    end
+
+    value
   end
 
   @doc """
   Gets the previous value of an indicator from the context.
+
+  Supports both single-value indicators and component access for multi-value indicators.
   """
-  def get_previous_indicator_value(indicator_name, context) do
+  def get_previous_indicator_value(%{name: name, component: component}, context) do
+    historical = Map.get(context, :historical_indicators, %{})
+    values = Map.get(historical, name, [])
+
+    case values do
+      [prev | _] when is_map(prev) ->
+        # Multi-value indicator - extract component
+        case Map.get(prev, component) do
+          nil ->
+            0.0
+
+          comp_value when is_struct(comp_value, Decimal) ->
+            comp_value
+
+          comp_value when is_number(comp_value) ->
+            Decimal.new("#{comp_value}")
+
+          _ ->
+            0.0
+        end
+
+      [prev | _] ->
+        # Single value
+        prev
+
+      [] ->
+        0.0
+    end
+  end
+
+  # Handle indicator ref maps without component (single-value indicators)
+  def get_previous_indicator_value(%{name: name} = _ref, context) do
+    get_previous_indicator_value(name, context)
+  end
+
+  def get_previous_indicator_value(indicator_name, context) when is_atom(indicator_name) do
     historical = Map.get(context, :historical_indicators, %{})
     values = Map.get(historical, indicator_name, [])
 
@@ -149,4 +242,44 @@ defmodule TradingStrategy.ConditionEvaluator do
       timestamp: Keyword.get(opts, :timestamp, DateTime.utc_now())
     }
   end
+
+  # Helper functions for cross detection
+
+  defp resolve_indicator_or_value(%{type: :indicator_ref} = ref, context) do
+    get_indicator_value(ref, context)
+  end
+
+  defp resolve_indicator_or_value(indicator_name, context) when is_atom(indicator_name) do
+    get_indicator_value(indicator_name, context)
+  end
+
+  defp resolve_previous_indicator_or_value(%{type: :indicator_ref} = ref, context) do
+    get_previous_indicator_value(ref, context)
+  end
+
+  defp resolve_previous_indicator_or_value(indicator_name, context)
+       when is_atom(indicator_name) do
+    get_previous_indicator_value(indicator_name, context)
+  end
+
+  # Compare two values, handling Decimal comparisons properly
+  defp compare_values(left, right, op) do
+    # Convert to comparable values
+    left_val = to_comparable(left)
+    right_val = to_comparable(right)
+
+    case op do
+      :> -> left_val > right_val
+      :>= -> left_val >= right_val
+      :< -> left_val < right_val
+      :<= -> left_val <= right_val
+      :== -> left_val == right_val
+      :!= -> left_val != right_val
+    end
+  end
+
+  # Convert Decimal to float for comparison, leave other types as-is
+  defp to_comparable(%Decimal{} = decimal), do: Decimal.to_float(decimal)
+  defp to_comparable(value) when is_number(value), do: value
+  defp to_comparable(value), do: value
 end

@@ -327,6 +327,60 @@ defmodule TradingStrategy.IntegrationTest do
       assert result.strategy == :multi_real
       assert map_size(strategy.indicators) == 3
     end
+
+    test "calculates Bollinger Bands with multi-value components" do
+      defmodule BollingerBandsStrategy do
+        use TradingStrategy.DSL
+
+        defstrategy :bollinger_test do
+          description "Bollinger Bands multi-value indicator test"
+
+          # Use real Bollinger Bands indicator
+          indicator :bb, TradingIndicators.Volatility.BollingerBands, period: 20, deviation: 2, source: :close
+          indicator :volume_sma, TradingIndicators.Trend.SMA, period: 20, source: :volume
+
+          entry_signal :long do
+            when_all do
+              indicator(:close) > indicator(:bb, :upper_band)
+              indicator(:volume) > indicator(:volume_sma)
+            end
+          end
+
+          entry_signal :short do
+            when_all do
+              indicator(:close) < indicator(:bb, :lower_band)
+              indicator(:volume) > indicator(:volume_sma)
+            end
+          end
+
+          exit_signal do
+            when_any do
+              cross_below(:close, indicator(:bb, :middle_band))
+              cross_above(:close, indicator(:bb, :middle_band))
+            end
+          end
+        end
+      end
+
+      # Generate volatile market data that should trigger breakouts
+      market_data = generate_market_data(count: 100, volatility: :high)
+      strategy = BollingerBandsStrategy.strategy_definition()
+
+      result =
+        TradingStrategy.backtest(
+          strategy: strategy,
+          market_data: market_data,
+          symbol: "BB_TEST"
+        )
+
+      # Verify strategy executed successfully
+      assert result.strategy == :bollinger_test
+      assert is_map(result.metrics)
+      assert is_list(result.signals)
+
+      # Should have 2 indicators defined
+      assert map_size(strategy.indicators) == 2
+    end
   end
 
   describe "edge cases and error handling" do

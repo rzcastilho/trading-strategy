@@ -139,12 +139,24 @@ defmodule TradingStrategy.DSL do
   All conditions must be true for the signal to trigger.
   """
   defmacro when_all(do: block) do
+    # Extract and recursively expand ALL macros (including nested indicator/pattern calls)
     conditions = extract_conditions(block)
+    expanded_conditions = Enum.map(conditions, fn cond ->
+      expand_recursively(cond, __CALLER__)
+    end)
+
+    # Convert map AST to actual maps FIRST, then escape
+    with_real_maps = Enum.map(expanded_conditions, fn cond ->
+      Macro.postwalk(cond, &convert_map_ast_to_map/1)
+    end)
+
+    # Now escape the whole thing
+    escaped = Macro.escape(with_real_maps)
 
     quote do
       %{
         type: :when_all,
-        conditions: unquote(conditions)
+        conditions: unquote(escaped)
       }
     end
   end
@@ -154,12 +166,24 @@ defmodule TradingStrategy.DSL do
   At least one condition must be true for the signal to trigger.
   """
   defmacro when_any(do: block) do
+    # Extract and recursively expand ALL macros (including nested indicator/pattern calls)
     conditions = extract_conditions(block)
+    expanded_conditions = Enum.map(conditions, fn cond ->
+      expand_recursively(cond, __CALLER__)
+    end)
+
+    # Convert map AST to actual maps FIRST, then escape
+    with_real_maps = Enum.map(expanded_conditions, fn cond ->
+      Macro.postwalk(cond, &convert_map_ast_to_map/1)
+    end)
+
+    # Now escape the whole thing
+    escaped = Macro.escape(with_real_maps)
 
     quote do
       %{
         type: :when_any,
-        conditions: unquote(conditions)
+        conditions: unquote(escaped)
       }
     end
   end
@@ -294,6 +318,25 @@ defmodule TradingStrategy.DSL do
   end
 
   # Helper function to extract conditions from a block
+  # Returns a list of condition AST nodes (after inner macros have expanded)
   defp extract_conditions({:__block__, _, conditions}), do: conditions
   defp extract_conditions(single_condition), do: [single_condition]
+
+  # Helper function to recursively expand all macros in an AST
+  # This is crucial for nested macro calls like `indicator(:close) > indicator(:bb, :upper_band)`
+  # where the `indicator` macros are nested inside the `>` operator
+  defp expand_recursively(ast, env) do
+    Macro.prewalk(ast, fn node ->
+      Macro.expand(node, env)
+    end)
+  end
+
+  # Helper function to convert map AST to actual maps at compile-time
+  # Map AST format: {:%{}, [], [type: :value, name: :foo]}
+  defp convert_map_ast_to_map({:%{}, [], kvs}) when is_list(kvs) do
+    # Convert keyword list to actual map
+    Map.new(kvs)
+  end
+
+  defp convert_map_ast_to_map(node), do: node
 end

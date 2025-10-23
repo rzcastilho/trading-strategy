@@ -134,6 +134,10 @@ defmodule TradingStrategy.ConditionEvaluator do
       %{^component => comp_value} when is_number(comp_value) ->
         Decimal.new("#{comp_value}")
 
+      # Indicator not calculated yet (nil) - return 0
+      nil ->
+        Decimal.new(0)
+
       # Value is a map but component doesn't exist
       map when is_map(map) and not is_struct(map, Decimal) ->
         available = Map.keys(map) |> Enum.map(&inspect/1) |> Enum.join(", ")

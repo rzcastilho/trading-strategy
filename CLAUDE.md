@@ -102,6 +102,18 @@ iex> TradingStrategy.Patterns.detect_all(candles)
 - Cross detection: compares current vs historical indicator values
 - Pattern matching: delegates to `Patterns` module
 
+**DSL Macro Expansion (Three-Phase Strategy):**
+- Phase 1: Recursive expansion of all nested macros using `Macro.prewalk` and `Macro.expand`
+- Phase 2: Conversion of map AST to actual Elixir maps for helper macros (`indicator()`, `pattern()`)
+- Phase 3: Escaping with `Macro.escape` to preserve comparison operators as AST for runtime evaluation
+- This ensures conditions are evaluated at runtime, not compile-time
+
+**Nil Handling During Warmup:**
+- Indicators return `nil` when insufficient data (e.g., first 20 candles for 20-period indicator)
+- `ConditionEvaluator` treats any comparison with `nil` as `false`
+- No signals generated during warmup period
+- Prevents crashes and ensures clean strategy startup
+
 ## Critical Implementation Details
 
 ### OHLCV Data Structure

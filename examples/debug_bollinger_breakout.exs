@@ -61,65 +61,124 @@ IO.puts("  Exit signals: #{length(strategy.exit_signals)}")
 IO.puts("\nStep 2: Generating test market data...")
 
 # Generate data that should trigger signals:
-# - Start at 100, gradually increase to 120 (should trigger upper band breakout)
-# - Then drop to 80 (should trigger lower band breakout)
-# - High volume throughout
+# - Establish bands with low volatility
+# - Create SUSTAINED breakouts (price stays beyond bands) with high volume
 generate_breakout_data = fn ->
   base_time = DateTime.utc_now()
 
-  # First 30 candles: sideways movement around 100 (to establish bands)
-  sideways = for i <- 0..29 do
-    price = Decimal.new("100") |> Decimal.add(Decimal.new("#{rem(i, 5) - 2}"))
+  # First 20 candles: very tight sideways movement around 100 (low volatility to create tight bands)
+  sideways = for i <- 0..19 do
+    # Very small random movement (±0.3)
+    noise = rem(i, 3) - 1  # -1, 0, or 1
+    price = Decimal.new("100") |> Decimal.add(Decimal.new("#{noise * 0.3}"))
     Types.new_ohlcv(
-      Decimal.sub(price, Decimal.new("0.5")),
-      Decimal.add(price, Decimal.new("1")),
-      Decimal.sub(price, Decimal.new("1")),
+      Decimal.sub(price, Decimal.new("0.15")),
+      Decimal.add(price, Decimal.new("0.15")),
+      Decimal.sub(price, Decimal.new("0.15")),
       price,
-      10000 + i * 100,
+      10000,  # Consistent low volume
       DateTime.add(base_time, i * 86400, :second)
     )
   end
 
-  # Next 10 candles: breakout above upper band
-  breakout_up = for i <- 30..39 do
-    price = Decimal.new("#{100 + (i - 29) * 2}")  # Price increases rapidly
+  # Next candle: Initial breakout above (gap up with volume)
+  initial_breakout_up = [
     Types.new_ohlcv(
-      Decimal.sub(price, Decimal.new("0.5")),
-      Decimal.add(price, Decimal.new("1")),
-      Decimal.sub(price, Decimal.new("1")),
+      Decimal.new("105"),
+      Decimal.new("106"),
+      Decimal.new("104.5"),
+      Decimal.new("105.5"),  # Jump from ~100 to 105.5
+      25000,  # High volume
+      DateTime.add(base_time, 20 * 86400, :second)
+    )
+  ]
+
+  # Next 5 candles: Price STAYS above upper band at elevated levels
+  sustained_high = for i <- 21..25 do
+    # Price stays in 105-107 range (will be above the original tight upper band)
+    base_price = 105.5
+    variation = rem(i, 3) * 0.5  # 0, 0.5, or 1.0
+    price = Decimal.new("#{base_price + variation}")
+    Types.new_ohlcv(
+      Decimal.sub(price, Decimal.new("0.3")),
+      Decimal.add(price, Decimal.new("0.4")),
+      Decimal.sub(price, Decimal.new("0.4")),
       price,
-      15000 + i * 100,  # High volume
+      20000 + i * 100,  # Sustained high volume
       DateTime.add(base_time, i * 86400, :second)
     )
   end
 
-  # Next 10 candles: return to middle
-  return_middle = for i <- 40..49 do
-    price = Decimal.new("#{120 - (i - 39) * 2}")
+  # Gradual return to normal
+  consolidate = for i <- 26..30 do
+    price = Decimal.new("#{106 - (i - 25) * 1.2}")  # Slowly back to ~100
     Types.new_ohlcv(
       Decimal.sub(price, Decimal.new("0.5")),
-      Decimal.add(price, Decimal.new("1")),
-      Decimal.sub(price, Decimal.new("1")),
+      Decimal.add(price, Decimal.new("0.5")),
+      Decimal.sub(price, Decimal.new("0.5")),
       price,
-      10000 + i * 100,
+      12000,
       DateTime.add(base_time, i * 86400, :second)
     )
   end
 
-  # Next 10 candles: breakout below lower band
-  breakout_down = for i <- 50..59 do
-    price = Decimal.new("#{100 - (i - 49) * 2}")  # Price decreases rapidly
+  # More sideways to re-establish tight bands
+  more_sideways = for i <- 31..45 do
+    noise = rem(i, 3) - 1
+    price = Decimal.new("100") |> Decimal.add(Decimal.new("#{noise * 0.3}"))
     Types.new_ohlcv(
-      Decimal.sub(price, Decimal.new("0.5")),
-      Decimal.add(price, Decimal.new("1")),
-      Decimal.sub(price, Decimal.new("1")),
+      Decimal.sub(price, Decimal.new("0.15")),
+      Decimal.add(price, Decimal.new("0.15")),
+      Decimal.sub(price, Decimal.new("0.15")),
       price,
-      15000 + i * 100,  # High volume
+      10000,
       DateTime.add(base_time, i * 86400, :second)
     )
   end
 
-  sideways ++ breakout_up ++ return_middle ++ breakout_down
+  # Initial breakout below (gap down with volume)
+  initial_breakout_down = [
+    Types.new_ohlcv(
+      Decimal.new("94.5"),
+      Decimal.new("95"),
+      Decimal.new("94"),
+      Decimal.new("94.5"),  # Drop from ~100 to 94.5
+      25000,  # High volume
+      DateTime.add(base_time, 46 * 86400, :second)
+    )
+  ]
+
+  # Next 5 candles: Price STAYS below lower band at depressed levels
+  sustained_low = for i <- 47..51 do
+    # Price stays in 93-95 range (will be below the original tight lower band)
+    base_price = 94.5
+    variation = rem(i, 3) * -0.5  # 0, -0.5, or -1.0
+    price = Decimal.new("#{base_price + variation}")
+    Types.new_ohlcv(
+      Decimal.sub(price, Decimal.new("0.4")),
+      Decimal.add(price, Decimal.new("0.3")),
+      Decimal.sub(price, Decimal.new("0.4")),
+      price,
+      20000 + i * 100,  # Sustained high volume
+      DateTime.add(base_time, i * 86400, :second)
+    )
+  end
+
+  # Final return to normal
+  final_consolidate = for i <- 52..57 do
+    price = Decimal.new("#{94 + (i - 51) * 1.0}")  # Back to ~100
+    Types.new_ohlcv(
+      Decimal.sub(price, Decimal.new("0.5")),
+      Decimal.add(price, Decimal.new("0.5")),
+      Decimal.sub(price, Decimal.new("0.5")),
+      price,
+      12000,
+      DateTime.add(base_time, i * 86400, :second)
+    )
+  end
+
+  sideways ++ initial_breakout_up ++ sustained_high ++ consolidate ++ more_sideways ++
+    initial_breakout_down ++ sustained_low ++ final_consolidate
 end
 
 market_data = generate_breakout_data.()
@@ -232,8 +291,8 @@ try do
 
   IO.puts("✓ Engine started")
 
-  # Process first 30 candles (warmup + a few more)
-  test_candles = Enum.take(market_data, 35)
+  # Process all candles to see breakouts
+  test_candles = market_data
 
   IO.puts("Processing #{length(test_candles)} candles...")
 
@@ -241,7 +300,10 @@ try do
   |> Enum.map(fn {candle, idx} ->
     {:ok, result} = Engine.process_market_data(engine, candle)
 
-    if rem(idx, 10) == 0 or length(result.signals) > 0 do
+    # Show every 10th candle, OR candles 20-27 (breakout zone), OR candles 46-53 (breakout down zone), OR signals
+    should_show = rem(idx, 10) == 0 or length(result.signals) > 0 or (idx >= 20 and idx <= 27) or (idx >= 46 and idx <= 53)
+
+    if should_show do
       state = Engine.get_state(engine)
       IO.puts("\nCandle #{idx}:")
       IO.puts("  Price: #{candle.close}, Volume: #{candle.volume}")

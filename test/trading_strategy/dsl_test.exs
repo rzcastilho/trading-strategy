@@ -211,6 +211,60 @@ defmodule TradingStrategy.DSLTest do
       assert pattern_condition.name == :hammer
     end
   end
+
+  describe "compile-time vs runtime evaluation" do
+    test "comparison operators are preserved as AST for runtime evaluation" do
+      definition = ComplexStrategy.strategy_definition()
+      long_signal = Enum.find(definition.entry_signals, &(&1.direction == :long))
+
+      # Verify that conditions contain AST tuples, not boolean values
+      conditions = long_signal.condition.conditions
+
+      # Find comparison conditions (should be AST tuples like {:>, [], [...]})
+      comparison_conditions = Enum.filter(conditions, fn cond ->
+        is_tuple(cond) and tuple_size(cond) == 3
+      end)
+
+      # Should have at least 2 comparison conditions: indicator(:rsi) > 30 and indicator(:rsi) < 70
+      assert length(comparison_conditions) >= 2
+
+      # Verify they are comparison operators (not evaluated to false/true)
+      Enum.each(comparison_conditions, fn condition ->
+        {operator, _meta, _args} = condition
+        assert operator in [:>, :<, :>=, :<=, :==, :!=]
+      end)
+    end
+
+    test "conditions list does not contain boolean false values" do
+      definition = ComplexStrategy.strategy_definition()
+      long_signal = Enum.find(definition.entry_signals, &(&1.direction == :long))
+
+      # None of the conditions should be compile-time evaluated to false
+      false_conditions = Enum.filter(long_signal.condition.conditions, &(&1 == false))
+      assert Enum.empty?(false_conditions),
+             "Found compile-time evaluated false conditions - comparison operators should be preserved as AST"
+    end
+
+    test "indicator references are converted to maps, not AST" do
+      definition = ComplexStrategy.strategy_definition()
+      long_signal = Enum.find(definition.entry_signals, &(&1.direction == :long))
+
+      # Find a comparison condition
+      comparison = Enum.find(long_signal.condition.conditions, fn cond ->
+        is_tuple(cond) and tuple_size(cond) == 3 and elem(cond, 0) == :>
+      end)
+
+      assert comparison, "Should find a > comparison operator"
+
+      # Extract the left side (should be indicator reference)
+      {_op, _meta, [left, _right]} = comparison
+
+      # Verify that indicator reference is a map (not AST)
+      assert is_map(left)
+      assert left.type == :indicator_ref
+      assert left.name == :rsi
+    end
+  end
 end
 
 defmodule TestIndicator do

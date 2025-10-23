@@ -319,9 +319,16 @@ defmodule TradingStrategy.ConditionEvaluatorTest do
       assert ConditionEvaluator.get_indicator_value(:sma, context) == 100.0
     end
 
-    test "returns Decimal 0 for missing indicator" do
+    test "returns nil for missing indicator (warmup period)" do
       context = %{indicators: %{}}
-      assert ConditionEvaluator.get_indicator_value(:missing, context) == Decimal.new("0")
+      assert ConditionEvaluator.get_indicator_value(:missing, context) == nil
+    end
+
+    test "returns nil for indicator with nil value (warmup period)" do
+      context = %{indicators: %{rsi: nil}}
+      # When accessing price/volume fields, fall back to candles
+      context_with_candles = Map.put(context, :candles, [])
+      assert ConditionEvaluator.get_indicator_value(:rsi, context_with_candles) == nil
     end
   end
 
@@ -336,14 +343,18 @@ defmodule TradingStrategy.ConditionEvaluatorTest do
       assert ConditionEvaluator.get_previous_indicator_value(:rsi, context) == 50.0
     end
 
-    test "returns Decimal 0 for missing historical data" do
+    test "returns nil for missing historical data (warmup period)" do
       context = %{historical_indicators: %{}}
-      assert ConditionEvaluator.get_previous_indicator_value(:missing, context) == Decimal.new("0")
+      # When accessing price/volume fields, fall back to candles
+      context_with_candles = Map.put(context, :candles, [])
+      assert ConditionEvaluator.get_previous_indicator_value(:missing, context_with_candles) == nil
     end
 
-    test "returns Decimal 0 for empty historical data" do
+    test "returns nil for empty historical data (warmup period)" do
       context = %{historical_indicators: %{rsi: []}}
-      assert ConditionEvaluator.get_previous_indicator_value(:rsi, context) == Decimal.new("0")
+      # When accessing price/volume fields, fall back to candles
+      context_with_candles = Map.put(context, :candles, [])
+      assert ConditionEvaluator.get_previous_indicator_value(:rsi, context_with_candles) == nil
     end
   end
 
@@ -529,6 +540,104 @@ defmodule TradingStrategy.ConditionEvaluatorTest do
       previous_value = ConditionEvaluator.get_previous_indicator_value(middle_ref, context)
 
       assert previous_value == Decimal.new("98")
+    end
+  end
+
+  describe "nil handling during warmup period" do
+    test "comparison with nil indicator returns false (>)" do
+      condition = {:>, [], [%{type: :indicator_ref, name: :rsi}, 30]}
+      context = %{indicators: %{rsi: nil}, candles: []}
+
+      refute ConditionEvaluator.evaluate(condition, context)
+    end
+
+    test "comparison with nil indicator returns false (<)" do
+      condition = {:<, [], [%{type: :indicator_ref, name: :rsi}, 70]}
+      context = %{indicators: %{rsi: nil}, candles: []}
+
+      refute ConditionEvaluator.evaluate(condition, context)
+    end
+
+    test "comparison with nil indicator returns false (>=)" do
+      condition = {:>=, [], [%{type: :indicator_ref, name: :rsi}, 50]}
+      context = %{indicators: %{rsi: nil}, candles: []}
+
+      refute ConditionEvaluator.evaluate(condition, context)
+    end
+
+    test "comparison with nil indicator returns false (<=)" do
+      condition = {:<=, [], [%{type: :indicator_ref, name: :rsi}, 50]}
+      context = %{indicators: %{rsi: nil}, candles: []}
+
+      refute ConditionEvaluator.evaluate(condition, context)
+    end
+
+    test "comparison with nil indicator returns false (==)" do
+      condition = {:==, [], [%{type: :indicator_ref, name: :rsi}, 50]}
+      context = %{indicators: %{rsi: nil}, candles: []}
+
+      refute ConditionEvaluator.evaluate(condition, context)
+    end
+
+    test "comparison with nil indicator returns false (!=)" do
+      condition = {:!=, [], [%{type: :indicator_ref, name: :rsi}, 50]}
+      context = %{indicators: %{rsi: nil}, candles: []}
+
+      refute ConditionEvaluator.evaluate(condition, context)
+    end
+
+    test "when_all with nil indicator returns false" do
+      condition = %{
+        type: :when_all,
+        conditions: [
+          {:>, [], [%{type: :indicator_ref, name: :rsi}, 30]},
+          {:>, [], [%{type: :indicator_ref, name: :sma}, 100]}
+        ]
+      }
+
+      # RSI is nil (warmup), SMA has value
+      context = %{indicators: %{rsi: nil, sma: Decimal.new("110")}, candles: []}
+
+      refute ConditionEvaluator.evaluate(condition, context)
+    end
+
+    test "when_any with nil indicator but other condition true still returns true" do
+      condition = %{
+        type: :when_any,
+        conditions: [
+          {:>, [], [%{type: :indicator_ref, name: :rsi}, 70]},
+          {:>, [], [%{type: :indicator_ref, name: :sma}, 100]}
+        ]
+      }
+
+      # RSI is nil (warmup), but SMA condition is true
+      context = %{indicators: %{rsi: nil, sma: Decimal.new("110")}, candles: []}
+
+      assert ConditionEvaluator.evaluate(condition, context)
+    end
+
+    test "cross detection with nil indicators returns false" do
+      condition = %{
+        type: :cross_above,
+        indicator1: :fast,
+        indicator2: :slow
+      }
+
+      # Current fast is nil (warmup)
+      context = %{
+        indicators: %{fast: nil, slow: Decimal.new("100")},
+        historical_indicators: %{fast: [nil], slow: [Decimal.new("100")]},
+        candles: []
+      }
+
+      refute ConditionEvaluator.evaluate(condition, context)
+    end
+
+    test "multi-value indicator with nil returns nil" do
+      context = %{indicators: %{macd: nil}}
+
+      macd_ref = %{type: :indicator_ref, name: :macd, component: :histogram}
+      assert ConditionEvaluator.get_indicator_value(macd_ref, context) == nil
     end
   end
 end

@@ -134,9 +134,9 @@ defmodule TradingStrategy.ConditionEvaluator do
       %{^component => comp_value} when is_number(comp_value) ->
         Decimal.new("#{comp_value}")
 
-      # Indicator not calculated yet (nil) - return 0
+      # Indicator not calculated yet (nil) - return nil to signal warmup period
       nil ->
-        Decimal.new(0)
+        nil
 
       # Value is a map but component doesn't exist
       map when is_map(map) and not is_struct(map, Decimal) ->
@@ -198,18 +198,18 @@ defmodule TradingStrategy.ConditionEvaluator do
       # If candles is a list, get the last candle
       is_list(candles) and length(candles) > 0 ->
         current_candle = List.last(candles)
-        Map.get(current_candle, field_name, Decimal.new(0))
+        Map.get(current_candle, field_name)
 
       # If candles is a single candle map
       is_map(candles) and not is_list(candles) ->
-        Map.get(candles, field_name, Decimal.new(0))
+        Map.get(candles, field_name)
 
       true ->
-        Decimal.new(0)
+        nil
     end
   end
 
-  defp get_candle_field(_field_name, _context), do: Decimal.new(0)
+  defp get_candle_field(_field_name, _context), do: nil
 
   @doc """
   Gets the previous value of an indicator from the context.
@@ -225,7 +225,7 @@ defmodule TradingStrategy.ConditionEvaluator do
         # Multi-value indicator - extract component
         case Map.get(prev, component) do
           nil ->
-            0.0
+            nil
 
           comp_value when is_struct(comp_value, Decimal) ->
             comp_value
@@ -234,7 +234,7 @@ defmodule TradingStrategy.ConditionEvaluator do
             Decimal.new("#{comp_value}")
 
           _ ->
-            0.0
+            nil
         end
 
       [prev | _] ->
@@ -242,7 +242,7 @@ defmodule TradingStrategy.ConditionEvaluator do
         prev
 
       [] ->
-        0.0
+        nil
     end
   end
 
@@ -275,15 +275,15 @@ defmodule TradingStrategy.ConditionEvaluator do
       # If candles is a list with at least 2 elements, get the second-to-last
       is_list(candles) and length(candles) >= 2 ->
         prev_candle = Enum.at(candles, -2)
-        Map.get(prev_candle, field_name, Decimal.new(0))
+        Map.get(prev_candle, field_name)
 
       # If candles is a single candle (not a list), we don't have previous data
       true ->
-        Decimal.new(0)
+        nil
     end
   end
 
-  defp get_previous_candle_field(_field_name, _context), do: Decimal.new(0)
+  defp get_previous_candle_field(_field_name, _context), do: nil
 
   @doc """
   Builds an evaluation context from market data and calculated indicators.
@@ -318,6 +318,10 @@ defmodule TradingStrategy.ConditionEvaluator do
   end
 
   # Compare two values, handling Decimal comparisons properly
+  # Returns false if either value is nil (indicator not ready during warmup)
+  defp compare_values(nil, _right, _op), do: false
+  defp compare_values(_left, nil, _op), do: false
+
   defp compare_values(left, right, op) do
     # Normalize both values to Decimal for consistent comparison
     left_decimal = to_decimal(left)

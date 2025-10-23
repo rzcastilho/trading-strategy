@@ -430,6 +430,8 @@ end
 
 ### Conditions
 
+**Note on Warmup Period:** During the initial candles (warmup period), indicators may return `nil` when they don't have sufficient data. Any condition involving a `nil` indicator will evaluate to `false`, preventing signals from being generated until all indicators are ready. This ensures your strategy only acts on complete data.
+
 #### Boolean Logic
 
 Combine conditions with `when_all` (AND), `when_any` (OR), and `when_not` (NOT):

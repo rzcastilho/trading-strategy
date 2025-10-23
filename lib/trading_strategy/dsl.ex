@@ -29,6 +29,42 @@ defmodule TradingStrategy.DSL do
           end
         end
       end
+
+  ## Macro Expansion Strategy
+
+  The DSL uses a three-phase macro expansion strategy to properly handle
+  compile-time vs runtime evaluation boundaries:
+
+  ### Phase 1: Recursive Macro Expansion
+  All nested macros (like `indicator()`, `pattern()`, `cross_above()`) are
+  recursively expanded using `Macro.prewalk` and `Macro.expand`. This ensures
+  that deeply nested macro calls are fully expanded before processing.
+
+  ### Phase 2: AST to Data Structure Conversion
+  Map AST nodes (format: `{:%{}, [], [key: value, ...]}`) are converted to
+  actual Elixir maps. This is necessary for helper macros like `indicator()`
+  and `pattern()` to produce runtime data structures instead of remaining as AST.
+
+  ### Phase 3: Escaping for Runtime Evaluation
+  After expansion and conversion, the entire condition tree is escaped using
+  `Macro.escape`. This preserves comparison operators (like `>`, `<`, `>=`)
+  as AST tuples that can be evaluated at runtime by the ConditionEvaluator.
+
+  Without this strategy, comparison operators would be evaluated at compile-time
+  (resulting in `false` values) instead of being preserved for runtime evaluation.
+
+  ## Nil Handling During Warmup
+
+  During the indicator warmup period (e.g., the first 20 candles for a 20-period
+  indicator), indicators return `nil` to signal insufficient data. The
+  ConditionEvaluator handles this gracefully:
+
+  - Any comparison involving `nil` returns `false`
+  - No signals are generated during warmup
+  - Once indicators have sufficient data, normal evaluation resumes
+
+  This prevents errors during the initial candles and ensures strategies only
+  generate signals when all indicators are properly calculated.
   """
 
   alias TradingStrategy.Definition
@@ -139,26 +175,7 @@ defmodule TradingStrategy.DSL do
   All conditions must be true for the signal to trigger.
   """
   defmacro when_all(do: block) do
-    # Extract and recursively expand ALL macros (including nested indicator/pattern calls)
-    conditions = extract_conditions(block)
-    expanded_conditions = Enum.map(conditions, fn cond ->
-      expand_recursively(cond, __CALLER__)
-    end)
-
-    # Convert map AST to actual maps FIRST, then escape
-    with_real_maps = Enum.map(expanded_conditions, fn cond ->
-      Macro.postwalk(cond, &convert_map_ast_to_map/1)
-    end)
-
-    # Now escape the whole thing
-    escaped = Macro.escape(with_real_maps)
-
-    quote do
-      %{
-        type: :when_all,
-        conditions: unquote(escaped)
-      }
-    end
+    build_boolean_condition(:when_all, block, __CALLER__)
   end
 
   @doc """
@@ -166,26 +183,7 @@ defmodule TradingStrategy.DSL do
   At least one condition must be true for the signal to trigger.
   """
   defmacro when_any(do: block) do
-    # Extract and recursively expand ALL macros (including nested indicator/pattern calls)
-    conditions = extract_conditions(block)
-    expanded_conditions = Enum.map(conditions, fn cond ->
-      expand_recursively(cond, __CALLER__)
-    end)
-
-    # Convert map AST to actual maps FIRST, then escape
-    with_real_maps = Enum.map(expanded_conditions, fn cond ->
-      Macro.postwalk(cond, &convert_map_ast_to_map/1)
-    end)
-
-    # Now escape the whole thing
-    escaped = Macro.escape(with_real_maps)
-
-    quote do
-      %{
-        type: :when_any,
-        conditions: unquote(escaped)
-      }
-    end
+    build_boolean_condition(:when_any, block, __CALLER__)
   end
 
   @doc """
@@ -313,6 +311,31 @@ defmodule TradingStrategy.DSL do
       %{
         type: :pattern,
         name: unquote(name)
+      }
+    end
+  end
+
+  # Helper function to build boolean condition structures (when_all/when_any)
+  # This extracts the common logic between when_all and when_any macros
+  defp build_boolean_condition(condition_type, block, caller_env) do
+    # Extract and recursively expand ALL macros (including nested indicator/pattern calls)
+    conditions = extract_conditions(block)
+    expanded_conditions = Enum.map(conditions, fn cond ->
+      expand_recursively(cond, caller_env)
+    end)
+
+    # Convert map AST to actual maps FIRST, then escape
+    with_real_maps = Enum.map(expanded_conditions, fn cond ->
+      Macro.postwalk(cond, &convert_map_ast_to_map/1)
+    end)
+
+    # Now escape the whole thing
+    escaped = Macro.escape(with_real_maps)
+
+    quote do
+      %{
+        type: unquote(condition_type),
+        conditions: unquote(escaped)
       }
     end
   end

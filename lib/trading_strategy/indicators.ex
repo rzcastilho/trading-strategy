@@ -132,38 +132,16 @@ defmodule TradingStrategy.Indicators do
   2. Checks data sufficiency using `required_periods/0` or `required_periods/1`
   3. Handles `{:ok, results}` and `{:error, reason}` tuples
   4. Extracts value from result struct
-
-  Special handling for volume data:
-  - When `source: :volume` is specified, the source is removed from validation params
-    since most indicators only accept price-based sources
-  - Volume data is extracted and passed directly to the indicator
+  5. Supports both price-based sources (`:close`, `:open`, `:high`, `:low`) and `:volume`
   """
   @spec calculate_indicator(%{module: module(), params: keyword()}, [Types.ohlcv()], keyword()) ::
           indicator_result()
   def calculate_indicator(%{module: module, params: params}, market_data, _opts \\ []) do
-    # Special handling for volume source: Most indicators (e.g., SMA, EMA) only validate
-    # price-based sources (:close, :open, :high, :low) in their parameter schemas.
-    # When using volume as a source (e.g., `indicator :volume_sma, SMA, period: 20, source: :volume`),
-    # we need to remove :volume from validation params to avoid schema errors, while still
-    # extracting volume data correctly via extract_data_series/2.
-    validation_params =
-      case Keyword.get(params, :source) do
-        :volume ->
-          # Remove source from validation params since indicators expect price sources
-          # The data series will be volume anyway due to extract_data_series
-          Keyword.delete(params, :source)
-
-        _ ->
-          # For price sources, use params as-is for both validation and calculation
-          params
-      end
-
-    with {:ok, _} <- validate_indicator_params(module, validation_params),
+    with {:ok, _} <- validate_indicator_params(module, params),
          :ok <- check_sufficient_data(module, market_data, params),
          data <- extract_data_series(market_data, params) do
       # Call the indicator's calculate function
-      # Use validation_params (without volume source) to avoid parameter errors
-      case apply(module, :calculate, [data, validation_params]) do
+      case apply(module, :calculate, [data, params]) do
         {:ok, results} ->
           # Real indicator that follows TradingIndicators.Behaviour
           extract_indicator_value(results)

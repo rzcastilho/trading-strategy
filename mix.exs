@@ -23,7 +23,8 @@ defmodule TradingStrategy.MixProject do
   defp deps do
     [
       {:decimal, "~> 2.0"},
-      {:trading_indicators, git: "https://github.com/rzcastilho/trading-indicators.git", branch: "main"}
+      {:trading_indicators,
+       git: "https://github.com/rzcastilho/trading-indicators.git", ref: "main"}
     ]
   end
 end

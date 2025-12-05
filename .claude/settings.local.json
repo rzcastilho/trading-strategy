@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.specify/scripts/bash/setup-plan.sh:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:hex.pm)",
+      "WebFetch(domain:hexdocs.pm)",
+      "WebFetch(domain:crates.io)",
+      "Bash(.specify/scripts/bash/update-agent-context.sh:*)",
+      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

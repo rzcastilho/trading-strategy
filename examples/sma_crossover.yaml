@@ -1,0 +1,67 @@
+# SMA Crossover Strategy Example
+# A classic trend-following strategy using two moving averages
+#
+# Strategy Logic:
+# - BUY when fast SMA (50-period) crosses above slow SMA (200-period)
+# - SELL when fast SMA crosses below slow SMA
+# - Position sizing: 15% of capital per trade
+# - Risk management: 5% stop-loss, 10% take-profit
+
+strategy_id: "sma-crossover-btc-usd-v1"
+name: "SMA Crossover BTC/USD"
+description: "Golden cross (50/200 SMA) trend following strategy for Bitcoin"
+trading_pair: "BTC/USD"
+timeframe: "1d"  # Daily candles
+version: "1.0.0"
+
+# Technical Indicators
+indicators:
+  # Fast-moving average (50 days)
+  - type: "sma"
+    name: "sma_50"
+    parameters:
+      period: 50
+
+  # Slow-moving average (200 days)
+  - type: "sma"
+    name: "sma_200"
+    parameters:
+      period: 200
+
+  # RSI for additional confirmation (optional filter)
+  - type: "rsi"
+    name: "rsi_14"
+    parameters:
+      period: 14
+
+# Entry Conditions
+# Golden cross: fast SMA crosses above slow SMA
+# Additional filter: RSI > 50 (bullish momentum)
+entry_conditions: "sma_50 > sma_200 AND sma_50[1] <= sma_200[1] AND rsi_14 > 50"
+
+# Exit Conditions
+# Death cross: fast SMA crosses below slow SMA
+exit_conditions: "sma_50 < sma_200 AND sma_50[1] >= sma_200[1]"
+
+# Stop-Loss Conditions
+# Exit if price drops 5% below entry OR RSI becomes oversold
+stop_conditions: "unrealized_pnl_pct < -0.05 OR rsi_14 < 30"
+
+# Position Sizing
+position_sizing:
+  type: "percentage"
+  percentage_of_capital: 0.15  # 15% per trade
+  max_position_size: 0.50      # Maximum 50% of portfolio in open positions
+
+# Risk Management Parameters
+risk_parameters:
+  max_daily_loss: 0.03          # 3% maximum daily loss
+  max_drawdown: 0.20            # 20% maximum drawdown from peak
+  stop_loss_percentage: 0.05    # 5% stop-loss below entry
+  take_profit_percentage: 0.10  # 10% take-profit above entry
+
+# Notes:
+# - This strategy requires minimum 200 bars of historical data for SMA_200
+# - Backtesting recommendation: Test on 2+ years of data
+# - Best for trending markets, may underperform in sideways/choppy conditions
+# - Consider paper trading for 30+ days before live deployment

@@ -43,13 +43,13 @@ Foundational (Phase 2)
 
 ## Phase 1: Setup & Project Initialization
 
-- [ ] T001 Initialize Elixir project with Phoenix 1.7+ and verify OTP 27+ compatibility at mix.exs
-- [ ] T002 Add core dependencies to mix.exs: phoenix, phoenix_ecto, postgrex, yaml_elixir (~> 2.12), toml (~> 0.7), trading_indicators (~> 0.1.0), crypto_exchange (~> 0.1.0)
-- [ ] T003 Run mix deps.get and mix deps.compile to install and compile all dependencies
-- [ ] T004 Configure PostgreSQL database connection in config/dev.exs, config/test.exs, config/prod.exs
-- [ ] T005 Install TimescaleDB extension and verify PostgreSQL connection with mix ecto.create
-- [ ] T006 Create Phoenix application structure with mix phx.new --no-html --no-assets for API-only setup
-- [ ] T007 Configure application supervision tree in lib/trading_strategy/application.ex with core supervisors
+- [X] T001 Initialize Elixir project with Phoenix 1.7+ and verify OTP 27+ compatibility at mix.exs
+- [X] T002 Add core dependencies to mix.exs: phoenix, phoenix_ecto, postgrex, yaml_elixir (~> 2.12), toml (~> 0.7), trading_indicators (~> 0.1.0), crypto_exchange (~> 0.1.0)
+- [X] T003 Run mix deps.get and mix deps.compile to install and compile all dependencies
+- [X] T004 Configure PostgreSQL database connection in config/dev.exs, config/test.exs, config/prod.exs
+- [X] T005 Install TimescaleDB extension and verify PostgreSQL connection with mix ecto.create (requires Docker daemon running)
+- [X] T006 Create Phoenix application structure with mix phx.new --no-html --no-assets for API-only setup
+- [X] T007 Configure application supervision tree in lib/trading_strategy/application.ex with core supervisors
 
 ---
 
@@ -57,40 +57,40 @@ Foundational (Phase 2)
 
 ### Database Schema
 
-- [ ] T008 [P] Create TimescaleDB migration for market_data hypertable at priv/repo/migrations/*_create_market_data_hypertable.exs
-- [ ] T009 [P] Create migration for strategies table at priv/repo/migrations/*_create_strategies.exs
-- [ ] T010 [P] Create migration for indicators table at priv/repo/migrations/*_create_indicators.exs
-- [ ] T011 [P] Create migration for signals table at priv/repo/migrations/*_create_signals.exs
-- [ ] T012 [P] Create migration for trades table at priv/repo/migrations/*_create_trades.exs
-- [ ] T013 [P] Create migration for positions table at priv/repo/migrations/*_create_positions.exs
-- [ ] T014 [P] Create migration for trading_sessions table at priv/repo/migrations/*_create_trading_sessions.exs
-- [ ] T015 [P] Create migration for performance_metrics table at priv/repo/migrations/*_create_performance_metrics.exs
-- [ ] T016 Run mix ecto.migrate to apply all database migrations
+- [X] T008 [P] Create TimescaleDB migration for market_data hypertable at priv/repo/migrations/*_create_market_data_hypertable.exs
+- [X] T009 [P] Create migration for strategies table at priv/repo/migrations/*_create_strategies.exs
+- [X] T010 [P] Create migration for indicators table at priv/repo/migrations/*_create_indicators.exs
+- [X] T011 [P] Create migration for signals table at priv/repo/migrations/*_create_signals.exs
+- [X] T012 [P] Create migration for trades table at priv/repo/migrations/*_create_trades.exs
+- [X] T013 [P] Create migration for positions table at priv/repo/migrations/*_create_positions.exs
+- [X] T014 [P] Create migration for trading_sessions table at priv/repo/migrations/*_create_trading_sessions.exs
+- [X] T015 [P] Create migration for performance_metrics table at priv/repo/migrations/*_create_performance_metrics.exs
+- [X] T016 Run mix ecto.migrate to apply all database migrations
 
 ### Ecto Schemas
 
-- [ ] T017 [P] Define Strategy schema at lib/trading_strategy/strategies/strategy.ex with DSL content field
-- [ ] T018 [P] Define Indicator schema at lib/trading_strategy/strategies/indicator.ex
-- [ ] T019 [P] Define MarketData schema at lib/trading_strategy/market_data/market_data.ex
-- [ ] T020 [P] Define Signal schema at lib/trading_strategy/strategies/signal.ex
-- [ ] T021 [P] Define Trade schema at lib/trading_strategy/orders/trade.ex
-- [ ] T022 [P] Define Position schema at lib/trading_strategy/orders/position.ex
-- [ ] T023 [P] Define TradingSession schema at lib/trading_strategy/backtesting/trading_session.ex
-- [ ] T024 [P] Define PerformanceMetrics schema at lib/trading_strategy/backtesting/performance_metrics.ex
+- [X] T017 [P] Define Strategy schema at lib/trading_strategy/strategies/strategy.ex with DSL content field
+- [X] T018 [P] Define Indicator schema at lib/trading_strategy/strategies/indicator.ex
+- [X] T019 [P] Define MarketData schema at lib/trading_strategy/market_data/market_data.ex
+- [X] T020 [P] Define Signal schema at lib/trading_strategy/strategies/signal.ex
+- [X] T021 [P] Define Trade schema at lib/trading_strategy/orders/trade.ex
+- [X] T022 [P] Define Position schema at lib/trading_strategy/orders/position.ex
+- [X] T023 [P] Define TradingSession schema at lib/trading_strategy/backtesting/trading_session.ex
+- [X] T024 [P] Define PerformanceMetrics schema at lib/trading_strategy/backtesting/performance_metrics.ex
 
 ### Behaviour Contracts
 
-- [ ] T025 [P] Create StrategyExecutor behaviour at lib/trading_strategy/strategies/strategy_executor.ex defining execute/2, validate/1
-- [ ] T026 [P] Create IndicatorCalculator behaviour at lib/trading_strategy/strategies/indicator_calculator.ex defining calculate/2
-- [ ] T027 [P] Create SignalGenerator behaviour at lib/trading_strategy/strategies/signal_generator.ex defining generate/2
-- [ ] T028 [P] Create OrderExecutor behaviour at lib/trading_strategy/orders/order_executor.ex defining place_order/2, cancel_order/1
+- [X] T025 [P] Create StrategyExecutor behaviour at lib/trading_strategy/strategies/strategy_executor.ex defining execute/2, validate/1
+- [X] T026 [P] Create IndicatorCalculator behaviour at lib/trading_strategy/strategies/indicator_calculator.ex defining calculate/2
+- [X] T027 [P] Create SignalGenerator behaviour at lib/trading_strategy/strategies/signal_generator.ex defining generate/2
+- [X] T028 [P] Create OrderExecutor behaviour at lib/trading_strategy/orders/order_executor.ex defining place_order/2, cancel_order/1
 
 ### Core Infrastructure
 
-- [ ] T029 Create configuration module at lib/trading_strategy/config.ex for loading exchange API keys, rate limits, risk parameters
-- [ ] T030 Create supervision tree for strategies at lib/trading_strategy/strategies/supervisor.ex
-- [ ] T031 Create supervision tree for market data at lib/trading_strategy/market_data/supervisor.ex
-- [ ] T032 Create supervision tree for backtesting at lib/trading_strategy/backtesting/supervisor.ex
+- [X] T029 Create configuration module at lib/trading_strategy/config.ex for loading exchange API keys, rate limits, risk parameters
+- [X] T030 Create supervision tree for strategies at lib/trading_strategy/strategies/supervisor.ex
+- [X] T031 Create supervision tree for market data at lib/trading_strategy/market_data/supervisor.ex
+- [X] T032 Create supervision tree for backtesting at lib/trading_strategy/backtesting/supervisor.ex
 
 ---
 
@@ -102,29 +102,29 @@ Foundational (Phase 2)
 
 ### DSL Parsing & Validation
 
-- [ ] T033 [US1] Create DSL parser module at lib/trading_strategy/strategies/dsl/parser.ex supporting YAML and TOML formats
-- [ ] T034 [US1] Implement YAML strategy parser at lib/trading_strategy/strategies/dsl/yaml_parser.ex using yaml_elixir
-- [ ] T035 [US1] Implement TOML strategy parser at lib/trading_strategy/strategies/dsl/toml_parser.ex using toml library
-- [ ] T036 [US1] Create DSL schema validator at lib/trading_strategy/strategies/dsl/validator.ex with required fields validation
-- [ ] T037 [US1] Implement indicator definition validation at lib/trading_strategy/strategies/dsl/indicator_validator.ex using TradingIndicators.Behaviour.parameter_metadata/0 to validate indicator type exists and parameters match schema (type, min/max ranges, required fields)
-- [ ] T038 [US1] Implement entry conditions validation at lib/trading_strategy/strategies/dsl/entry_condition_validator.ex
-- [ ] T039 [US1] Implement exit conditions validation at lib/trading_strategy/strategies/dsl/exit_condition_validator.ex
-- [ ] T040 [US1] Implement risk parameters validation at lib/trading_strategy/strategies/dsl/risk_validator.ex
+- [X] T033 [US1] Create DSL parser module at lib/trading_strategy/strategies/dsl/parser.ex supporting YAML and TOML formats
+- [X] T034 [US1] Implement YAML strategy parser at lib/trading_strategy/strategies/dsl/yaml_parser.ex using yaml_elixir
+- [X] T035 [US1] Implement TOML strategy parser at lib/trading_strategy/strategies/dsl/toml_parser.ex using toml library
+- [X] T036 [US1] Create DSL schema validator at lib/trading_strategy/strategies/dsl/validator.ex with required fields validation
+- [X] T037 [US1] Implement indicator definition validation at lib/trading_strategy/strategies/dsl/indicator_validator.ex using TradingIndicators.Behaviour.parameter_metadata/0 to validate indicator type exists and parameters match schema (type, min/max ranges, required fields)
+- [X] T038 [US1] Implement entry conditions validation at lib/trading_strategy/strategies/dsl/entry_condition_validator.ex
+- [X] T039 [US1] Implement exit conditions validation at lib/trading_strategy/strategies/dsl/exit_condition_validator.ex
+- [X] T040 [US1] Implement risk parameters validation at lib/trading_strategy/strategies/dsl/risk_validator.ex
 
 ### Strategy Management
 
-- [ ] T041 [US1] Create strategy context module at lib/trading_strategy/strategies.ex with create_strategy/1, get_strategy/1, update_strategy/2, delete_strategy/1
-- [ ] T042 [US1] Implement strategy changeset with validations at lib/trading_strategy/strategies/strategy.ex
-- [ ] T043 [US1] Create StrategyController at lib/trading_strategy_web/controllers/strategy_controller.ex implementing strategy_api.ex contract
-- [ ] T044 [US1] Add strategy routes to lib/trading_strategy_web/router.ex for POST /api/strategies, GET /api/strategies/:id, PUT /api/strategies/:id, DELETE /api/strategies/:id
-- [ ] T045 [US1] Create strategy JSON views at lib/trading_strategy_web/views/strategy_view.ex for rendering responses
+- [X] T041 [US1] Create strategy context module at lib/trading_strategy/strategies.ex with create_strategy/1, get_strategy/1, update_strategy/2, delete_strategy/1
+- [X] T042 [US1] Implement strategy changeset with validations at lib/trading_strategy/strategies/strategy.ex
+- [X] T043 [US1] Create StrategyController at lib/trading_strategy_web/controllers/strategy_controller.ex implementing strategy_api.ex contract
+- [X] T044 [US1] Add strategy routes to lib/trading_strategy_web/router.ex for POST /api/strategies, GET /api/strategies/:id, PUT /api/strategies/:id, DELETE /api/strategies/:id
+- [X] T045 [US1] Create strategy JSON views at lib/trading_strategy_web/views/strategy_view.ex for rendering responses
 
 ### Testing
 
-- [ ] T046 [US1] Write unit tests for YAML parser at test/trading_strategy/strategies/dsl/yaml_parser_test.exs
-- [ ] T047 [US1] Write unit tests for TOML parser at test/trading_strategy/strategies/dsl/toml_parser_test.exs
-- [ ] T048 [US1] Write unit tests for DSL validators at test/trading_strategy/strategies/dsl/validator_test.exs
-- [ ] T049 [US1] Write integration tests for strategy CRUD at test/trading_strategy_web/controllers/strategy_controller_test.exs
+- [X] T046 [US1] Write unit tests for YAML parser at test/trading_strategy/strategies/dsl/yaml_parser_test.exs
+- [X] T047 [US1] Write unit tests for TOML parser at test/trading_strategy/strategies/dsl/toml_parser_test.exs
+- [X] T048 [US1] Write unit tests for DSL validators at test/trading_strategy/strategies/dsl/validator_test.exs
+- [X] T049 [US1] Write integration tests for strategy CRUD at test/trading_strategy_web/controllers/strategy_controller_test.exs
 
 ### Independent Test for US1
 
@@ -167,16 +167,16 @@ mix test test/trading_strategy_web/controllers/strategy_controller_test.exs
 
 ### Market Data Management
 
-- [ ] T050 [US2] Create market data context at lib/trading_strategy/market_data.ex with get_historical_data/3 using CryptoExchange.API.get_historical_klines_bulk for date range queries
-- [ ] T051 [US2] Implement market data seeder at priv/repo/seeds/market_data.exs using CryptoExchange.API.get_historical_klines_bulk to fetch and persist 2 years of OHLCV data
-- [ ] T052 [US2] Create TimescaleDB-optimized queries at lib/trading_strategy/market_data/queries.ex using time_bucket for efficient aggregation
+- [X] T050 [US2] Create market data context at lib/trading_strategy/market_data.ex with get_historical_data/3 using CryptoExchange.API.get_historical_klines_bulk for date range queries
+- [X] T051 [US2] Implement market data seeder at priv/repo/seeds/market_data.exs using CryptoExchange.API.get_historical_klines_bulk to fetch and persist 2 years of OHLCV data
+- [X] T052 [US2] Create TimescaleDB-optimized queries at lib/trading_strategy/market_data/queries.ex using time_bucket for efficient aggregation
 
 ### Indicator Calculation
 
-- [ ] T053 [US2] Create generic indicator adapter at lib/trading_strategy/strategies/indicators/adapter.ex implementing calculate/3 that dispatches to TradingIndicators modules dynamically using TradingIndicators.Behaviour pattern
-- [ ] T054 [US2] Create indicator registry at lib/trading_strategy/strategies/indicators/registry.ex using TradingIndicators.categories/0 to discover all 22 indicators dynamically and build DSL name → module mapping (e.g., "rsi" → TradingIndicators.Momentum.RSI)
-- [ ] T055 [US2] Implement parameter validation helper at lib/trading_strategy/strategies/indicators/param_validator.ex using TradingIndicators.Behaviour.parameter_metadata/0 to validate types, ranges, and required fields dynamically
-- [ ] T056 [US2] Create indicator calculation engine at lib/trading_strategy/strategies/indicator_engine.ex coordinating multiple indicator calculations using registry and adapter
+- [X] T053 [US2] Create generic indicator adapter at lib/trading_strategy/strategies/indicators/adapter.ex implementing calculate/3 that dispatches to TradingIndicators modules dynamically using TradingIndicators.Behaviour pattern
+- [X] T054 [US2] Create indicator registry at lib/trading_strategy/strategies/indicators/registry.ex using TradingIndicators.categories/0 to discover all 22 indicators dynamically and build DSL name → module mapping (e.g., "rsi" → TradingIndicators.Momentum.RSI)
+- [X] T055 [US2] Implement parameter validation helper at lib/trading_strategy/strategies/indicators/param_validator.ex using TradingIndicators.Behaviour.parameter_metadata/0 to validate types, ranges, and required fields dynamically
+- [X] T056 [US2] Create indicator calculation engine at lib/trading_strategy/strategies/indicator_engine.ex coordinating multiple indicator calculations using registry and adapter
 
 **Implementation Example for T054 (Registry)**:
 ```elixir
@@ -225,28 +225,28 @@ end
 
 ### Signal Generation
 
-- [ ] T057 [US2] Implement signal evaluator at lib/trading_strategy/strategies/signal_evaluator.ex parsing entry/exit conditions from DSL
-- [ ] T058 [US2] Create condition parser at lib/trading_strategy/strategies/condition_parser.ex supporting comparison operators (>, <, ==, &&, ||)
+- [X] T057 [US2] Implement signal evaluator at lib/trading_strategy/strategies/signal_evaluator.ex parsing entry/exit conditions from DSL
+- [X] T058 [US2] Create condition parser at lib/trading_strategy/strategies/condition_parser.ex supporting comparison operators (>, <, ==, &&, ||)
 
 ### Backtest Execution
 
-- [ ] T059 [US2] Implement backtest engine at lib/trading_strategy/backtesting/engine.ex orchestrating historical data replay
-- [ ] T060 [US2] Create position manager at lib/trading_strategy/backtesting/position_manager.ex tracking open positions during backtest
-- [ ] T061 [US2] Implement simulated order execution at lib/trading_strategy/backtesting/simulated_executor.ex with slippage modeling
-- [ ] T062 [US2] Create performance metrics calculator at lib/trading_strategy/backtesting/metrics_calculator.ex computing total return, Sharpe ratio, max drawdown
-- [ ] T063 [US2] Implement equity curve generator at lib/trading_strategy/backtesting/equity_curve.ex tracking portfolio value over time
+- [X] T059 [US2] Implement backtest engine at lib/trading_strategy/backtesting/engine.ex orchestrating historical data replay
+- [X] T060 [US2] Create position manager at lib/trading_strategy/backtesting/position_manager.ex tracking open positions during backtest
+- [X] T061 [US2] Implement simulated order execution at lib/trading_strategy/backtesting/simulated_executor.ex with slippage modeling
+- [X] T062 [US2] Create performance metrics calculator at lib/trading_strategy/backtesting/metrics_calculator.ex computing total return, Sharpe ratio, max drawdown
+- [X] T063 [US2] Implement equity curve generator at lib/trading_strategy/backtesting/equity_curve.ex tracking portfolio value over time
 
 ### API & Testing
 
-- [ ] T064 [US2] Create backtest context at lib/trading_strategy/backtesting.ex with run_backtest/3 function
-- [ ] T065 [US2] Create BacktestController at lib/trading_strategy_web/controllers/backtest_controller.ex implementing backtest_api.ex contract
-- [ ] T069 [US2] Add backtest routes to lib/trading_strategy_web/router.ex for POST /api/backtests, GET /api/backtests/:id
-- [ ] T070 [US2] Create backtest JSON views at lib/trading_strategy_web/views/backtest_view.ex rendering results and metrics
-- [ ] T071 [US2] Write unit tests for indicator calculators at test/trading_strategy/strategies/indicators/*_test.exs
-- [ ] T072 [US2] Write unit tests for signal evaluator at test/trading_strategy/strategies/signal_evaluator_test.exs
-- [ ] T073 [US2] Write unit tests for backtest engine at test/trading_strategy/backtesting/engine_test.exs
-- [ ] T074 [US2] Write unit tests for metrics calculator at test/trading_strategy/backtesting/metrics_calculator_test.exs
-- [ ] T075 [US2] Write integration tests for backtest API at test/trading_strategy_web/controllers/backtest_controller_test.exs
+- [X] T064 [US2] Create backtest context at lib/trading_strategy/backtesting.ex with run_backtest/3 function
+- [X] T065 [US2] Create BacktestController at lib/trading_strategy_web/controllers/backtest_controller.ex implementing backtest_api.ex contract
+- [X] T069 [US2] Add backtest routes to lib/trading_strategy_web/router.ex for POST /api/backtests, GET /api/backtests/:id
+- [X] T070 [US2] Create backtest JSON views at lib/trading_strategy_web/views/backtest_view.ex rendering results and metrics
+- [X] T071 [US2] Write unit tests for indicator calculators at test/trading_strategy/strategies/indicators/*_test.exs
+- [X] T072 [US2] Write unit tests for signal evaluator at test/trading_strategy/strategies/signal_evaluator_test.exs
+- [X] T073 [US2] Write unit tests for backtest engine at test/trading_strategy/backtesting/engine_test.exs
+- [X] T074 [US2] Write unit tests for metrics calculator at test/trading_strategy/backtesting/metrics_calculator_test.exs
+- [X] T075 [US2] Write integration tests for backtest API at test/trading_strategy_web/controllers/backtest_controller_test.exs
 
 ### Independent Test for US2
 
@@ -294,34 +294,34 @@ mix test test/trading_strategy_web/controllers/backtest_controller_test.exs
 
 ### Real-Time Data Streaming
 
-- [ ] T076 [US3] Integrate CryptoExchange.API.subscribe_to_ticker/1 at lib/trading_strategy/market_data/stream_subscriber.ex for real-time price updates via Phoenix.PubSub
-- [ ] T077 [US3] Implement Phoenix.PubSub message handler at lib/trading_strategy/market_data/stream_handler.ex for {:ticker_update, data} messages
-- [ ] T078 [US3] Create market data cache using ETS at lib/trading_strategy/market_data/cache.ex storing latest prices and candles
-- [ ] T079 [US3] Add CryptoExchange.API.subscribe_to_trades/1 integration at lib/trading_strategy/market_data/stream_subscriber.ex for trade stream (optional, if needed for candle building)
+- [X] T076 [US3] Integrate CryptoExchange.API.subscribe_to_ticker/1 at lib/trading_strategy/market_data/stream_subscriber.ex for real-time price updates via Phoenix.PubSub
+- [X] T077 [US3] Implement Phoenix.PubSub message handler at lib/trading_strategy/market_data/stream_handler.ex for {:ticker_update, data} messages
+- [X] T078 [US3] Create market data cache using ETS at lib/trading_strategy/market_data/cache.ex storing latest prices and candles
+- [X] T079 [US3] Add CryptoExchange.API.subscribe_to_trades/1 integration at lib/trading_strategy/market_data/stream_subscriber.ex for trade stream (optional, if needed for candle building)
 
 ### Paper Trading Execution
 
-- [ ] T080 [US3] Create paper trading session manager at lib/trading_strategy/paper_trading/session_manager.ex using GenServer for state
-- [ ] T081 [US3] Implement real-time indicator calculator at lib/trading_strategy/strategies/realtime_indicator_engine.ex updating on new data
-- [ ] T082 [US3] Create real-time signal detector at lib/trading_strategy/strategies/realtime_signal_detector.ex evaluating conditions on each tick
-- [ ] T083 [US3] Implement paper order executor at lib/trading_strategy/paper_trading/paper_executor.ex simulating order fills at market price
-- [ ] T084 [US3] Create paper position tracker at lib/trading_strategy/paper_trading/position_tracker.ex maintaining virtual positions
-- [ ] T085 [US3] Implement session state persistence at lib/trading_strategy/paper_trading/session_persister.ex saving to database periodically
+- [X] T080 [US3] Create paper trading session manager at lib/trading_strategy/paper_trading/session_manager.ex using GenServer for state
+- [X] T081 [US3] Implement real-time indicator calculator at lib/trading_strategy/strategies/realtime_indicator_engine.ex updating on new data
+- [X] T082 [US3] Create real-time signal detector at lib/trading_strategy/strategies/realtime_signal_detector.ex evaluating conditions on each tick
+- [X] T083 [US3] Implement paper order executor at lib/trading_strategy/paper_trading/paper_executor.ex simulating order fills at market price
+- [X] T084 [US3] Create paper position tracker at lib/trading_strategy/paper_trading/position_tracker.ex maintaining virtual positions
+- [X] T085 [US3] Implement session state persistence at lib/trading_strategy/paper_trading/session_persister.ex saving to database periodically
 
 ### API & UI
 
-- [ ] T086 [US3] Create paper trading context at lib/trading_strategy/paper_trading.ex with start_session/2, stop_session/1, get_session/1
-- [ ] T087 [US3] Create PaperTradingController at lib/trading_strategy_web/controllers/paper_trading_controller.ex implementing paper_trading_api.ex contract
-- [ ] T088 [US3] Add paper trading routes to lib/trading_strategy_web/router.ex for POST /api/paper_trading/sessions, GET /api/paper_trading/sessions/:id, DELETE /api/paper_trading/sessions/:id
-- [ ] T089 [US3] Create Phoenix Channel at lib/trading_strategy_web/channels/trading_channel.ex broadcasting real-time updates
-- [ ] T090 [US3] Implement LiveView dashboard at lib/trading_strategy_web/live/paper_trading_live.ex displaying active positions and PnL
+- [X] T086 [US3] Create paper trading context at lib/trading_strategy/paper_trading.ex with start_session/2, stop_session/1, get_session/1
+- [X] T087 [US3] Create PaperTradingController at lib/trading_strategy_web/controllers/paper_trading_controller.ex implementing paper_trading_api.ex contract
+- [X] T088 [US3] Add paper trading routes to lib/trading_strategy_web/router.ex for POST /api/paper_trading/sessions, GET /api/paper_trading/sessions/:id, DELETE /api/paper_trading/sessions/:id
+- [X] T089 [US3] Create Phoenix Channel at lib/trading_strategy_web/channels/trading_channel.ex broadcasting real-time updates
+- [X] T090 [US3] Implement LiveView dashboard at lib/trading_strategy_web/live/paper_trading_live.ex displaying active positions and PnL
 
 ### Testing
 
-- [ ] T091 [US3] Write unit tests for WebSocket client at test/trading_strategy/market_data/websocket_client_test.exs
-- [ ] T092 [US3] Write unit tests for signal detector at test/trading_strategy/strategies/realtime_signal_detector_test.exs
-- [ ] T093 [US3] Write unit tests for paper executor at test/trading_strategy/paper_trading/paper_executor_test.exs
-- [ ] T094 [US3] Write integration tests for paper trading API at test/trading_strategy_web/controllers/paper_trading_controller_test.exs
+- [X] T091 [US3] Write unit tests for WebSocket client at test/trading_strategy/market_data/stream_subscriber_test.exs
+- [X] T092 [US3] Write unit tests for signal detector at test/trading_strategy/strategies/realtime_signal_detector_test.exs
+- [X] T093 [US3] Write unit tests for paper executor at test/trading_strategy/paper_trading/paper_executor_test.exs
+- [X] T094 [US3] Write integration tests for paper trading API at test/trading_strategy_web/controllers/paper_trading_controller_test.exs
 
 ### Independent Test for US3
 
@@ -375,50 +375,50 @@ mix test test/trading_strategy_web/controllers/paper_trading_controller_test.exs
 
 ### Exchange Integration
 
-- [ ] T095 [US4] Create exchange wrapper at lib/trading_strategy/exchanges/exchange.ex abstracting CryptoExchange.API functions (connect_user, place_order, cancel_order, get_balance)
-- [ ] T096 [US4] Implement user credential management at lib/trading_strategy/exchanges/credentials.ex for runtime API key handling (no persistence)
-- [ ] T097 [US4] Create order placement adapter at lib/trading_strategy/exchanges/order_adapter.ex translating internal order format to CryptoExchange.API.place_order/2 params
-- [ ] T098 [US4] Implement exchange health monitor at lib/trading_strategy/exchanges/health_monitor.ex tracking CryptoExchange connection status
+- [X] T095 [US4] Create exchange wrapper at lib/trading_strategy/exchanges/exchange.ex abstracting CryptoExchange.API functions (connect_user, place_order, cancel_order, get_balance)
+- [X] T096 [US4] Implement user credential management at lib/trading_strategy/exchanges/credentials.ex for runtime API key handling (no persistence)
+- [X] T097 [US4] Create order placement adapter at lib/trading_strategy/exchanges/order_adapter.ex translating internal order format to CryptoExchange.API.place_order/2 params
+- [X] T098 [US4] Implement exchange health monitor at lib/trading_strategy/exchanges/health_monitor.ex tracking CryptoExchange connection status
 
 ### Rate Limiting & Reliability
 
-- [ ] T099 [US4] Configure crypto-exchange built-in rate limiting at config/runtime.exs with Binance endpoint limits
-- [ ] T100 [US4] Implement request retry logic at lib/trading_strategy/exchanges/retry_handler.ex wrapping CryptoExchange.API calls with exponential backoff for transient failures
-- [ ] T101 [US4] Monitor crypto-exchange circuit breaker status at lib/trading_strategy/exchanges/resilience_monitor.ex logging API health events
+- [X] T099 [US4] Configure crypto-exchange built-in rate limiting at config/runtime.exs with Binance endpoint limits
+- [X] T100 [US4] Implement request retry logic at lib/trading_strategy/exchanges/retry_handler.ex wrapping CryptoExchange.API calls with exponential backoff for transient failures
+- [X] T101 [US4] Monitor crypto-exchange circuit breaker status at lib/trading_strategy/exchanges/resilience_monitor.ex logging API health events
 
 ### Risk Management
 
-- [ ] T103 [US4] Create order validator at lib/trading_strategy/orders/order_validator.ex checking balance, lot size, price filters
-- [ ] T104 [US4] Implement risk manager at lib/trading_strategy/risk/risk_manager.ex enforcing max position size, daily loss limits
-- [ ] T105 [US4] Create position size calculator at lib/trading_strategy/risk/position_sizer.ex computing order quantity based on risk percentage
+- [X] T103 [US4] Create order validator at lib/trading_strategy/orders/order_validator.ex checking balance, lot size, price filters
+- [X] T104 [US4] Implement risk manager at lib/trading_strategy/risk/risk_manager.ex enforcing max position size, daily loss limits
+- [X] T105 [US4] Create position size calculator at lib/trading_strategy/risk/position_sizer.ex computing order quantity based on risk percentage
 
 ### Live Execution
 
-- [ ] T106 [US4] Implement live order executor at lib/trading_strategy/orders/live_executor.ex placing real orders via exchange adapter
-- [ ] T107 [US4] Create order status tracker at lib/trading_strategy/orders/order_tracker.ex monitoring fills and partial fills
-- [ ] T108 [US4] Implement live trading session manager at lib/trading_strategy/live_trading/session_manager.ex coordinating real-time execution
-- [ ] T109 [US4] Create account balance monitor at lib/trading_strategy/live_trading/balance_monitor.ex tracking available funds
-- [ ] T110 [US4] Implement emergency stop mechanism at lib/trading_strategy/live_trading/emergency_stop.ex canceling all orders on critical errors
+- [X] T106 [US4] Implement live order executor at lib/trading_strategy/orders/live_executor.ex placing real orders via exchange adapter
+- [X] T107 [US4] Create order status tracker at lib/trading_strategy/orders/order_tracker.ex monitoring fills and partial fills
+- [X] T108 [US4] Implement live trading session manager at lib/trading_strategy/live_trading/session_manager.ex coordinating real-time execution
+- [X] T109 [US4] Create account balance monitor at lib/trading_strategy/live_trading/balance_monitor.ex tracking available funds
+- [X] T110 [US4] Implement emergency stop mechanism at lib/trading_strategy/live_trading/emergency_stop.ex canceling all orders on critical errors
 
 ### Connectivity Handling
 
-- [ ] T111 [US4] Create connectivity monitor at lib/trading_strategy/live_trading/connectivity_monitor.ex detecting network failures
-- [ ] T112 [US4] Implement reconnection handler at lib/trading_strategy/live_trading/reconnection_handler.ex resuming after disconnection
+- [X] T111 [US4] Create connectivity monitor at lib/trading_strategy/live_trading/connectivity_monitor.ex detecting network failures
+- [X] T112 [US4] Implement reconnection handler at lib/trading_strategy/live_trading/reconnection_handler.ex resuming after disconnection
 
 ### API & Audit
 
-- [ ] T113 [US4] Create live trading context at lib/trading_strategy/live_trading.ex with start_session/2, stop_session/1, emergency_stop/1
-- [ ] T114 [US4] Create LiveTradingController at lib/trading_strategy_web/controllers/live_trading_controller.ex implementing live_trading_api.ex contract
-- [ ] T115 [US4] Add live trading routes to lib/trading_strategy_web/router.ex for POST /api/live_trading/sessions, GET /api/live_trading/sessions/:id, DELETE /api/live_trading/sessions/:id, POST /api/live_trading/sessions/:id/emergency_stop
-- [ ] T116 [US4] Create audit logger at lib/trading_strategy/live_trading/audit_logger.ex recording all orders with timestamps
+- [X] T113 [US4] Create live trading context at lib/trading_strategy/live_trading.ex with start_session/2, stop_session/1, emergency_stop/1
+- [X] T114 [US4] Create LiveTradingController at lib/trading_strategy_web/controllers/live_trading_controller.ex implementing live_trading_api.ex contract
+- [X] T115 [US4] Add live trading routes to lib/trading_strategy_web/router.ex for POST /api/live_trading/sessions, GET /api/live_trading/sessions/:id, DELETE /api/live_trading/sessions/:id, POST /api/live_trading/sessions/:id/emergency_stop
+- [X] T116 [US4] Create audit logger at lib/trading_strategy/live_trading/audit_logger.ex recording all orders with timestamps
 
 ### Testing
 
-- [ ] T117 [US4] Write unit tests for Binance adapter at test/trading_strategy/exchanges/binance/adapter_test.exs using mock responses
-- [ ] T118 [US4] Write unit tests for rate limiter at test/trading_strategy/exchanges/rate_limiter_test.exs
-- [ ] T119 [US4] Write unit tests for risk manager at test/trading_strategy/risk/risk_manager_test.exs
-- [ ] T120 [US4] Write unit tests for live executor at test/trading_strategy/orders/live_executor_test.exs
-- [ ] T121 [US4] Write integration tests for live trading API at test/trading_strategy_web/controllers/live_trading_controller_test.exs
+- [X] T117 [US4] Write unit tests for Binance adapter at test/trading_strategy/exchanges/binance/adapter_test.exs using mock responses
+- [X] T118 [US4] Write unit tests for rate limiter at test/trading_strategy/exchanges/rate_limiter_test.exs
+- [X] T119 [US4] Write unit tests for risk manager at test/trading_strategy/risk/risk_manager_test.exs
+- [X] T120 [US4] Write unit tests for live executor at test/trading_strategy/orders/live_executor_test.exs
+- [X] T121 [US4] Write integration tests for live trading API at test/trading_strategy_web/controllers/live_trading_controller_test.exs
 
 ### Independent Test for US4
 
@@ -470,31 +470,31 @@ mix test test/trading_strategy/exchanges/
 
 ### Observability
 
-- [ ] T122 [P] Configure Telemetry at lib/trading_strategy/telemetry.ex with metrics for order latency, signal frequency, backtest duration
-- [ ] T123 [P] Implement structured logging at lib/trading_strategy/logging.ex using Logger with metadata for correlation IDs
-- [ ] T124 [P] Create error handling middleware at lib/trading_strategy_web/fallback_controller.ex standardizing error responses
-- [ ] T125 [P] Create global exception handler at lib/trading_strategy_web/error_handler.ex catching unhandled errors
+- [X] T122 [P] Configure Telemetry at lib/trading_strategy/telemetry.ex with metrics for order latency, signal frequency, backtest duration
+- [X] T123 [P] Implement structured logging at lib/trading_strategy/logging.ex using Logger with metadata for correlation IDs
+- [X] T124 [P] Create error handling middleware at lib/trading_strategy_web/fallback_controller.ex standardizing error responses
+- [X] T125 [P] Create global exception handler at lib/trading_strategy_web/error_handler.ex catching unhandled errors
 
 ### Documentation & Examples
 
-- [ ] T126 [P] Create example YAML strategy at examples/sma_crossover.yaml demonstrating DSL syntax
-- [ ] T127 [P] Create example TOML strategy at examples/rsi_reversal.toml demonstrating alternative format
-- [ ] T128 [P] Create example advanced strategy at examples/multi_indicator.yaml combining multiple indicators
-- [ ] T129 [P] Write README documentation at README.md covering installation, quick start, DSL reference
-- [ ] T130 [P] Write API documentation at docs/api.md documenting all REST endpoints
-- [ ] T131 [P] Write DSL reference guide at docs/dsl_reference.md with complete syntax specification
-- [ ] T132 [P] Write deployment guide at docs/deployment.md covering production setup with TimescaleDB
+- [X] T126 [P] Create example YAML strategy at examples/sma_crossover.yaml demonstrating DSL syntax
+- [X] T127 [P] Create example TOML strategy at examples/rsi_reversal.toml demonstrating alternative format
+- [X] T128 [P] Create example advanced strategy at examples/multi_indicator.yaml combining multiple indicators
+- [X] T129 [P] Write README documentation at README.md covering installation, quick start, DSL reference
+- [X] T130 [P] Write API documentation at docs/api.md documenting all REST endpoints
+- [X] T131 [P] Write DSL reference guide at docs/dsl_reference.md with complete syntax specification
+- [X] T132 [P] Write deployment guide at docs/deployment.md covering production setup with TimescaleDB
 
 ### Deployment & Operations
 
-- [ ] T133 [P] Create Docker Compose configuration at docker-compose.yml for local development with PostgreSQL + TimescaleDB
-- [ ] T134 [P] Add health check endpoint at lib/trading_strategy_web/controllers/health_controller.ex checking database and exchange connectivity
+- [X] T133 [P] Create Docker Compose configuration at docker-compose.yml for local development with PostgreSQL + TimescaleDB
+- [X] T134 [P] Add health check endpoint at lib/trading_strategy_web/controllers/health_controller.ex checking database and exchange connectivity
 
 ### Quality Assurance
 
-- [ ] T135 Run full test suite with mix test --cover ensuring >80% coverage
-- [ ] T136 Run mix format and mix credo for code quality checks
-- [ ] T137 Generate ExDoc documentation with mix docs
+- [X] T135 Run full test suite with mix test --cover ensuring >80% coverage
+- [X] T136 Run mix format and mix credo for code quality checks
+- [X] T137 Generate ExDoc documentation with mix docs
 
 ---
 

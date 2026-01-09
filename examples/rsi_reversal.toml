@@ -1,0 +1,67 @@
+# RSI Mean Reversion Strategy Example (TOML Format)
+# Buy oversold conditions, sell overbought conditions
+#
+# Strategy Logic:
+# - BUY when RSI < 30 (oversold) AND price > 50-day SMA (uptrend filter)
+# - SELL when RSI > 70 (overbought)
+# - STOP if RSI < 25 (extreme oversold, potential breakdown)
+# - Position sizing: 10% of capital per trade
+
+strategy_id = "rsi-reversal-eth-usd-v1"
+name = "RSI Mean Reversion ETH/USD"
+description = "Mean reversion strategy targeting oversold/overbought extremes in Ethereum"
+trading_pair = "ETH/USD"
+timeframe = "1h"  # Hourly candles
+version = "1.0.0"
+
+# Technical Indicators
+[[indicators]]
+type = "rsi"
+name = "rsi_14"
+
+  [indicators.parameters]
+  period = 14
+
+[[indicators]]
+type = "sma"
+name = "sma_50"
+
+  [indicators.parameters]
+  period = 50
+
+[[indicators]]
+type = "bb"  # Bollinger Bands for additional context
+name = "bollinger_20"
+
+  [indicators.parameters]
+  period = 20
+  std_dev = 2.0
+
+# Trading Conditions
+# Entry: Oversold RSI in an uptrend (price above SMA)
+entry_conditions = "rsi_14 < 30 AND close > sma_50 AND close < bollinger_20_lower"
+
+# Exit: Overbought RSI reached
+exit_conditions = "rsi_14 > 70 OR close > bollinger_20_upper"
+
+# Stop: Extreme oversold (potential trend reversal) or max loss
+stop_conditions = "rsi_14 < 25 OR unrealized_pnl_pct < -0.05"
+
+# Position Sizing
+[position_sizing]
+type = "percentage"
+percentage_of_capital = 0.10  # 10% per trade
+max_position_size = 0.25       # Max 25% in open positions
+
+# Risk Management
+[risk_parameters]
+max_daily_loss = 0.03          # 3% daily loss limit
+max_drawdown = 0.15            # 15% max drawdown
+stop_loss_percentage = 0.05    # 5% stop-loss
+take_profit_percentage = 0.08  # 8% take-profit
+
+# Strategy Notes:
+# - Works best in ranging/consolidating markets
+# - May underperform in strong trending conditions
+# - Recommended for 1h-4h timeframes
+# - Backtest on sideways market periods for best results

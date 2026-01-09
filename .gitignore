@@ -43,3 +43,5 @@ config/*.secret.exs
 *.db
 *.db-*
 
+# Claude
+/.claude/settings.local.json

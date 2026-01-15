@@ -1,0 +1,246 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Trading Strategy API - Postman Collection Contract",
+  "description": "JSON Schema defining the structure and validation rules for the Trading Strategy API Postman Collection v2.1",
+  "type": "object",
+  "required": ["info", "item"],
+  "properties": {
+    "info": {
+      "type": "object",
+      "required": ["name", "schema"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "const": "Trading Strategy API"
+        },
+        "description": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string",
+          "const": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+        }
+      }
+    },
+    "item": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "description": "Must contain exactly 4 folders: Strategy Management, Backtest Management, Paper Trading, Live Trading",
+      "items": {
+        "type": "object",
+        "required": ["name", "item"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "Strategy Management",
+              "Backtest Management",
+              "Paper Trading",
+              "Live Trading"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "item": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["name", "request"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "request": {
+                  "type": "object",
+                  "required": ["method", "url"],
+                  "properties": {
+                    "method": {
+                      "type": "string",
+                      "enum": ["GET", "POST", "PATCH", "DELETE"]
+                    },
+                    "header": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {"type": "string"},
+                          "value": {"type": "string"}
+                        }
+                      }
+                    },
+                    "body": {
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": ["raw"]
+                        },
+                        "raw": {
+                          "type": "string",
+                          "description": "JSON string for request body"
+                        }
+                      }
+                    },
+                    "url": {
+                      "type": "object",
+                      "required": ["raw"],
+                      "properties": {
+                        "raw": {
+                          "type": "string",
+                          "pattern": "^\\{\\{base_url\\}\\}/api/"
+                        },
+                        "host": {
+                          "type": "array",
+                          "items": {"type": "string"}
+                        },
+                        "path": {
+                          "type": "array",
+                          "items": {"type": "string"}
+                        }
+                      }
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "response": {
+                  "type": "array",
+                  "minItems": 1,
+                  "description": "Must include at least one example response",
+                  "items": {
+                    "type": "object",
+                    "required": ["name", "status", "code"],
+                    "properties": {
+                      "name": {"type": "string"},
+                      "status": {"type": "string"},
+                      "code": {"type": "integer"},
+                      "body": {"type": "string"}
+                    }
+                  }
+                },
+                "event": {
+                  "type": "array",
+                  "description": "Test scripts",
+                  "items": {
+                    "type": "object",
+                    "required": ["listen", "script"],
+                    "properties": {
+                      "listen": {
+                        "type": "string",
+                        "enum": ["test", "prerequest"]
+                      },
+                      "script": {
+                        "type": "object",
+                        "required": ["exec"],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "text/javascript"
+                          },
+                          "exec": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "JavaScript test code lines"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "variable": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Collection variables (at minimum: base_url)",
+      "items": {
+        "type": "object",
+        "required": ["key", "value"],
+        "properties": {
+          "key": {"type": "string"},
+          "value": {"type": ["string", "number"]},
+          "type": {"type": "string"}
+        }
+      }
+    }
+  },
+
+  "definitions": {
+    "StrategyManagementRequirements": {
+      "description": "Strategy Management folder must contain exactly 5 requests",
+      "minItems": 5,
+      "maxItems": 5,
+      "expectedRequests": [
+        "List Strategies (GET /api/strategies)",
+        "Create Strategy (POST /api/strategies)",
+        "Get Strategy by ID (GET /api/strategies/:id)",
+        "Update Strategy (PATCH /api/strategies/:id)",
+        "Delete Strategy (DELETE /api/strategies/:id)"
+      ]
+    },
+    "BacktestManagementRequirements": {
+      "description": "Backtest Management folder must contain exactly 6 requests",
+      "minItems": 6,
+      "maxItems": 6,
+      "expectedRequests": [
+        "Create Backtest (POST /api/backtests)",
+        "List Backtests (GET /api/backtests)",
+        "Get Backtest Results (GET /api/backtests/:id)",
+        "Get Backtest Progress (GET /api/backtests/:id/progress)",
+        "Cancel Backtest (DELETE /api/backtests/:id)",
+        "Validate Historical Data (POST /api/backtests/validate-data)"
+      ]
+    },
+    "PaperTradingRequirements": {
+      "description": "Paper Trading folder must contain exactly 8 requests",
+      "minItems": 8,
+      "maxItems": 8,
+      "expectedRequests": [
+        "Create Session (POST /api/paper_trading/sessions)",
+        "List Sessions (GET /api/paper_trading/sessions)",
+        "Get Session Status (GET /api/paper_trading/sessions/:id)",
+        "Stop Session (DELETE /api/paper_trading/sessions/:id)",
+        "Pause Session (POST /api/paper_trading/sessions/:id/pause)",
+        "Resume Session (POST /api/paper_trading/sessions/:id/resume)",
+        "Get Trade History (GET /api/paper_trading/sessions/:id/trades)",
+        "Get Performance Metrics (GET /api/paper_trading/sessions/:id/metrics)"
+      ]
+    },
+    "LiveTradingRequirements": {
+      "description": "Live Trading folder must contain exactly 9 requests",
+      "minItems": 9,
+      "maxItems": 9,
+      "expectedRequests": [
+        "Create Session (POST /api/live_trading/sessions)",
+        "List Sessions (GET /api/live_trading/sessions)",
+        "Get Session Status (GET /api/live_trading/sessions/:id)",
+        "Stop Session (DELETE /api/live_trading/sessions/:id)",
+        "Pause Session (POST /api/live_trading/sessions/:id/pause)",
+        "Resume Session (POST /api/live_trading/sessions/:id/resume)",
+        "Emergency Stop (POST /api/live_trading/sessions/:id/emergency_stop)",
+        "Place Order (POST /api/live_trading/sessions/:id/orders)",
+        "Get Order Status (GET /api/live_trading/sessions/:id/orders/:order_id)",
+        "Cancel Order (DELETE /api/live_trading/sessions/:id/orders/:order_id)"
+      ]
+    }
+  },
+
+  "totalRequestsRequired": 28,
+  "validationNotes": [
+    "Collection must have exactly 4 folders",
+    "Total requests across all folders must be 28",
+    "All requests must use {{base_url}} variable",
+    "All requests must include at least one example response",
+    "All requests must include test scripts for validation",
+    "Request bodies for POST/PATCH must be in JSON format",
+    "All URLs must start with /api/"
+  ]
+}

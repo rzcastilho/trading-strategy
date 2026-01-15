@@ -208,13 +208,15 @@ defmodule TradingStrategy.MarketData do
     # Convert timeframe to CryptoExchange format
     interval = convert_timeframe(timeframe)
 
+    # Normalize symbol to Binance format (remove slashes, ensure USDT pairs)
+    normalized_symbol = normalize_symbol_for_binance(symbol)
+
     # Fetch from exchange
-    case CryptoExchange.API.get_historical_klines_bulk(
-           String.to_atom(exchange),
-           symbol,
+    case CryptoExchange.get_historical_klines_bulk(
+           normalized_symbol,
            interval,
-           DateTime.to_unix(start_time, :millisecond),
-           DateTime.to_unix(end_time, :millisecond)
+           start_time: DateTime.to_unix(start_time, :millisecond),
+           end_time: DateTime.to_unix(end_time, :millisecond)
          ) do
       {:ok, klines} when is_list(klines) ->
         # Convert to our format and store
@@ -243,18 +245,16 @@ defmodule TradingStrategy.MarketData do
     end
   end
 
-  defp convert_kline_to_market_data(kline, symbol, timeframe, exchange) do
-    # CryptoExchange kline format: [timestamp, open, high, low, close, volume, ...]
-    [timestamp_ms, open, high, low, close, volume | _] = kline
-
+  defp convert_kline_to_market_data(%CryptoExchange.Models.Kline{} = kline, symbol, timeframe, exchange) do
+    # CryptoExchange returns a Kline struct with string prices and millisecond timestamps
     %{
       symbol: symbol,
-      timestamp: DateTime.from_unix!(timestamp_ms, :millisecond),
-      open: Decimal.new(to_string(open)),
-      high: Decimal.new(to_string(high)),
-      low: Decimal.new(to_string(low)),
-      close: Decimal.new(to_string(close)),
-      volume: Decimal.new(to_string(volume)),
+      timestamp: DateTime.from_unix!(kline.kline_start_time, :millisecond),
+      open: Decimal.new(kline.open_price),
+      high: Decimal.new(kline.high_price),
+      low: Decimal.new(kline.low_price),
+      close: Decimal.new(kline.close_price),
+      volume: Decimal.new(kline.base_asset_volume),
       timeframe: timeframe,
       data_source: exchange,
       quality_flag: "complete"
@@ -271,6 +271,22 @@ defmodule TradingStrategy.MarketData do
       "4h" -> "4h"
       "1d" -> "1d"
       other -> other
+    end
+  end
+
+  defp normalize_symbol_for_binance(symbol) do
+    # Convert symbol from common format (BTC/USD, BTC/USDT, ETH/BTC) to Binance format (BTCUSDT, ETHBTC)
+    # Binance uses no separator and typically USDT as the quote currency for fiat pairs
+    normalized =
+      symbol
+      |> String.upcase()
+      |> String.replace("/", "")
+
+    # Convert USD to USDT only if it ends with USD (not already USDT)
+    if String.ends_with?(normalized, "USD") and not String.ends_with?(normalized, "USDT") do
+      String.replace_suffix(normalized, "USD", "USDT")
+    else
+      normalized
     end
   end
 

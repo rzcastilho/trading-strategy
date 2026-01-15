@@ -1,0 +1,2486 @@
+{
+  "info": {
+    "name": "Trading Strategy API",
+    "description": "# Trading Strategy API Collection\n\n**Version**: 1.0.0 | **Total Endpoints**: 29 | **Test Coverage**: 100%\n\n## Overview\n\nComprehensive Postman collection for testing all Trading Strategy API endpoints. Includes automated test scripts, semi-realistic example data, and environment variables for request chaining.\n\n## What's Included\n\n- **29 API Endpoints** across 4 functional areas\n- **Automated Test Scripts** on every request (status codes, field validation, type checking)\n- **Example Responses** for all endpoints\n- **Environment Variables** for seamless request chaining (strategy_id, backtest_id, session_id, order_id)\n- **Semi-Realistic Data** for backtests, strategies, and trading sessions\n\n## Quick Start (5 minutes)\n\n### 1. Import Collection\n- Click **Import** → Select `trading-strategy-api.postman_collection.json`\n- Collection appears in sidebar with 4 folders\n\n### 2. Verify Server\n- Ensure API is running at `http://localhost:4000`\n- Test: Send **Strategy Management → List Strategies**\n- Expected: `200 OK` with empty or populated data array\n\n### 3. Run End-to-End Workflow\n1. **Create Strategy** → Extracts `strategy_id`\n2. **Create Backtest** → Uses `{{strategy_id}}`, extracts `backtest_id`\n3. **Get Backtest Results** → Uses `{{backtest_id}}`\n4. **Create Paper Session** → Uses `{{strategy_id}}`, extracts `paper_session_id`\n5. **Get Session Status** → Uses `{{paper_session_id}}`\n\n## Folders\n\n### 1. Strategy Management (5 endpoints)\nCRUD operations for trading strategies (YAML/TOML format).\n- List, Create, Get, Update, Delete strategies\n\n### 2. Backtest Management (6 endpoints)\nRun historical simulations and validate data quality.\n- Create backtest, monitor progress, get results, validate data\n\n### 3. Paper Trading (8 endpoints)\nTest strategies with virtual capital in real-time.\n- Create/manage sessions, view trades, monitor metrics\n\n### 4. Live Trading (10 endpoints)\nExecute strategies with real capital (use testnet credentials!).\n- Create/manage sessions, place orders, emergency stop\n\n## Tips\n\n- **Run Folders**: Right-click folder → Run folder (executes all requests sequentially)\n- **View Test Results**: Click **Test Results** tab after sending request\n- **Check Variables**: Click eye icon (top right) to see extracted IDs\n- **Collection Runner**: Use for automated testing of multiple requests\n- **Newman CLI**: Run `newman run trading-strategy-api.postman_collection.json` for CI/CD\n\n## Requirements\n\n- **Postman**: Desktop or web version\n- **API Server**: Running at `http://localhost:4000`\n- **Authentication**: None required (local development)\n\n## Documentation\n\nFor detailed usage, see `specs/002-postman-api-collection/quickstart.md` in the repository.\n\n---\n\n**Ready to test your trading strategies? Start with Strategy Management → Create Strategy!** 🚀",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Strategy Management",
+      "description": "Endpoints for creating, retrieving, updating, and deleting trading strategies. Use these endpoints to manage your strategy definitions in YAML or TOML format.",
+      "item": [
+        {
+          "name": "List Strategies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/strategies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "strategies"
+              ]
+            },
+            "description": "Retrieve a list of all trading strategies. Returns an array of strategy summaries with basic information."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/strategies",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "strategies"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"name\": \"RSI Mean Reversion\",\n      \"trading_pair\": \"BTC/USD\",\n      \"timeframe\": \"1h\",\n      \"status\": \"active\",\n      \"version\": 1,\n      \"inserted_at\": \"2024-01-01T10:00:00Z\",\n      \"updated_at\": \"2024-01-01T10:00:00Z\"\n    },\n    {\n      \"id\": \"650e8400-e29b-41d4-a716-446655440001\",\n      \"name\": \"MACD Crossover\",\n      \"trading_pair\": \"ETH/USD\",\n      \"timeframe\": \"4h\",\n      \"status\": \"draft\",\n      \"version\": 1,\n      \"inserted_at\": \"2024-01-02T14:30:00Z\",\n      \"updated_at\": \"2024-01-02T14:30:00Z\"\n    }\n  ]\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test(\"Array items have required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        pm.expect(jsonData.data[0]).to.have.property('id');",
+                  "        pm.expect(jsonData.data[0]).to.have.property('name');",
+                  "        pm.expect(jsonData.data[0]).to.have.property('trading_pair');",
+                  "        pm.expect(jsonData.data[0]).to.have.property('timeframe');",
+                  "        pm.expect(jsonData.data[0]).to.have.property('status');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Strategy",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategy\": {\n    \"name\": \"RSI Mean Reversion\",\n    \"description\": \"Buy when RSI < 30 (oversold), sell when RSI > 70 (overbought) on 1-hour BTC/USD\",\n    \"format\": \"yaml\",\n    \"content\": \"name: RSI Mean Reversion\\ntrading_pair: BTC/USD\\ntimeframe: 1h\\nindicators:\\n  - type: rsi\\n    name: rsi_14\\n    parameters:\\n      period: 14\\nentry_conditions: \\\"rsi_14 < 30\\\"\\nexit_conditions: \\\"rsi_14 > 70\\\"\\nstop_conditions: \\\"unrealized_pnl_pct < -0.05\\\"\\nposition_sizing:\\n  type: percentage\\n  percentage_of_capital: 0.10\\n  max_position_size: 0.25\\nrisk_parameters:\\n  max_daily_loss: 0.03\\n  max_drawdown: 0.15\\n\",\n    \"trading_pair\": \"BTC/USD\",\n    \"timeframe\": \"1h\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/strategies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "strategies"
+              ]
+            },
+            "description": "Create a new trading strategy with YAML or TOML DSL definition. Returns the created strategy with a unique ID."
+          },
+          "response": [
+            {
+              "name": "Success - 201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"strategy\": {\n    \"name\": \"RSI Mean Reversion\",\n    \"description\": \"Buy when RSI < 30 (oversold), sell when RSI > 70 (overbought) on 1-hour BTC/USD\",\n    \"format\": \"yaml\",\n    \"content\": \"name: RSI Mean Reversion\\ntrading_pair: BTC/USD\\ntimeframe: 1h\\nindicators:\\n  - type: rsi\\n    name: rsi_14\\n    parameters:\\n      period: 14\\nentry_conditions: \\\"rsi_14 < 30\\\"\\nexit_conditions: \\\"rsi_14 > 70\\\"\\nstop_conditions: \\\"unrealized_pnl_pct < -0.05\\\"\\nposition_sizing:\\n  type: percentage\\n  percentage_of_capital: 0.10\\n  max_position_size: 0.25\\nrisk_parameters:\\n  max_daily_loss: 0.03\\n  max_drawdown: 0.15\\n\",\n    \"trading_pair\": \"BTC/USD\",\n    \"timeframe\": \"1h\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/strategies",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "strategies"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"name\": \"RSI Mean Reversion\",\n    \"description\": \"Buy when RSI < 30 (oversold), sell when RSI > 70 (overbought) on 1-hour BTC/USD\",\n    \"format\": \"yaml\",\n    \"content\": \"name: RSI Mean Reversion\\ntrading_pair: BTC/USD\\ntimeframe: 1h\\nindicators:\\n  - type: rsi\\n    name: rsi_14\\n    parameters:\\n      period: 14\\nentry_conditions: \\\"rsi_14 < 30\\\"\\nexit_conditions: \\\"rsi_14 > 70\\\"\\nstop_conditions: \\\"unrealized_pnl_pct < -0.05\\\"\\nposition_sizing:\\n  type: percentage\\n  percentage_of_capital: 0.10\\n  max_position_size: 0.25\\nrisk_parameters:\\n  max_daily_loss: 0.03\\n  max_drawdown: 0.15\\n\",\n    \"trading_pair\": \"BTC/USD\",\n    \"timeframe\": \"1h\",\n    \"status\": \"draft\",\n    \"version\": 1,\n    \"inserted_at\": \"2024-01-01T10:00:00Z\",\n    \"updated_at\": \"2024-01-01T10:00:00Z\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data field\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test(\"Response has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.expect(jsonData.data).to.have.property('name');",
+                  "    pm.expect(jsonData.data).to.have.property('format');",
+                  "    pm.expect(jsonData.data).to.have.property('content');",
+                  "    pm.expect(jsonData.data).to.have.property('trading_pair');",
+                  "    pm.expect(jsonData.data).to.have.property('timeframe');",
+                  "    pm.expect(jsonData.data).to.have.property('status');",
+                  "    pm.expect(jsonData.data).to.have.property('inserted_at');",
+                  "    pm.expect(jsonData.data).to.have.property('updated_at');",
+                  "});",
+                  "",
+                  "pm.test(\"Extract strategy_id to environment\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"strategy_id\", jsonData.data.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Strategy by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/strategies/{{strategy_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "strategies",
+                "{{strategy_id}}"
+              ]
+            },
+            "description": "Retrieve a specific trading strategy by its unique ID. Returns the complete strategy definition including DSL content."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/strategies/{{strategy_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "strategies",
+                    "{{strategy_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"name\": \"RSI Mean Reversion\",\n    \"description\": \"Buy when RSI < 30 (oversold), sell when RSI > 70 (overbought) on 1-hour BTC/USD\",\n    \"format\": \"yaml\",\n    \"content\": \"name: RSI Mean Reversion\\ntrading_pair: BTC/USD\\ntimeframe: 1h\\nindicators:\\n  - type: rsi\\n    name: rsi_14\\n    parameters:\\n      period: 14\\nentry_conditions: \\\"rsi_14 < 30\\\"\\nexit_conditions: \\\"rsi_14 > 70\\\"\\nstop_conditions: \\\"unrealized_pnl_pct < -0.05\\\"\\nposition_sizing:\\n  type: percentage\\n  percentage_of_capital: 0.10\\n  max_position_size: 0.25\\nrisk_parameters:\\n  max_daily_loss: 0.03\\n  max_drawdown: 0.15\\n\",\n    \"trading_pair\": \"BTC/USD\",\n    \"timeframe\": \"1h\",\n    \"status\": \"draft\",\n    \"version\": 1,\n    \"inserted_at\": \"2024-01-01T10:00:00Z\",\n    \"updated_at\": \"2024-01-01T10:00:00Z\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data field\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test(\"Strategy data has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.expect(jsonData.data).to.have.property('name');",
+                  "    pm.expect(jsonData.data).to.have.property('format');",
+                  "    pm.expect(jsonData.data).to.have.property('content');",
+                  "    pm.expect(jsonData.data).to.have.property('trading_pair');",
+                  "    pm.expect(jsonData.data).to.have.property('timeframe');",
+                  "    pm.expect(jsonData.data).to.have.property('status');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Strategy",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategy\": {\n    \"timeframe\": \"4h\",\n    \"description\": \"Updated: Buy when RSI < 30, sell when RSI > 70 on 4-hour BTC/USD\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/strategies/{{strategy_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "strategies",
+                "{{strategy_id}}"
+              ]
+            },
+            "description": "Update an existing trading strategy. Supports partial updates - only send fields you want to change."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"strategy\": {\n    \"timeframe\": \"4h\",\n    \"description\": \"Updated: Buy when RSI < 30, sell when RSI > 70 on 4-hour BTC/USD\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/strategies/{{strategy_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "strategies",
+                    "{{strategy_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"name\": \"RSI Mean Reversion\",\n    \"description\": \"Updated: Buy when RSI < 30, sell when RSI > 70 on 4-hour BTC/USD\",\n    \"format\": \"yaml\",\n    \"content\": \"name: RSI Mean Reversion\\ntrading_pair: BTC/USD\\ntimeframe: 4h\\nindicators:\\n  - type: rsi\\n    name: rsi_14\\n    parameters:\\n      period: 14\\nentry_conditions: \\\"rsi_14 < 30\\\"\\nexit_conditions: \\\"rsi_14 > 70\\\"\\nstop_conditions: \\\"unrealized_pnl_pct < -0.05\\\"\\nposition_sizing:\\n  type: percentage\\n  percentage_of_capital: 0.10\\n  max_position_size: 0.25\\nrisk_parameters:\\n  max_daily_loss: 0.03\\n  max_drawdown: 0.15\\n\",\n    \"trading_pair\": \"BTC/USD\",\n    \"timeframe\": \"4h\",\n    \"status\": \"draft\",\n    \"version\": 1,\n    \"inserted_at\": \"2024-01-01T10:00:00Z\",\n    \"updated_at\": \"2024-01-01T11:30:00Z\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data field\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test(\"Updated_at field is present\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('updated_at');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Strategy",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/strategies/{{strategy_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "strategies",
+                "{{strategy_id}}"
+              ]
+            },
+            "description": "Delete a trading strategy by its unique ID. This operation is permanent and cannot be undone."
+          },
+          "response": [
+            {
+              "name": "Success - 204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/strategies/{{strategy_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "strategies",
+                    "{{strategy_id}}"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": ""
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backtest Management",
+      "description": "Endpoints for running backtests against historical data, monitoring progress, retrieving results, and validating data quality. Test your strategies before deploying them to live or paper trading.",
+      "item": [
+        {
+          "name": "Create Backtest",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategy_id\": \"{{strategy_id}}\",\n  \"trading_pair\": \"BTC/USD\",\n  \"start_date\": \"2023-01-01T00:00:00Z\",\n  \"end_date\": \"2024-12-31T23:59:59Z\",\n  \"initial_capital\": \"10000.00\",\n  \"commission_rate\": \"0.001\",\n  \"slippage_bps\": 5,\n  \"data_source\": \"binance\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/backtests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "backtests"
+              ]
+            },
+            "description": "Create and start a new backtest for a trading strategy. Runs the strategy against historical data and returns a backtest_id for tracking progress."
+          },
+          "response": [
+            {
+              "name": "Success - 201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"strategy_id\": \"{{strategy_id}}\",\n  \"trading_pair\": \"BTC/USD\",\n  \"start_date\": \"2023-01-01T00:00:00Z\",\n  \"end_date\": \"2024-12-31T23:59:59Z\",\n  \"initial_capital\": \"10000.00\",\n  \"commission_rate\": \"0.001\",\n  \"slippage_bps\": 5,\n  \"data_source\": \"binance\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/backtests",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "backtests"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"backtest_id\": \"750e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"running\",\n  \"message\": \"Backtest started successfully\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has backtest_id\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('backtest_id');",
+                  "});",
+                  "",
+                  "pm.test(\"Status is running\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData.status).to.equal('running');",
+                  "});",
+                  "",
+                  "pm.test(\"Extract backtest_id to environment\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"backtest_id\", jsonData.backtest_id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Backtests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/backtests",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "backtests"
+              ]
+            },
+            "description": "Retrieve a list of all backtests. Returns an array of backtest summaries with status information."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/backtests",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "backtests"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"backtest_id\": \"750e8400-e29b-41d4-a716-446655440000\",\n      \"strategy_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"trading_pair\": \"BTC/USD\",\n      \"status\": \"completed\",\n      \"start_date\": \"2023-01-01T00:00:00Z\",\n      \"end_date\": \"2024-12-31T23:59:59Z\",\n      \"created_at\": \"2024-01-15T10:00:00Z\"\n    },\n    {\n      \"backtest_id\": \"850e8400-e29b-41d4-a716-446655440001\",\n      \"strategy_id\": \"650e8400-e29b-41d4-a716-446655440001\",\n      \"trading_pair\": \"ETH/USD\",\n      \"status\": \"running\",\n      \"start_date\": \"2023-06-01T00:00:00Z\",\n      \"end_date\": \"2024-06-30T23:59:59Z\",\n      \"created_at\": \"2024-01-15T11:30:00Z\"\n    }\n  ]\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Backtest Results",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/backtests/{{backtest_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "backtests",
+                "{{backtest_id}}"
+              ]
+            },
+            "description": "Retrieve detailed results for a completed backtest including performance metrics, trade history, and equity curve."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/backtests/{{backtest_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "backtests",
+                    "{{backtest_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"backtest_id\": \"750e8400-e29b-41d4-a716-446655440000\",\n  \"strategy_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"config\": {\n    \"trading_pair\": \"BTC/USD\",\n    \"start_date\": \"2023-01-01T00:00:00Z\",\n    \"end_date\": \"2024-12-31T23:59:59Z\",\n    \"initial_capital\": \"10000.00\"\n  },\n  \"performance_metrics\": {\n    \"total_return\": \"0.342\",\n    \"total_return_abs\": \"3420.00\",\n    \"win_rate\": \"0.65\",\n    \"max_drawdown\": \"0.12\",\n    \"sharpe_ratio\": \"1.8\",\n    \"trade_count\": 50,\n    \"winning_trades\": 33,\n    \"losing_trades\": 17,\n    \"average_win\": \"250.00\",\n    \"average_loss\": \"120.00\",\n    \"profit_factor\": \"2.1\"\n  },\n  \"trades\": [\n    {\n      \"timestamp\": \"2023-01-15T14:30:00Z\",\n      \"side\": \"buy\",\n      \"price\": \"21500.00\",\n      \"quantity\": \"0.046\",\n      \"pnl\": \"0.00\"\n    },\n    {\n      \"timestamp\": \"2023-01-18T09:15:00Z\",\n      \"side\": \"sell\",\n      \"price\": \"22100.00\",\n      \"quantity\": \"0.046\",\n      \"pnl\": \"27.60\"\n    }\n  ],\n  \"equity_curve\": [\n    {\n      \"timestamp\": \"2023-01-01T00:00:00Z\",\n      \"equity\": \"10000.00\"\n    },\n    {\n      \"timestamp\": \"2023-01-18T09:15:00Z\",\n      \"equity\": \"10027.60\"\n    }\n  ]\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has performance_metrics\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('performance_metrics');",
+                  "});",
+                  "",
+                  "pm.test(\"Response has trades array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('trades');",
+                  "    pm.expect(jsonData.trades).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Backtest Progress",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/backtests/{{backtest_id}}/progress",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "backtests",
+                "{{backtest_id}}",
+                "progress"
+              ]
+            },
+            "description": "Monitor the progress of a running backtest. Returns completion percentage and estimated time remaining."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/backtests/{{backtest_id}}/progress",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "backtests",
+                    "{{backtest_id}}",
+                    "progress"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"backtest_id\": \"750e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"running\",\n  \"progress_percentage\": 45,\n  \"bars_processed\": 6570,\n  \"total_bars\": 14600,\n  \"estimated_time_remaining_ms\": 12000\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Progress percentage is between 0-100\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('progress_percentage');",
+                  "    pm.expect(jsonData.progress_percentage).to.be.at.least(0);",
+                  "    pm.expect(jsonData.progress_percentage).to.be.at.most(100);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel Backtest",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/backtests/{{backtest_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "backtests",
+                "{{backtest_id}}"
+              ]
+            },
+            "description": "Cancel a running backtest. The backtest will stop processing and partial results may be discarded."
+          },
+          "response": [
+            {
+              "name": "Success - 204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/backtests/{{backtest_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "backtests",
+                    "{{backtest_id}}"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": ""
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validate Historical Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trading_pair\": \"BTC/USD\",\n  \"start_date\": \"2023-01-01T00:00:00Z\",\n  \"end_date\": \"2024-12-31T23:59:59Z\",\n  \"timeframe\": \"1h\",\n  \"data_source\": \"binance\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/backtests/validate-data",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "backtests",
+                "validate-data"
+              ]
+            },
+            "description": "Validate the quality and completeness of historical data before running a backtest. Returns data quality metrics and warnings about gaps or missing data."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"trading_pair\": \"BTC/USD\",\n  \"start_date\": \"2023-01-01T00:00:00Z\",\n  \"end_date\": \"2024-12-31T23:59:59Z\",\n  \"timeframe\": \"1h\",\n  \"data_source\": \"binance\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/backtests/validate-data",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "backtests",
+                    "validate-data"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"total_bars_expected\": 17520,\n  \"total_bars_available\": 17485,\n  \"completeness_percentage\": \"99.8\",\n  \"quality_warnings\": [\n    {\n      \"type\": \"gap_detected\",\n      \"message\": \"Data gap detected between 2023-03-15 02:00:00 and 2023-03-15 05:00:00 (3 hours)\",\n      \"timestamp\": \"2023-03-15T02:00:00Z\"\n    },\n    {\n      \"type\": \"missing_bars\",\n      \"message\": \"35 bars missing in total across the date range\",\n      \"timestamp\": null\n    }\n  ]\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has quality metrics\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('total_bars_expected');",
+                  "    pm.expect(jsonData).to.have.property('total_bars_available');",
+                  "    pm.expect(jsonData).to.have.property('completeness_percentage');",
+                  "});",
+                  "",
+                  "pm.test(\"Response has warnings array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('quality_warnings');",
+                  "    pm.expect(jsonData.quality_warnings).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Paper Trading",
+      "description": "Endpoints for creating and managing paper trading sessions with virtual capital. Test strategies in real-time market conditions without risking real money.",
+      "item": [
+        {
+          "name": "Create Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session\": {\n    \"strategy_id\": \"{{strategy_id}}\",\n    \"trading_pair\": \"BTC/USD\",\n    \"initial_capital\": \"10000.00\",\n    \"data_source\": \"binance\",\n    \"position_sizing\": \"percentage\",\n    \"position_size_pct\": \"0.1\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/paper_trading/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "paper_trading",
+                "sessions"
+              ]
+            },
+            "description": "Create a new paper trading session with virtual capital. Returns the session ID for tracking performance and managing the session lifecycle."
+          },
+          "response": [
+            {
+              "name": "Success - 201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"session\": {\n    \"strategy_id\": \"{{strategy_id}}\",\n    \"trading_pair\": \"BTC/USD\",\n    \"initial_capital\": \"10000.00\",\n    \"data_source\": \"binance\",\n    \"position_sizing\": \"percentage\",\n    \"position_size_pct\": \"0.1\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/paper_trading/sessions",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "paper_trading",
+                    "sessions"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"session_id\": \"950e8400-e29b-41d4-a716-446655440000\",\n    \"strategy_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"trading_pair\": \"BTC/USD\",\n    \"initial_capital\": \"10000.00\",\n    \"status\": \"active\",\n    \"started_at\": \"2024-01-20T15:00:00Z\",\n    \"data_source\": \"binance\",\n    \"position_sizing\": \"percentage\",\n    \"position_size_pct\": \"0.1\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data field\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test(\"Session has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('session_id');",
+                  "    pm.expect(jsonData.data).to.have.property('strategy_id');",
+                  "    pm.expect(jsonData.data).to.have.property('trading_pair');",
+                  "    pm.expect(jsonData.data).to.have.property('initial_capital');",
+                  "    pm.expect(jsonData.data).to.have.property('status');",
+                  "    pm.expect(jsonData.data).to.have.property('started_at');",
+                  "});",
+                  "",
+                  "pm.test(\"Extract paper_session_id to environment\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"paper_session_id\", jsonData.data.session_id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/paper_trading/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "paper_trading",
+                "sessions"
+              ]
+            },
+            "description": "Retrieve a list of all paper trading sessions. Returns an array of session summaries with status information."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/paper_trading/sessions",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "paper_trading",
+                    "sessions"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"session_id\": \"950e8400-e29b-41d4-a716-446655440000\",\n      \"strategy_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"trading_pair\": \"BTC/USD\",\n      \"status\": \"active\",\n      \"started_at\": \"2024-01-20T15:00:00Z\",\n      \"current_equity\": \"10450.00\",\n      \"realized_pnl\": \"450.00\",\n      \"trades_count\": 8\n    },\n    {\n      \"session_id\": \"a50e8400-e29b-41d4-a716-446655440001\",\n      \"strategy_id\": \"650e8400-e29b-41d4-a716-446655440001\",\n      \"trading_pair\": \"ETH/USD\",\n      \"status\": \"paused\",\n      \"started_at\": \"2024-01-19T10:30:00Z\",\n      \"current_equity\": \"9820.00\",\n      \"realized_pnl\": \"-180.00\",\n      \"trades_count\": 12\n    }\n  ]\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test(\"Array items have required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        pm.expect(jsonData.data[0]).to.have.property('session_id');",
+                  "        pm.expect(jsonData.data[0]).to.have.property('strategy_id');",
+                  "        pm.expect(jsonData.data[0]).to.have.property('trading_pair');",
+                  "        pm.expect(jsonData.data[0]).to.have.property('status');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Session Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "paper_trading",
+                "sessions",
+                "{{paper_session_id}}"
+              ]
+            },
+            "description": "Retrieve detailed status information for a specific paper trading session including current equity, PnL, and open positions."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "paper_trading",
+                    "sessions",
+                    "{{paper_session_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"session_id\": \"950e8400-e29b-41d4-a716-446655440000\",\n    \"status\": \"active\",\n    \"started_at\": \"2024-01-20T15:00:00Z\",\n    \"current_equity\": \"10450.00\",\n    \"unrealized_pnl\": \"120.00\",\n    \"realized_pnl\": \"450.00\",\n    \"open_positions\": [\n      {\n        \"trading_pair\": \"BTC/USD\",\n        \"side\": \"long\",\n        \"entry_price\": \"42000.00\",\n        \"quantity\": \"0.024\",\n        \"current_price\": \"43000.00\",\n        \"unrealized_pnl\": \"24.00\",\n        \"duration_seconds\": 3600\n      }\n    ],\n    \"trades_count\": 8,\n    \"last_market_price\": \"43000.00\",\n    \"last_updated_at\": \"2024-01-20T16:00:00Z\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data field\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test(\"Session status has required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('session_id');",
+                  "    pm.expect(jsonData.data).to.have.property('status');",
+                  "    pm.expect(jsonData.data).to.have.property('current_equity');",
+                  "    pm.expect(jsonData.data).to.have.property('unrealized_pnl');",
+                  "    pm.expect(jsonData.data).to.have.property('realized_pnl');",
+                  "    pm.expect(jsonData.data).to.have.property('open_positions');",
+                  "    pm.expect(jsonData.data.open_positions).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Stop Session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "paper_trading",
+                "sessions",
+                "{{paper_session_id}}"
+              ]
+            },
+            "description": "Stop a paper trading session. This will close all open positions and finalize the session performance metrics."
+          },
+          "response": [
+            {
+              "name": "Success - 204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "paper_trading",
+                    "sessions",
+                    "{{paper_session_id}}"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": ""
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pause Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}/pause",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "paper_trading",
+                "sessions",
+                "{{paper_session_id}}",
+                "pause"
+              ]
+            },
+            "description": "Pause an active paper trading session. The session will stop executing trades until resumed."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}/pause",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "paper_trading",
+                    "sessions",
+                    "{{paper_session_id}}",
+                    "pause"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Session paused successfully\",\n  \"session_id\": \"950e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"paused\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response confirms action\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData).to.have.property('session_id');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "});",
+                  "",
+                  "pm.test(\"Status is paused\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.equal('paused');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resume Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}/resume",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "paper_trading",
+                "sessions",
+                "{{paper_session_id}}",
+                "resume"
+              ]
+            },
+            "description": "Resume a paused paper trading session. The session will continue executing trades based on strategy signals."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}/resume",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "paper_trading",
+                    "sessions",
+                    "{{paper_session_id}}",
+                    "resume"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Session resumed successfully\",\n  \"session_id\": \"950e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"active\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response confirms action\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData).to.have.property('session_id');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "});",
+                  "",
+                  "pm.test(\"Status is active\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.equal('active');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Trade History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}/trades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "paper_trading",
+                "sessions",
+                "{{paper_session_id}}",
+                "trades"
+              ]
+            },
+            "description": "Retrieve the complete trade history for a paper trading session. Returns all executed trades with timestamps, prices, and PnL."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}/trades",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "paper_trading",
+                    "sessions",
+                    "{{paper_session_id}}",
+                    "trades"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"trade_id\": \"b50e8400-e29b-41d4-a716-446655440000\",\n      \"session_id\": \"950e8400-e29b-41d4-a716-446655440000\",\n      \"timestamp\": \"2024-01-20T15:30:00Z\",\n      \"trading_pair\": \"BTC/USD\",\n      \"side\": \"buy\",\n      \"quantity\": \"0.024\",\n      \"price\": \"42000.00\",\n      \"signal_type\": \"entry\",\n      \"pnl\": \"0.00\"\n    },\n    {\n      \"trade_id\": \"c50e8400-e29b-41d4-a716-446655440001\",\n      \"session_id\": \"950e8400-e29b-41d4-a716-446655440000\",\n      \"timestamp\": \"2024-01-20T18:15:00Z\",\n      \"trading_pair\": \"BTC/USD\",\n      \"side\": \"sell\",\n      \"quantity\": \"0.012\",\n      \"price\": \"42500.00\",\n      \"signal_type\": \"exit\",\n      \"pnl\": \"6.00\"\n    }\n  ]\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test(\"Trades have required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data.length > 0) {",
+                  "        pm.expect(jsonData.data[0]).to.have.property('trade_id');",
+                  "        pm.expect(jsonData.data[0]).to.have.property('timestamp');",
+                  "        pm.expect(jsonData.data[0]).to.have.property('side');",
+                  "        pm.expect(jsonData.data[0]).to.have.property('price');",
+                  "        pm.expect(jsonData.data[0]).to.have.property('quantity');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Performance Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}/metrics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "paper_trading",
+                "sessions",
+                "{{paper_session_id}}",
+                "metrics"
+              ]
+            },
+            "description": "Retrieve comprehensive performance metrics for a paper trading session including win rate, total PnL, Sharpe ratio, and drawdown statistics."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/paper_trading/sessions/{{paper_session_id}}/metrics",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "paper_trading",
+                    "sessions",
+                    "{{paper_session_id}}",
+                    "metrics"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"session_id\": \"950e8400-e29b-41d4-a716-446655440000\",\n    \"total_trades\": 8,\n    \"winning_trades\": 5,\n    \"losing_trades\": 3,\n    \"win_rate\": \"0.625\",\n    \"total_pnl\": \"450.00\",\n    \"total_return_pct\": \"0.045\",\n    \"sharpe_ratio\": \"1.65\",\n    \"max_drawdown_pct\": \"0.08\",\n    \"average_win\": \"150.00\",\n    \"average_loss\": \"75.00\",\n    \"largest_win\": \"280.00\",\n    \"largest_loss\": \"120.00\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data field\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "});",
+                  "",
+                  "pm.test(\"Metrics have required fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('session_id');",
+                  "    pm.expect(jsonData.data).to.have.property('total_trades');",
+                  "    pm.expect(jsonData.data).to.have.property('win_rate');",
+                  "    pm.expect(jsonData.data).to.have.property('total_pnl');",
+                  "    pm.expect(jsonData.data).to.have.property('sharpe_ratio');",
+                  "    pm.expect(jsonData.data).to.have.property('max_drawdown_pct');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Live Trading",
+      "description": "Endpoints for managing live trading sessions with real capital on exchange testnet or production environments. Includes order management and emergency stop functionality.",
+      "item": [
+        {
+          "name": "Create Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategy_id\": \"{{strategy_id}}\",\n  \"trading_pair\": \"BTC/USDT\",\n  \"allocated_capital\": \"5000.00\",\n  \"exchange\": \"binance\",\n  \"mode\": \"testnet\",\n  \"api_credentials\": {\n    \"api_key\": \"testnet_key_placeholder\",\n    \"api_secret\": \"testnet_secret_placeholder\",\n    \"passphrase\": null\n  },\n  \"position_sizing\": \"percentage\",\n  \"risk_limits\": {\n    \"max_position_size_pct\": \"0.25\",\n    \"max_daily_loss_pct\": \"0.03\",\n    \"max_drawdown_pct\": \"0.15\",\n    \"max_concurrent_positions\": 3\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/live_trading/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "live_trading",
+                "sessions"
+              ]
+            },
+            "description": "Create a new live trading session with risk limits and exchange credentials. IMPORTANT: Use testnet mode for testing - never use real API keys in this collection."
+          },
+          "response": [
+            {
+              "name": "Success - 201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"strategy_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"trading_pair\": \"BTC/USDT\",\n  \"allocated_capital\": \"5000.00\",\n  \"exchange\": \"binance\",\n  \"mode\": \"testnet\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/live_trading/sessions",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "live_trading",
+                    "sessions"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"session_id\": \"750e8400-e29b-41d4-a716-446655440000\",\n    \"strategy_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"status\": \"active\",\n    \"trading_pair\": \"BTC/USDT\",\n    \"exchange\": \"binance\",\n    \"mode\": \"testnet\",\n    \"started_at\": \"2024-01-15T10:00:00Z\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains session_id\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.have.property('session_id');",
+                  "    pm.expect(jsonData.data.session_id).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test(\"Extract live_session_id to environment\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"live_session_id\", jsonData.data.session_id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/live_trading/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "live_trading",
+                "sessions"
+              ]
+            },
+            "description": "Retrieve a list of all live trading sessions. Returns an array of session summaries."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/live_trading/sessions",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "live_trading",
+                    "sessions"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"session_id\": \"750e8400-e29b-41d4-a716-446655440000\",\n      \"strategy_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"status\": \"active\",\n      \"trading_pair\": \"BTC/USDT\",\n      \"exchange\": \"binance\",\n      \"mode\": \"testnet\",\n      \"started_at\": \"2024-01-15T10:00:00Z\",\n      \"current_equity\": \"5300.00\",\n      \"realized_pnl\": \"300.00\"\n    }\n  ]\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains data array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Session Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/live_trading/sessions/{{live_session_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "live_trading",
+                "sessions",
+                "{{live_session_id}}"
+              ]
+            },
+            "description": "Get detailed status of a live trading session including equity, positions, risk limits, and connectivity."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/live_trading/sessions/750e8400-e29b-41d4-a716-446655440000",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "live_trading",
+                    "sessions",
+                    "750e8400-e29b-41d4-a716-446655440000"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"session_id\": \"750e8400-e29b-41d4-a716-446655440000\",\n    \"status\": \"active\",\n    \"started_at\": \"2024-01-15T10:00:00Z\",\n    \"exchange\": \"binance\",\n    \"current_equity\": \"5300.00\",\n    \"unrealized_pnl\": \"150.00\",\n    \"realized_pnl\": \"150.00\",\n    \"open_positions\": [\n      {\n        \"position_id\": \"850e8400-e29b-41d4-a716-446655440000\",\n        \"trading_pair\": \"BTC/USDT\",\n        \"side\": \"long\",\n        \"entry_price\": \"45000.00\",\n        \"quantity\": \"0.05\",\n        \"current_price\": \"46000.00\",\n        \"unrealized_pnl\": \"50.00\"\n      }\n    ],\n    \"pending_orders\": [],\n    \"trades_count\": 8,\n    \"risk_limits_status\": {\n      \"position_size_utilization_pct\": \"0.22\",\n      \"daily_loss_used_pct\": \"0.00\",\n      \"drawdown_from_peak_pct\": \"0.05\",\n      \"concurrent_positions\": 1,\n      \"can_open_new_position\": true\n    },\n    \"last_updated_at\": \"2024-01-15T12:30:00Z\",\n    \"connectivity_status\": \"connected\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains session status\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.have.property('session_id');",
+                  "    pm.expect(jsonData.data).to.have.property('risk_limits_status');",
+                  "    pm.expect(jsonData.data).to.have.property('connectivity_status');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Stop Session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/live_trading/sessions/{{live_session_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "live_trading",
+                "sessions",
+                "{{live_session_id}}"
+              ]
+            },
+            "description": "Stop a live trading session. This will cancel all pending orders and close all positions."
+          },
+          "response": [
+            {
+              "name": "Success - 204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/live_trading/sessions/750e8400-e29b-41d4-a716-446655440000",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "live_trading",
+                    "sessions",
+                    "750e8400-e29b-41d4-a716-446655440000"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "body": ""
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pause Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/live_trading/sessions/{{live_session_id}}/pause",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "live_trading",
+                "sessions",
+                "{{live_session_id}}",
+                "pause"
+              ]
+            },
+            "description": "Pause a live trading session. The session will stop executing new trades but maintain existing positions."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/live_trading/sessions/750e8400-e29b-41d4-a716-446655440000/pause",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "live_trading",
+                    "sessions",
+                    "750e8400-e29b-41d4-a716-446655440000",
+                    "pause"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Session paused successfully\",\n  \"session_id\": \"750e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"paused\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Session paused successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData.status).to.equal('paused');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resume Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/live_trading/sessions/{{live_session_id}}/resume",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "live_trading",
+                "sessions",
+                "{{live_session_id}}",
+                "resume"
+              ]
+            },
+            "description": "Resume a paused live trading session. The session will start executing trades again."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/live_trading/sessions/750e8400-e29b-41d4-a716-446655440000/resume",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "live_trading",
+                    "sessions",
+                    "750e8400-e29b-41d4-a716-446655440000",
+                    "resume"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Session resumed successfully\",\n  \"session_id\": \"750e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"active\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Session resumed successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData.status).to.equal('active');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Emergency Stop",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/live_trading/sessions/{{live_session_id}}/emergency_stop",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "live_trading",
+                "sessions",
+                "{{live_session_id}}",
+                "emergency_stop"
+              ]
+            },
+            "description": "Execute an emergency stop on a live trading session. Immediately cancels all pending orders and closes all positions."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/live_trading/sessions/750e8400-e29b-41d4-a716-446655440000/emergency_stop",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "live_trading",
+                    "sessions",
+                    "750e8400-e29b-41d4-a716-446655440000",
+                    "emergency_stop"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Emergency stop executed\",\n  \"session_id\": \"750e8400-e29b-41d4-a716-446655440000\",\n  \"cancelled_orders\": 3,\n  \"failed_cancellations\": 0,\n  \"duration_ms\": 450\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Emergency stop executed\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData).to.have.property('cancelled_orders');",
+                  "    pm.expect(jsonData.cancelled_orders).to.be.a('number');",
+                  "    pm.expect(jsonData).to.have.property('duration_ms');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Place Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_type\": \"limit\",\n  \"side\": \"buy\",\n  \"quantity\": \"0.05\",\n  \"price\": \"45000.00\",\n  \"signal_type\": \"entry\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/live_trading/sessions/{{live_session_id}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "live_trading",
+                "sessions",
+                "{{live_session_id}}",
+                "orders"
+              ]
+            },
+            "description": "Place a new order in a live trading session. Supports market and limit orders."
+          },
+          "response": [
+            {
+              "name": "Success - 201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"order_type\": \"limit\",\n  \"side\": \"buy\",\n  \"quantity\": \"0.05\",\n  \"price\": \"45000.00\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/live_trading/sessions/750e8400-e29b-41d4-a716-446655440000/orders",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "live_trading",
+                    "sessions",
+                    "750e8400-e29b-41d4-a716-446655440000",
+                    "orders"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"order_id\": \"950e8400-e29b-41d4-a716-446655440000\",\n  \"message\": \"Order placed successfully\"\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Order placed successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('order_id');",
+                  "    pm.expect(jsonData.order_id).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test(\"Extract order_id to environment\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"order_id\", jsonData.order_id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Order Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/live_trading/sessions/{{live_session_id}}/orders/{{order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "live_trading",
+                "sessions",
+                "{{live_session_id}}",
+                "orders",
+                "{{order_id}}"
+              ]
+            },
+            "description": "Get the status of a specific order in a live trading session."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/live_trading/sessions/750e8400-e29b-41d4-a716-446655440000/orders/950e8400-e29b-41d4-a716-446655440000",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "live_trading",
+                    "sessions",
+                    "750e8400-e29b-41d4-a716-446655440000",
+                    "orders",
+                    "950e8400-e29b-41d4-a716-446655440000"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"order_id\": \"950e8400-e29b-41d4-a716-446655440000\",\n    \"exchange_order_id\": \"binance_12345678\",\n    \"type\": \"limit\",\n    \"side\": \"buy\",\n    \"status\": \"filled\",\n    \"quantity\": \"0.05\",\n    \"filled_quantity\": \"0.05\",\n    \"price\": \"45000.00\",\n    \"average_fill_price\": \"44995.00\",\n    \"created_at\": \"2024-01-15T11:00:00Z\",\n    \"updated_at\": \"2024-01-15T11:02:30Z\"\n  }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Order status retrieved\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.have.property('order_id');",
+                  "    pm.expect(jsonData.data).to.have.property('exchange_order_id');",
+                  "    pm.expect(jsonData.data).to.have.property('status');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/live_trading/sessions/{{live_session_id}}/orders/{{order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "live_trading",
+                "sessions",
+                "{{live_session_id}}",
+                "orders",
+                "{{order_id}}"
+              ]
+            },
+            "description": "Cancel a pending order in a live trading session."
+          },
+          "response": [
+            {
+              "name": "Success - 204 No Content",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/live_trading/sessions/750e8400-e29b-41d4-a716-446655440000/orders/950e8400-e29b-41d4-a716-446655440000",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "live_trading",
+                    "sessions",
+                    "750e8400-e29b-41d4-a716-446655440000",
+                    "orders",
+                    "950e8400-e29b-41d4-a716-446655440000"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "body": ""
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4000",
+      "type": "string",
+      "description": "Base URL for the Trading Strategy API server"
+    },
+    {
+      "key": "port",
+      "value": "4000",
+      "type": "string",
+      "description": "Port number for the API server"
+    }
+  ]
+}

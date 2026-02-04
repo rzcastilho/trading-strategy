@@ -186,7 +186,8 @@ defmodule TradingStrategy.Backtesting.MetricsCalculator do
     # Get PnL sequence
     pnl_sequence = Enum.map(trades, fn t -> Map.get(t, :pnl, 0) end)
 
-    {max_wins, max_losses} =
+    # Reduce returns {max_wins, max_losses, current_wins, current_losses}
+    {max_wins, max_losses, _current_wins, _current_losses} =
       Enum.reduce(pnl_sequence, {0, 0, 0, 0}, fn pnl, {max_w, max_l, curr_w, curr_l} ->
         cond do
           pnl > 0 ->

@@ -38,14 +38,14 @@ defmodule TradingStrategy.Strategies.SignalEvaluator do
         context: %{"rsi_14" => 25, "sma_50" => 42000, ...}
       }}
   """
-  @spec evaluate_signals(map(), list(map()), map(), map() | nil) ::
+  @spec evaluate_signals(map(), list(map()), map(), map() | nil, map()) ::
           {:ok, map()} | {:error, term()}
-  def evaluate_signals(strategy, market_data, current_bar, indicator_values \\ nil) do
+  def evaluate_signals(strategy, market_data, current_bar, indicator_values \\ nil, position_context \\ %{}) do
     # Calculate indicators if not provided
     with {:ok, indicators} <-
            get_or_calculate_indicators(strategy, market_data, current_bar, indicator_values) do
-      # Build evaluation context with indicators and current bar data
-      context = build_context(current_bar, indicators)
+      # Build evaluation context with indicators, current bar data, and position data
+      context = build_context(current_bar, indicators, position_context)
 
       # Evaluate each condition type
       with {:ok, entry} <- evaluate_condition(strategy["entry_conditions"], context),
@@ -232,7 +232,7 @@ defmodule TradingStrategy.Strategies.SignalEvaluator do
     end
   end
 
-  defp build_context(current_bar, indicator_values) do
+  defp build_context(current_bar, indicator_values, position_context \\ %{}) do
     # Merge indicator values with current bar OHLCV data
     base_context = %{
       "open" => normalize_value(get_field(current_bar, "open")),
@@ -250,7 +250,10 @@ defmodule TradingStrategy.Strategies.SignalEvaluator do
         Map.put(acc, name, normalize_value(value))
       end)
 
-    Map.merge(base_context, indicator_context)
+    # Merge all contexts: base + indicators + position data
+    base_context
+    |> Map.merge(indicator_context)
+    |> Map.merge(position_context)
   end
 
   defp build_trigger_conditions(signal_type, evaluation_result) do

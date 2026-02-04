@@ -134,7 +134,7 @@ defmodule TradingStrategy.MarketData do
             MarketDataSchema,
             Enum.map(data_list, &prepare_for_insert/1),
             on_conflict: :nothing,
-            conflict_target: [:symbol, :timestamp, :timeframe, :data_source]
+            conflict_target: [:symbol, :timestamp, :timeframe, :exchange]
           )
 
         {:ok, count}
@@ -247,17 +247,19 @@ defmodule TradingStrategy.MarketData do
 
   defp convert_kline_to_market_data(%CryptoExchange.Models.Kline{} = kline, symbol, timeframe, exchange) do
     # CryptoExchange returns a Kline struct with string prices and millisecond timestamps
+    # Convert millisecond timestamp to microseconds, then create DateTime with microsecond precision
+    timestamp = DateTime.from_unix!(kline.kline_start_time * 1000, :microsecond)
+
     %{
       symbol: symbol,
-      timestamp: DateTime.from_unix!(kline.kline_start_time, :millisecond),
+      timestamp: timestamp,
       open: Decimal.new(kline.open_price),
       high: Decimal.new(kline.high_price),
       low: Decimal.new(kline.low_price),
       close: Decimal.new(kline.close_price),
       volume: Decimal.new(kline.base_asset_volume),
       timeframe: timeframe,
-      data_source: exchange,
-      quality_flag: "complete"
+      exchange: exchange
     }
   end
 
@@ -291,8 +293,10 @@ defmodule TradingStrategy.MarketData do
   end
 
   defp prepare_for_insert(attrs) do
+    now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
+
     attrs
-    |> Map.put(:inserted_at, DateTime.utc_now() |> DateTime.truncate(:second))
-    |> Map.put(:updated_at, DateTime.utc_now() |> DateTime.truncate(:second))
+    |> Map.put(:inserted_at, now)
+    |> Map.put(:updated_at, now)
   end
 end

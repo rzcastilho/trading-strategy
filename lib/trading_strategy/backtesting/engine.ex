@@ -97,11 +97,16 @@ defmodule TradingStrategy.Backtesting.Engine do
     # Get historical data up to current bar for indicator calculation
     historical_data = Enum.slice(all_data, 0..index)
 
+    # Build position context if there's an open position
+    position_context = build_position_context(state.position_manager, get_close_price(current_bar))
+
     # Evaluate signals
     case SignalEvaluator.evaluate_signals(
            state.strategy,
            historical_data,
-           current_bar
+           current_bar,
+           nil,
+           position_context
          ) do
       {:ok, signal_result} ->
         # Process signals and execute trades
@@ -346,4 +351,30 @@ defmodule TradingStrategy.Backtesting.Engine do
 
   defp normalize_decimal(%Decimal{} = d), do: Decimal.to_float(d)
   defp normalize_decimal(n) when is_number(n), do: n / 1.0
+
+  defp build_position_context(position_manager, current_price) do
+    if PositionManager.has_open_position?(position_manager) do
+      {:ok, unrealized_pnl} = PositionManager.calculate_unrealized_pnl(position_manager, current_price)
+      position = position_manager.current_position
+
+      # Calculate unrealized PnL percentage
+      cost = position.entry_price * position.quantity
+      unrealized_pnl_pct = if cost > 0, do: unrealized_pnl / cost, else: 0.0
+
+      %{
+        "unrealized_pnl" => unrealized_pnl,
+        "unrealized_pnl_pct" => unrealized_pnl_pct,
+        "position_age" => calculate_position_age(position),
+        "drawdown" => 0.0  # TODO: Implement drawdown calculation
+      }
+    else
+      %{}
+    end
+  end
+
+  defp calculate_position_age(position) do
+    # Return position age in bars/candles
+    # This is a simple implementation - could be enhanced to use actual timestamps
+    0
+  end
 end

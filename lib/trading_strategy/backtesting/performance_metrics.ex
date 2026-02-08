@@ -23,6 +23,10 @@ defmodule TradingStrategy.Backtesting.PerformanceMetrics do
     field :calculated_at, :utc_datetime_usec
     field :metadata, :map
 
+    # NEW FIELDS for Phase 2
+    field :equity_curve, {:array, :map}
+    field :equity_curve_metadata, :map
+
     belongs_to :trading_session, TradingStrategy.Backtesting.TradingSession
 
     timestamps(type: :utc_datetime_usec)
@@ -48,14 +52,27 @@ defmodule TradingStrategy.Backtesting.PerformanceMetrics do
       :largest_loss,
       :calculated_at,
       :metadata,
-      :trading_session_id
+      :trading_session_id,
+      :equity_curve,
+      :equity_curve_metadata
     ])
     |> validate_required([:calculated_at, :trading_session_id])
     |> validate_number(:win_rate, greater_than_or_equal_to: 0, less_than_or_equal_to: 1)
     |> validate_number(:total_trades, greater_than_or_equal_to: 0)
     |> validate_number(:winning_trades, greater_than_or_equal_to: 0)
     |> validate_number(:losing_trades, greater_than_or_equal_to: 0)
+    |> validate_equity_curve()
     |> foreign_key_constraint(:trading_session_id)
     |> unique_constraint([:trading_session_id, :calculated_at])
+  end
+
+  defp validate_equity_curve(changeset) do
+    curve = get_field(changeset, :equity_curve)
+
+    if curve && length(curve) > 1000 do
+      add_error(changeset, :equity_curve, "cannot exceed 1000 points")
+    else
+      changeset
+    end
   end
 end

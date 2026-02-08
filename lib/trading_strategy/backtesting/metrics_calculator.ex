@@ -42,74 +42,105 @@ defmodule TradingStrategy.Backtesting.MetricsCalculator do
     total_return_abs = final_equity - initial_capital
 
     # Trade statistics
-    winning_trades = Enum.filter(trades, fn t -> Map.get(t, :pnl, 0) > 0 end)
-    losing_trades = Enum.filter(trades, fn t -> Map.get(t, :pnl, 0) < 0 end)
     trade_count = length(trades)
 
-    win_rate =
-      if trade_count > 0 do
-        length(winning_trades) / trade_count
-      else
-        0.0
-      end
+    # T085: Handle zero trades edge case - return flat metrics
+    if trade_count == 0 do
+      # Still calculate drawdown and sharpe from equity history (unrealized PnL tracking)
+      max_drawdown = calculate_max_drawdown(equity_history)
+      sharpe_ratio = calculate_sharpe_ratio(equity_history, initial_capital)
 
-    # Average trade metrics
-    avg_win =
-      if length(winning_trades) > 0 do
-        Enum.sum(Enum.map(winning_trades, &Map.get(&1, :pnl, 0))) / length(winning_trades)
-      else
-        0.0
-      end
+      %{
+        total_return: Float.round(total_return, 4),
+        total_return_abs: Float.round(total_return_abs, 2),
+        win_rate: nil,
+        # N/A for zero trades
+        max_drawdown: Float.round(max_drawdown, 4),
+        # Calculate from equity curve
+        sharpe_ratio:
+          if(sharpe_ratio == 0.0, do: nil, else: Float.round(sharpe_ratio, 4)),
+        # nil if zero
+        trade_count: 0,
+        winning_trades: 0,
+        losing_trades: 0,
+        average_win: nil,
+        # N/A
+        average_loss: nil,
+        # N/A
+        profit_factor: nil,
+        # N/A
+        max_consecutive_wins: 0,
+        max_consecutive_losses: 0,
+        average_trade_duration_minutes: nil,
+        # N/A
+        final_equity: Float.round(final_equity, 2),
+        initial_capital: initial_capital / 1.0
+      }
+    else
+      # Normal calculation for backtests with trades
+      winning_trades = Enum.filter(trades, fn t -> Map.get(t, :pnl, 0) > 0 end)
+      losing_trades = Enum.filter(trades, fn t -> Map.get(t, :pnl, 0) < 0 end)
 
-    avg_loss =
-      if length(losing_trades) > 0 do
-        Enum.sum(Enum.map(losing_trades, &Map.get(&1, :pnl, 0))) / length(losing_trades)
-      else
-        0.0
-      end
+      win_rate = length(winning_trades) / trade_count
 
-    # Profit factor
-    gross_profit = Enum.sum(Enum.map(winning_trades, &Map.get(&1, :pnl, 0)))
-    gross_loss = abs(Enum.sum(Enum.map(losing_trades, &Map.get(&1, :pnl, 0))))
+      # Average trade metrics
+      avg_win =
+        if length(winning_trades) > 0 do
+          Enum.sum(Enum.map(winning_trades, &Map.get(&1, :pnl, 0))) / length(winning_trades)
+        else
+          0.0
+        end
 
-    profit_factor =
-      if gross_loss > 0 do
-        gross_profit / gross_loss
-      else
-        if gross_profit > 0, do: :infinity, else: 0.0
-      end
+      avg_loss =
+        if length(losing_trades) > 0 do
+          Enum.sum(Enum.map(losing_trades, &Map.get(&1, :pnl, 0))) / length(losing_trades)
+        else
+          0.0
+        end
 
-    # Drawdown metrics
-    max_drawdown = calculate_max_drawdown(equity_history)
+      # Profit factor
+      gross_profit = Enum.sum(Enum.map(winning_trades, &Map.get(&1, :pnl, 0)))
+      gross_loss = abs(Enum.sum(Enum.map(losing_trades, &Map.get(&1, :pnl, 0))))
 
-    # Risk-adjusted metrics
-    sharpe_ratio = calculate_sharpe_ratio(equity_history, initial_capital)
+      profit_factor =
+        if gross_loss > 0 do
+          gross_profit / gross_loss
+        else
+          if gross_profit > 0, do: :infinity, else: 0.0
+        end
 
-    # Trade duration
-    avg_trade_duration = calculate_average_trade_duration(trades)
+      # Drawdown metrics
+      max_drawdown = calculate_max_drawdown(equity_history)
 
-    # Consecutive wins/losses
-    {max_consecutive_wins, max_consecutive_losses} = calculate_consecutive_streaks(trades)
+      # Risk-adjusted metrics
+      sharpe_ratio = calculate_sharpe_ratio(equity_history, initial_capital)
 
-    %{
-      total_return: Float.round(total_return, 4),
-      total_return_abs: Float.round(total_return_abs, 2),
-      win_rate: Float.round(win_rate, 4),
-      max_drawdown: Float.round(max_drawdown, 4),
-      sharpe_ratio: Float.round(sharpe_ratio, 4),
-      trade_count: trade_count,
-      winning_trades: length(winning_trades),
-      losing_trades: length(losing_trades),
-      average_win: Float.round(avg_win, 2),
-      average_loss: Float.round(avg_loss, 2),
-      profit_factor:
-        if(profit_factor == :infinity, do: 999.99, else: Float.round(profit_factor, 2)),
-      max_consecutive_wins: max_consecutive_wins,
-      max_consecutive_losses: max_consecutive_losses,
-      average_trade_duration_minutes: avg_trade_duration,
-      final_equity: Float.round(final_equity, 2),
-      initial_capital: initial_capital / 1.0
-    }
+      # Trade duration
+      avg_trade_duration = calculate_average_trade_duration(trades)
+
+      # Consecutive wins/losses
+      {max_consecutive_wins, max_consecutive_losses} = calculate_consecutive_streaks(trades)
+
+      %{
+        total_return: Float.round(total_return, 4),
+        total_return_abs: Float.round(total_return_abs, 2),
+        win_rate: Float.round(win_rate, 4),
+        max_drawdown: Float.round(max_drawdown, 4),
+        sharpe_ratio: Float.round(sharpe_ratio, 4),
+        trade_count: trade_count,
+        winning_trades: length(winning_trades),
+        losing_trades: length(losing_trades),
+        average_win: Float.round(avg_win, 2),
+        average_loss: Float.round(avg_loss, 2),
+        profit_factor:
+          if(profit_factor == :infinity, do: 999.99, else: Float.round(profit_factor, 2)),
+        max_consecutive_wins: max_consecutive_wins,
+        max_consecutive_losses: max_consecutive_losses,
+        average_trade_duration_minutes: avg_trade_duration,
+        final_equity: Float.round(final_equity, 2),
+        initial_capital: initial_capital / 1.0
+      }
+    end
   end
 
   # Private Functions
@@ -118,14 +149,14 @@ defmodule TradingStrategy.Backtesting.MetricsCalculator do
     equity_values = Enum.map(equity_history, fn {_ts, equity} -> equity end)
 
     {_peak, max_dd} =
-      Enum.reduce(equity_values, {0, 0}, fn equity, {peak, max_drawdown} ->
+      Enum.reduce(equity_values, {0.0, 0.0}, fn equity, {peak, max_drawdown} ->
         new_peak = max(peak, equity)
 
         drawdown =
           if new_peak > 0 do
             (new_peak - equity) / new_peak
           else
-            0
+            0.0
           end
 
         {new_peak, max(max_drawdown, drawdown)}
@@ -134,13 +165,13 @@ defmodule TradingStrategy.Backtesting.MetricsCalculator do
     max_dd
   end
 
-  defp calculate_sharpe_ratio(equity_history, initial_capital) do
+  defp calculate_sharpe_ratio(equity_history, _initial_capital) do
     # Calculate period returns
     returns =
       equity_history
       |> Enum.chunk_every(2, 1, :discard)
       |> Enum.map(fn [{_t1, e1}, {_t2, e2}] ->
-        if e1 > 0, do: (e2 - e1) / e1, else: 0
+        if e1 > 0, do: (e2 - e1) / e1, else: 0.0
       end)
 
     if length(returns) < 2 do
@@ -149,7 +180,7 @@ defmodule TradingStrategy.Backtesting.MetricsCalculator do
       mean_return = Enum.sum(returns) / length(returns)
 
       variance =
-        Enum.reduce(returns, 0, fn r, acc ->
+        Enum.reduce(returns, 0.0, fn r, acc ->
           acc + :math.pow(r - mean_return, 2)
         end) / length(returns)
 
@@ -166,14 +197,11 @@ defmodule TradingStrategy.Backtesting.MetricsCalculator do
   end
 
   defp calculate_average_trade_duration(trades) do
+    # T072: Use duration_seconds field from exit trades
     durations =
       trades
-      |> Enum.filter(fn t ->
-        Map.has_key?(t, :entry_timestamp) && Map.has_key?(t, :exit_timestamp)
-      end)
-      |> Enum.map(fn t ->
-        DateTime.diff(t.exit_timestamp, t.entry_timestamp, :minute)
-      end)
+      |> Enum.filter(fn t -> Map.get(t, :duration_seconds) != nil end)
+      |> Enum.map(fn t -> Map.get(t, :duration_seconds, 0) / 60 end)  # Convert to minutes
 
     if length(durations) > 0 do
       round(Enum.sum(durations) / length(durations))

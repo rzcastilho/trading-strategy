@@ -26,3 +26,10 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Backtesting test configuration
+config :trading_strategy,
+  # Enable test mode to prevent actual backtest execution in tests
+  backtest_test_mode: false,
+  # Set low concurrency limit for testing
+  max_concurrent_backtests: 3

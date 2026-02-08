@@ -15,6 +15,9 @@ defmodule TradingStrategy.Application do
       # Trading Strategy Supervisors
       TradingStrategy.Strategies.Supervisor,
       TradingStrategy.MarketData.Supervisor,
+      # NEW: Backtesting infrastructure GenServers (Phase 2)
+      TradingStrategy.Backtesting.ProgressTracker,
+      TradingStrategy.Backtesting.ConcurrencyManager,
       TradingStrategy.Backtesting.Supervisor,
       TradingStrategy.PaperTrading.Supervisor,
       TradingStrategy.LiveTrading.Supervisor,
@@ -25,7 +28,24 @@ defmodule TradingStrategy.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: TradingStrategy.Supervisor]
-    Supervisor.start_link(children, opts)
+
+    case Supervisor.start_link(children, opts) do
+      {:ok, pid} = result ->
+        # Detect and mark stale running sessions from previous application run
+        # Skip in test environment to avoid DBConnection.OwnershipError with Sandbox
+        if Mix.env() != :test do
+          Task.start(fn ->
+            # Wait a bit for the database connection to be ready
+            Process.sleep(1000)
+            TradingStrategy.Backtesting.detect_and_mark_stale_sessions()
+          end)
+        end
+
+        result
+
+      error ->
+        error
+    end
   end
 
   # Tell Phoenix to update the endpoint configuration

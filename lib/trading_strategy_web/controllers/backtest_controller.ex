@@ -62,7 +62,7 @@ defmodule TradingStrategyWeb.BacktestController do
         "estimated_time_remaining_ms": 12000
       }
   """
-  def show_progress(conn, %{"id" => backtest_id}) do
+  def show_progress(conn, %{"backtest_id" => backtest_id}) do
     case Backtesting.get_backtest_progress(backtest_id) do
       {:ok, progress} ->
         json(conn, format_progress(progress))
@@ -321,9 +321,10 @@ defmodule TradingStrategyWeb.BacktestController do
   defp format_config(config) do
     %{
       trading_pair: config.trading_pair,
-      start_date: config.start_date,
-      end_date: config.end_date,
-      initial_capital: Decimal.to_string(config.initial_capital)
+      start_time: config.start_time || config[:start_date],
+      end_time: config.end_time || config[:end_date],
+      initial_capital: Decimal.to_string(config.initial_capital),
+      timeframe: config[:timeframe] || "1h"
     }
   end
 
@@ -365,14 +366,22 @@ defmodule TradingStrategyWeb.BacktestController do
   defp format_trades(_), do: []
 
   defp format_equity_curve(curve) when is_list(curve) do
-    Enum.map(curve, fn point ->
-      %{
-        timestamp: point.timestamp,
-        equity: Decimal.to_string(point.equity),
-        cash: Decimal.to_string(point.cash),
-        positions_value: Decimal.to_string(point.positions_value)
-      }
-    end)
+    # Equity curve is already in JSON format from EquityCurve.to_json_format/1
+    # Just return it as-is if it has the correct format
+    if Enum.all?(curve, &is_map/1) and
+       Enum.all?(curve, fn point -> Map.has_key?(point, "timestamp") and Map.has_key?(point, "value") end) do
+      curve
+    else
+      # Legacy format - convert to new format
+      Enum.map(curve, fn point ->
+        %{
+          timestamp: point.timestamp,
+          equity: Decimal.to_string(point.equity),
+          cash: Decimal.to_string(point.cash),
+          positions_value: Decimal.to_string(point.positions_value)
+        }
+      end)
+    end
   end
 
   defp format_equity_curve(_), do: []

@@ -15,6 +15,9 @@ defmodule TradingStrategy.Backtesting.TradingSession do
     field :config, :map
     field :metadata, :map
 
+    # NEW FIELD for Phase 2
+    field :queued_at, :utc_datetime_usec
+
     belongs_to :strategy, TradingStrategy.Strategies.Strategy
     has_many :positions, TradingStrategy.Orders.Position
     has_many :signals, TradingStrategy.Strategies.Signal
@@ -35,16 +38,19 @@ defmodule TradingStrategy.Backtesting.TradingSession do
       :ended_at,
       :config,
       :metadata,
-      :strategy_id
+      :strategy_id,
+      :queued_at
     ])
     |> validate_required([:mode, :initial_capital, :strategy_id])
     |> validate_inclusion(:mode, ["backtest", "paper", "live"])
     |> validate_inclusion(:status, [
       "pending",
+      "queued",
       "running",
       "paused",
       "completed",
       "stopped",
+      "cancelled",
       "error"
     ])
     |> validate_number(:initial_capital, greater_than: 0)

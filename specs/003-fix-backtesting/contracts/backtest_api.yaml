@@ -1,0 +1,837 @@
+openapi: 3.0.3
+info:
+  title: Trading Strategy Backtesting API
+  description: |
+    API for creating, monitoring, and retrieving backtest results.
+
+    **Changes in this version**:
+    - Enhanced progress endpoint with accurate real-time tracking
+    - Added equity curve data to results endpoint
+    - Added complete configuration in results
+    - Added trade-level PnL and duration fields
+    - Added backtest queuing and status management
+  version: 2.0.0
+  contact:
+    name: Trading Strategy API Support
+servers:
+  - url: http://localhost:4000/api
+    description: Local development server
+
+paths:
+  /backtests:
+    post:
+      summary: Create and start a new backtest
+      description: |
+        Creates a new backtest session and starts execution asynchronously.
+        Returns immediately with backtest ID. Use progress endpoint to monitor execution.
+
+        **Concurrency**: System enforces a limit of 5-10 concurrent backtests.
+        If limit reached, backtest will be queued (status = "queued") and automatically
+        started when a slot becomes available.
+      operationId: createBacktest
+      tags:
+        - Backtests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BacktestRequest'
+            examples:
+              btc_backtest:
+                summary: Bitcoin backtest over 6 months
+                value:
+                  strategy_id: "550e8400-e29b-41d4-a716-446655440000"
+                  trading_pair: "BTC/USD"
+                  start_date: "2024-01-01T00:00:00Z"
+                  end_date: "2024-06-30T23:59:59Z"
+                  initial_capital: "10000"
+                  commission_rate: "0.001"
+                  slippage_bps: 5
+                  data_source: "binance"
+      responses:
+        '202':
+          description: Backtest created and started (or queued if limit reached)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BacktestCreatedResponse'
+              examples:
+                started:
+                  summary: Backtest started immediately
+                  value:
+                    backtest_id: "abc123-def456-ghi789"
+                    status: "running"
+                    message: "Backtest started successfully"
+                queued:
+                  summary: Backtest queued due to concurrency limit
+                  value:
+                    backtest_id: "abc123-def456-ghi789"
+                    status: "queued"
+                    message: "Backtest queued (position 3 in queue)"
+                    queue_position: 3
+        '400':
+          description: Invalid request (missing fields, invalid dates)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable entity (e.g., insufficient data for date range)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: List all backtests
+      description: Retrieve a paginated list of backtests with optional filtering
+      operationId: listBacktests
+      tags:
+        - Backtests
+      parameters:
+        - name: strategy_id
+          in: query
+          description: Filter by strategy UUID
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          description: Filter by backtest status
+          required: false
+          schema:
+            type: string
+            enum: [pending, queued, running, completed, stopped, error]
+        - name: limit
+          in: query
+          description: Maximum number of results to return
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 200
+        - name: offset
+          in: query
+          description: Pagination offset
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: List of backtests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BacktestListResponse'
+
+  /backtests/{backtest_id}:
+    get:
+      summary: Get complete backtest results
+      description: |
+        Retrieve full results of a completed backtest including:
+        - Performance metrics (Sharpe ratio, max drawdown, win rate, etc.)
+        - Complete equity curve (sampled to max 1000 points)
+        - All trades with PnL and duration
+        - Original configuration for reproducibility
+
+        **Status handling**:
+        - Returns 200 with results if status = "completed"
+        - Returns 202 with progress if status = "running" or "queued"
+        - Returns 404 if backtest not found
+      operationId: getBacktestResult
+      tags:
+        - Backtests
+      parameters:
+        - name: backtest_id
+          in: path
+          required: true
+          description: Backtest UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Backtest completed, results available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BacktestResult'
+        '202':
+          description: Backtest still running, use progress endpoint
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Backtest is still running"
+                  message:
+                    type: string
+                    example: "Use GET /api/backtests/:id/progress to check status"
+        '404':
+          description: Backtest not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Cancel a running backtest
+      description: |
+        Attempts to cancel a running backtest. Gracefully stops execution,
+        saves partial results, and marks status as "stopped".
+
+        Cannot cancel completed or already stopped backtests.
+      operationId: cancelBacktest
+      tags:
+        - Backtests
+      parameters:
+        - name: backtest_id
+          in: path
+          required: true
+          description: Backtest UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Backtest cancelled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Backtest cancelled successfully"
+        '404':
+          description: Backtest not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Cannot cancel (already completed)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Backtest already completed"
+
+  /backtests/{backtest_id}/progress:
+    get:
+      summary: Get real-time backtest progress
+      description: |
+        Poll this endpoint to monitor backtest execution progress.
+        Returns accurate percentage based on bars processed vs total bars.
+
+        **Polling recommendation**: Check every 5-10 seconds for long-running backtests.
+
+        **Status values**:
+        - `queued`: Backtest waiting for available execution slot
+        - `running`: Actively processing bars
+        - `completed`: Execution finished, results available via main endpoint
+        - `error`: Execution failed or interrupted
+      operationId: getBacktestProgress
+      tags:
+        - Backtests
+      parameters:
+        - name: backtest_id
+          in: path
+          required: true
+          description: Backtest UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Current progress information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BacktestProgress'
+              examples:
+                running:
+                  summary: Backtest in progress
+                  value:
+                    backtest_id: "abc123-def456-ghi789"
+                    status: "running"
+                    progress_percentage: 45.23
+                    bars_processed: 6570
+                    total_bars: 14600
+                    estimated_time_remaining_ms: 127000
+                    current_timestamp: "2024-03-15T14:30:00Z"
+                queued:
+                  summary: Backtest queued
+                  value:
+                    backtest_id: "abc123-def456-ghi789"
+                    status: "queued"
+                    progress_percentage: 0
+                    bars_processed: 0
+                    total_bars: 14600
+                    queue_position: 2
+                    estimated_time_remaining_ms: null
+                    current_timestamp: null
+                completed:
+                  summary: Backtest finished
+                  value:
+                    backtest_id: "abc123-def456-ghi789"
+                    status: "completed"
+                    progress_percentage: 100
+                    bars_processed: 14600
+                    total_bars: 14600
+                    estimated_time_remaining_ms: 0
+                    current_timestamp: "2024-06-30T23:59:59Z"
+        '404':
+          description: Backtest not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /backtests/validate-data:
+    post:
+      summary: Validate data quality before running backtest
+      description: |
+        Checks if sufficient historical data exists for the specified parameters.
+        Returns data completeness metrics and quality warnings.
+
+        **Use before creating backtest** to avoid failures due to insufficient data.
+      operationId: validateBacktestData
+      tags:
+        - Backtests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataValidationRequest'
+      responses:
+        '200':
+          description: Data quality report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataQualityReport'
+        '422':
+          description: No data available for specified range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    BacktestRequest:
+      type: object
+      required:
+        - strategy_id
+        - trading_pair
+        - start_date
+        - end_date
+      properties:
+        strategy_id:
+          type: string
+          format: uuid
+          description: UUID of the trading strategy to backtest
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        trading_pair:
+          type: string
+          description: Trading pair in BASE/QUOTE format
+          example: "BTC/USD"
+        start_date:
+          type: string
+          format: date-time
+          description: Start of backtest period (ISO8601)
+          example: "2024-01-01T00:00:00Z"
+        end_date:
+          type: string
+          format: date-time
+          description: End of backtest period (ISO8601)
+          example: "2024-06-30T23:59:59Z"
+        initial_capital:
+          type: string
+          description: Starting capital as decimal string
+          default: "10000"
+          example: "10000.00"
+        commission_rate:
+          type: string
+          description: Commission rate per trade (0.001 = 0.1%)
+          default: "0.001"
+          example: "0.001"
+        slippage_bps:
+          type: integer
+          description: Slippage in basis points (5 = 0.05%)
+          default: 5
+          minimum: 0
+          maximum: 100
+          example: 5
+        data_source:
+          type: string
+          description: Data provider identifier
+          default: "binance"
+          example: "binance"
+        position_sizing:
+          type: string
+          enum: [percentage, fixed, kelly]
+          description: Position sizing method
+          default: "percentage"
+
+    BacktestCreatedResponse:
+      type: object
+      required:
+        - backtest_id
+        - status
+        - message
+      properties:
+        backtest_id:
+          type: string
+          format: uuid
+          description: Unique identifier for this backtest
+          example: "abc123-def456-ghi789"
+        status:
+          type: string
+          enum: [running, queued]
+          description: Initial execution status
+          example: "running"
+        message:
+          type: string
+          description: Human-readable status message
+          example: "Backtest started successfully"
+        queue_position:
+          type: integer
+          description: Position in queue (only present if status=queued)
+          minimum: 1
+          example: 3
+
+    BacktestProgress:
+      type: object
+      required:
+        - backtest_id
+        - status
+        - progress_percentage
+        - bars_processed
+        - total_bars
+      properties:
+        backtest_id:
+          type: string
+          format: uuid
+          example: "abc123-def456-ghi789"
+        status:
+          type: string
+          enum: [pending, queued, running, completed, stopped, error]
+          description: Current backtest status
+          example: "running"
+        progress_percentage:
+          type: number
+          format: float
+          description: Completion percentage (0-100)
+          minimum: 0
+          maximum: 100
+          example: 45.23
+        bars_processed:
+          type: integer
+          description: Number of bars processed so far
+          minimum: 0
+          example: 6570
+        total_bars:
+          type: integer
+          description: Total bars to process
+          minimum: 0
+          example: 14600
+        estimated_time_remaining_ms:
+          type: integer
+          nullable: true
+          description: Estimated milliseconds until completion (null if not calculable)
+          example: 127000
+        current_timestamp:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp of most recently processed bar (null if not started)
+          example: "2024-03-15T14:30:00Z"
+        queue_position:
+          type: integer
+          nullable: true
+          description: Position in queue (only present if status=queued)
+          example: 2
+
+    BacktestResult:
+      type: object
+      required:
+        - backtest_id
+        - strategy_id
+        - config
+        - performance_metrics
+        - trades
+        - equity_curve
+        - started_at
+        - completed_at
+      properties:
+        backtest_id:
+          type: string
+          format: uuid
+          example: "abc123-def456-ghi789"
+        strategy_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        config:
+          $ref: '#/components/schemas/BacktestConfiguration'
+        performance_metrics:
+          $ref: '#/components/schemas/PerformanceMetrics'
+        trades:
+          type: array
+          items:
+            $ref: '#/components/schemas/Trade'
+          description: All trades executed during backtest
+        equity_curve:
+          type: array
+          items:
+            $ref: '#/components/schemas/EquityCurvePoint'
+          description: Portfolio value over time (sampled to max 1000 points)
+        started_at:
+          type: string
+          format: date-time
+          description: When backtest execution started
+          example: "2024-07-01T10:00:00Z"
+        completed_at:
+          type: string
+          format: date-time
+          description: When backtest execution completed
+          example: "2024-07-01T10:15:32Z"
+        data_quality_warnings:
+          type: array
+          items:
+            type: string
+          description: Warnings about data gaps or quality issues
+          example: ["Missing data: 2024-02-15 14:00 - 2024-02-15 16:00"]
+
+    BacktestConfiguration:
+      type: object
+      description: Original backtest configuration for reproducibility
+      required:
+        - trading_pair
+        - start_date
+        - end_date
+        - initial_capital
+      properties:
+        trading_pair:
+          type: string
+          example: "BTC/USD"
+        start_date:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        end_date:
+          type: string
+          format: date-time
+          example: "2024-06-30T23:59:59Z"
+        initial_capital:
+          type: string
+          description: Starting capital as decimal string
+          example: "10000.00"
+        commission_rate:
+          type: string
+          example: "0.001"
+        slippage_bps:
+          type: integer
+          example: 5
+        data_source:
+          type: string
+          example: "binance"
+
+    PerformanceMetrics:
+      type: object
+      required:
+        - total_return
+        - total_return_abs
+        - win_rate
+        - max_drawdown
+        - sharpe_ratio
+        - trade_count
+        - winning_trades
+        - losing_trades
+      properties:
+        total_return:
+          type: string
+          description: Total return as decimal percentage (0.342 = 34.2%)
+          example: "0.342"
+        total_return_abs:
+          type: string
+          description: Absolute return in currency units
+          example: "3420.00"
+        win_rate:
+          type: string
+          description: Percentage of winning trades (0.65 = 65%)
+          nullable: true
+          example: "0.65"
+        max_drawdown:
+          type: string
+          description: Maximum drawdown percentage (0.12 = 12%)
+          example: "0.12"
+        sharpe_ratio:
+          type: string
+          description: Risk-adjusted return metric
+          nullable: true
+          example: "1.85"
+        trade_count:
+          type: integer
+          description: Total number of trades executed
+          example: 87
+        winning_trades:
+          type: integer
+          description: Number of profitable trades
+          example: 57
+        losing_trades:
+          type: integer
+          description: Number of losing trades
+          example: 30
+        average_trade_duration:
+          type: integer
+          description: Average trade duration in seconds
+          example: 14400
+        max_consecutive_wins:
+          type: integer
+          description: Longest winning streak
+          example: 8
+        max_consecutive_losses:
+          type: integer
+          description: Longest losing streak
+          example: 4
+        average_win:
+          type: string
+          description: Average profit per winning trade
+          example: "125.50"
+        average_loss:
+          type: string
+          description: Average loss per losing trade (negative)
+          example: "-45.20"
+        profit_factor:
+          type: string
+          description: Gross profit / gross loss ratio
+          nullable: true
+          example: "2.15"
+
+    Trade:
+      type: object
+      required:
+        - timestamp
+        - side
+        - price
+        - quantity
+        - fees
+        - pnl
+        - signal_type
+      properties:
+        trade_id:
+          type: string
+          format: uuid
+          description: Unique trade identifier
+          example: "trade-001-abc"
+        timestamp:
+          type: string
+          format: date-time
+          description: When trade was executed
+          example: "2024-01-15T10:30:00Z"
+        side:
+          type: string
+          enum: [buy, sell]
+          description: Trade direction
+          example: "buy"
+        price:
+          type: string
+          description: Execution price
+          example: "50000.00"
+        quantity:
+          type: string
+          description: Quantity traded
+          example: "0.2"
+        fees:
+          type: string
+          description: Total fees paid (commission + slippage)
+          example: "10.00"
+        pnl:
+          type: string
+          description: Realized profit/loss for this trade (net of fees)
+          example: "150.50"
+        duration_seconds:
+          type: integer
+          nullable: true
+          description: Position hold duration (for exit trades only)
+          example: 14400
+        signal_type:
+          type: string
+          description: Signal that triggered this trade (entry/exit/stop_loss/take_profit)
+          example: "exit"
+        entry_price:
+          type: string
+          nullable: true
+          description: Average entry price (for exit trades)
+          example: "49250.00"
+        exit_price:
+          type: string
+          nullable: true
+          description: Exit price (for exit trades)
+          example: "50500.00"
+
+    EquityCurvePoint:
+      type: object
+      required:
+        - timestamp
+        - equity
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of this equity snapshot
+          example: "2024-01-15T10:30:00Z"
+        equity:
+          type: string
+          description: Total portfolio value at this point
+          example: "10500.00"
+        cash:
+          type: string
+          description: Cash portion of portfolio
+          example: "5000.00"
+        positions_value:
+          type: string
+          description: Market value of open positions
+          example: "5500.00"
+
+    DataValidationRequest:
+      type: object
+      required:
+        - trading_pair
+        - start_date
+        - end_date
+      properties:
+        trading_pair:
+          type: string
+          example: "BTC/USD"
+        start_date:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        end_date:
+          type: string
+          format: date-time
+          example: "2024-06-30T23:59:59Z"
+        timeframe:
+          type: string
+          description: Bar timeframe (1m, 5m, 15m, 1h, 4h, 1d)
+          default: "1h"
+          example: "1h"
+        data_source:
+          type: string
+          default: "binance"
+          example: "binance"
+
+    DataQualityReport:
+      type: object
+      required:
+        - total_bars_expected
+        - total_bars_available
+        - completeness_percentage
+        - quality_warnings
+      properties:
+        total_bars_expected:
+          type: integer
+          description: Expected number of bars for time range
+          example: 4380
+        total_bars_available:
+          type: integer
+          description: Actual bars available in database
+          example: 4350
+        completeness_percentage:
+          type: string
+          description: Data completeness percentage
+          example: "99.3"
+        quality_warnings:
+          type: array
+          items:
+            type: string
+          description: Data quality issues found
+          example:
+            - "Missing bars: 2024-03-15 14:00 - 2024-03-15 16:00"
+            - "High volatility detected: 2024-04-10 (potential outliers)"
+        sufficient_for_backtest:
+          type: boolean
+          description: Whether data quality is acceptable for backtesting
+          example: true
+
+    BacktestListResponse:
+      type: object
+      required:
+        - backtests
+      properties:
+        backtests:
+          type: array
+          items:
+            $ref: '#/components/schemas/BacktestSummary'
+        total:
+          type: integer
+          description: Total number of backtests (for pagination)
+          example: 153
+
+    BacktestSummary:
+      type: object
+      required:
+        - backtest_id
+        - strategy_id
+        - started_at
+        - status
+      properties:
+        backtest_id:
+          type: string
+          format: uuid
+          example: "abc123-def456-ghi789"
+        strategy_id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        started_at:
+          type: string
+          format: date-time
+          example: "2024-07-01T10:00:00Z"
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2024-07-01T10:15:32Z"
+        status:
+          type: string
+          enum: [pending, queued, running, completed, stopped, error]
+          example: "completed"
+        total_return:
+          type: string
+          nullable: true
+          description: Total return (only for completed backtests)
+          example: "0.342"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Backtest not found"
+        details:
+          type: object
+          description: Additional error context (optional)
+          additionalProperties: true
+
+tags:
+  - name: Backtests
+    description: Backtest creation, monitoring, and results retrieval

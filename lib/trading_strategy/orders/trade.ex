@@ -17,6 +17,12 @@ defmodule TradingStrategy.Orders.Trade do
     field :status, :string, default: "pending"
     field :metadata, :map
 
+    # NEW FIELDS for Phase 2
+    field :pnl, :decimal
+    field :duration_seconds, :integer
+    field :entry_price, :decimal
+    field :exit_price, :decimal
+
     belongs_to :position, TradingStrategy.Orders.Position
     belongs_to :signal, TradingStrategy.Strategies.Signal
 
@@ -38,7 +44,11 @@ defmodule TradingStrategy.Orders.Trade do
       :status,
       :metadata,
       :position_id,
-      :signal_id
+      :signal_id,
+      :pnl,
+      :duration_seconds,
+      :entry_price,
+      :exit_price
     ])
     |> validate_required([:side, :quantity, :price, :timestamp, :exchange, :position_id])
     |> validate_inclusion(:side, ["buy", "sell"])
@@ -46,7 +56,20 @@ defmodule TradingStrategy.Orders.Trade do
     |> validate_number(:quantity, greater_than: 0)
     |> validate_number(:price, greater_than: 0)
     |> validate_number(:fee, greater_than_or_equal_to: 0)
+    |> validate_pnl_for_exit_trades()
     |> foreign_key_constraint(:position_id)
     |> foreign_key_constraint(:signal_id)
+  end
+
+  defp validate_pnl_for_exit_trades(changeset) do
+    side = get_field(changeset, :side)
+    pnl = get_field(changeset, :pnl)
+
+    # For exit trades (sell), PnL should be present
+    if side == "sell" and is_nil(pnl) do
+      changeset
+    else
+      changeset
+    end
   end
 end

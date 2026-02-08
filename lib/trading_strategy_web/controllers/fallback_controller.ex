@@ -22,6 +22,13 @@ defmodule TradingStrategyWeb.FallbackController do
     |> render(:"404")
   end
 
+  # Handle bad request errors
+  def call(conn, {:error, {:bad_request, message}}) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: message})
+  end
+
   # Paper trading specific errors
   def call(conn, {:error, :already_paused}) do
     conn

@@ -3,7 +3,10 @@ defmodule TradingStrategy.BacktestHelpers do
   Helper functions for backtesting tests.
   """
 
+  import TradingStrategy.AccountsFixtures
+
   alias TradingStrategy.Repo
+  alias TradingStrategy.Strategies
   alias TradingStrategy.Strategies.Strategy
   alias TradingStrategy.Backtesting
 
@@ -12,7 +15,8 @@ defmodule TradingStrategy.BacktestHelpers do
   Returns {:ok, strategy}.
   """
   def create_test_strategy(attrs \\ %{}) do
-    strategy_id = Ecto.UUID.generate()
+    # Create a user for the strategy
+    user = Map.get(attrs, :user) || user_fixture()
 
     # Minimal valid strategy YAML that meets all required fields
     strategy_content = """
@@ -40,23 +44,18 @@ defmodule TradingStrategy.BacktestHelpers do
       take_profit_percentage: 0.10
     """
 
+    # Build strategy attrs - use values from attrs if provided, otherwise use defaults
     strategy_attrs = %{
-      id: strategy_id,
       name: Map.get(attrs, :name, "Test Strategy"),
       description: Map.get(attrs, :description, "For testing"),
-      version: 1,
-      status: "active",
-      format: "yaml",
-      content: strategy_content,
+      status: Map.get(attrs, :status, "active"),
+      format: Map.get(attrs, :format, "yaml"),
+      content: Map.get(attrs, :content, strategy_content),
       trading_pair: Map.get(attrs, :trading_pair, "BTC/USD"),
       timeframe: Map.get(attrs, :timeframe, "1h")
     }
 
-    {:ok, strategy} = %Strategy{}
-      |> Strategy.changeset(strategy_attrs)
-      |> Repo.insert()
-
-    {:ok, strategy}
+    Strategies.create_strategy(strategy_attrs, user)
   end
 
   @doc """

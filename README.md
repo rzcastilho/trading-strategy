@@ -4,7 +4,10 @@ A comprehensive trading strategy library for cryptocurrency markets, built with 
 
 ## Features
 
+- **Web UI**: Phoenix LiveView-based interface for strategy registration, validation, and management
+- **User Authentication**: Secure multi-user support with per-user strategy isolation
 - **Declarative DSL**: Define strategies in YAML or TOML without writing code
+- **Real-Time Validation**: Instant feedback on strategy syntax and configuration errors
 - **Comprehensive Indicators**: 22+ technical indicators (RSI, MACD, SMA, EMA, Bollinger Bands, etc.)
 - **Backtesting Engine**: Test strategies on 2+ years of historical data with realistic commissions and slippage
 - **Paper Trading**: Real-time simulation with live market data via WebSocket
@@ -51,7 +54,32 @@ mix phx.server
 
 Visit `http://localhost:4000` to access the dashboard.
 
-### Your First Strategy
+## Strategy Management
+
+### Web UI (Recommended)
+
+The web interface provides the easiest way to create and manage strategies:
+
+1. **Register an Account**: Visit `http://localhost:4000/users/register`
+2. **Login**: Access your dashboard at `http://localhost:4000/strategies`
+3. **Create Strategy**: Click "New Strategy" to open the registration form
+4. **Real-Time Validation**: Get instant feedback as you fill out the form
+5. **Test Syntax**: Click "Test Syntax" to validate your DSL before saving
+6. **Manage Strategies**: View, edit, duplicate, and activate your strategies
+
+#### Web UI Features
+
+- **User Isolation**: Each user's strategies are private and isolated
+- **Version Control**: Automatic versioning with optimistic locking to prevent conflicts
+- **Status Management**: Draft → Active → Inactive → Archived lifecycle
+- **Autosave**: Automatic draft saves every 30 seconds to prevent data loss
+- **Quick Actions**: Duplicate strategies to create variations quickly
+- **Filter & Search**: Filter by status (draft, active, inactive, archived)
+- **Syntax Testing**: Validate DSL syntax without running full backtests
+
+### Programmatic API (Alternative)
+
+You can also manage strategies programmatically:
 
 Create a simple RSI mean reversion strategy:
 
@@ -115,24 +143,35 @@ iex> results.performance_metrics
 
 Built on Elixir/OTP for fault tolerance and scalability:
 
-- **Phoenix 1.7+**: Web framework and REST API
-- **Ecto + PostgreSQL**: Data persistence
+- **Phoenix 1.7+**: Web framework with LiveView for real-time UI and REST API
+- **Phoenix LiveView**: Reactive web interface without JavaScript complexity
+- **Ecto + PostgreSQL**: Data persistence with optimistic locking
 - **TimescaleDB**: Time-series market data storage
 - **GenServer**: Strategy execution processes
 - **Supervision Trees**: Automatic failure recovery
 - **WebSocket**: Real-time market data streaming
+- **phx.gen.auth**: Secure user authentication and authorization
 
 ### Core Components
 
 ```
 lib/trading_strategy/
-├── strategies/          # Strategy DSL parsing and execution
+├── accounts/            # User authentication and authorization (phx.gen.auth)
+├── strategies/          # Strategy DSL parsing, validation, and execution
 ├── market_data/         # Market data ingestion and storage
 ├── backtesting/         # Backtest engine and metrics
 ├── paper_trading/       # Paper trading session management
 ├── live_trading/        # Live trading with exchange integration
 ├── risk/                # Risk management and position sizing
 └── orders/              # Order execution and tracking
+
+lib/trading_strategy_web/
+├── live/strategy_live/  # LiveView pages for strategy management
+│   ├── index.ex         # Strategy list with filtering
+│   ├── form.ex          # Registration and edit form
+│   └── show.ex          # Strategy detail view
+├── components/          # Reusable UI components
+└── user_auth.ex         # Authentication plugs and helpers
 ```
 
 ## Trading Modes

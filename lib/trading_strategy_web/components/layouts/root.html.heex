@@ -7,10 +7,47 @@
     <.live_title>
       <%= assigns[:page_title] || "Trading Strategy" %>
     </.live_title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}></script>
+    <script src="https://cdn.jsdelivr.net/npm/phoenix@1.8.2/priv/static/phoenix.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phoenix_live_view@1.1.19/priv/static/phoenix_live_view.min.js"></script>
+    <script defer type="text/javascript" src={~p"/assets/app.js"}></script>
   </head>
-  <body class="h-full antialiased">
+  <body class="h-full antialiased flex flex-col">
+    <div class="navbar bg-base-100 border-b">
+      <div class="flex-1">
+        <.link href={~p"/"} class="btn btn-ghost text-xl">Trading Strategy</.link>
+      </div>
+      <div class="flex-none">
+        <ul class="menu menu-horizontal px-1">
+          <%= if @current_scope do %>
+            <li>
+              <.link href={~p"/strategies"}>Strategies</.link>
+            </li>
+            <li>
+              <details>
+                <summary>{@current_scope.user.email}</summary>
+                <ul class="bg-base-100 rounded-t-none p-2 w-48">
+                  <li>
+                    <.link href={~p"/users/settings"}>Settings</.link>
+                  </li>
+                  <li>
+                    <.link href={~p"/users/log-out"} method="delete">Log out</.link>
+                  </li>
+                </ul>
+              </details>
+            </li>
+          <% else %>
+            <li>
+              <.link href={~p"/users/register"}>Register</.link>
+            </li>
+            <li>
+              <.link href={~p"/users/log-in"} class="btn btn-primary btn-sm">Log in</.link>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
     <%= @inner_content %>
   </body>
 </html>

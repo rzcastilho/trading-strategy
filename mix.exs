@@ -39,6 +39,7 @@ defmodule TradingStrategy.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bcrypt_elixir, "~> 3.0"},
       {:phoenix, "~> 1.8.2"},
       {:phoenix_ecto, "~> 4.5"},
       {:phoenix_html, "~> 4.1"},
@@ -57,7 +58,12 @@ defmodule TradingStrategy.MixProject do
       {:toml, "~> 0.7"},
       {:trading_indicators, github: "rzcastilho/trading-indicators"},
       {:crypto_exchange, github: "rzcastilho/crypto-exchange"},
-      {:decimal, "~> 2.1"}
+      {:decimal, "~> 2.1"},
+      {:swoosh, "~> 1.16"},
+      {:hackney, "~> 1.9"},
+      # Test dependencies
+      {:floki, ">= 0.30.0", only: :test},
+      {:lazy_html, ">= 0.1.0", only: :test}
     ]
   end
 

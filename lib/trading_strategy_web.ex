@@ -53,6 +53,20 @@ defmodule TradingStrategyWeb do
       use Phoenix.LiveView,
         layout: {TradingStrategyWeb.Layouts, :app}
 
+      use Gettext, backend: TradingStrategyWeb.Gettext
+
+      import TradingStrategyWeb.CoreComponents
+
+      unquote(verified_routes())
+    end
+  end
+
+  def live_component do
+    quote do
+      use Phoenix.LiveComponent
+
+      use Gettext, backend: TradingStrategyWeb.Gettext
+
       import TradingStrategyWeb.CoreComponents
 
       unquote(verified_routes())

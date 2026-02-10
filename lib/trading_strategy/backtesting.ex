@@ -364,7 +364,7 @@ defmodule TradingStrategy.Backtesting do
   # Private Functions
 
   defp load_strategy(strategy_id) do
-    case Strategies.get_strategy(strategy_id) do
+    case Strategies.get_strategy_admin(strategy_id) do
       nil -> {:error, :strategy_not_found}
       strategy -> {:ok, strategy}
     end

@@ -11,30 +11,89 @@ Production: https://your-domain.com/api
 
 ## Authentication
 
-Currently no authentication required (add API key authentication for production).
+**Required for all strategy management endpoints**
+
+The application uses session-based authentication via Phoenix's `phx.gen.auth`:
+
+- **Web UI**: Authenticated via cookie sessions after login
+- **API**: Include session cookie or add API key support (future enhancement)
+
+### User Registration
+```
+POST /users/register
+Content-Type: application/x-www-form-urlencoded
+
+user[email]=user@example.com&user[password]=secure_password_123
+
+Response: Redirect to dashboard
+```
+
+### User Login
+```
+POST /users/log_in
+Content-Type: application/x-www-form-urlencoded
+
+user[email]=user@example.com&user[password]=secure_password_123
+
+Response: Redirect to dashboard with authenticated session
+```
 
 ## API Endpoints
 
 ### Strategy Management
 
-See `specs/001-strategy-dsl-library/contracts/strategy_api.ex` for detailed contract.
+**All endpoints are user-scoped** - users can only access their own strategies.
+
+See `specs/001-strategy-dsl-library/contracts/strategy_api.ex` and `specs/004-strategy-ui/contracts/` for detailed contracts.
+
+#### List User Strategies
+```
+GET /api/strategies?status=active&limit=50&offset=0
+
+Response: 200 OK
+{
+  "strategies": [
+    {
+      "id": "uuid",
+      "name": "RSI Mean Reversion",
+      "status": "active",
+      "version": 1,
+      "trading_pair": "BTC/USD",
+      "timeframe": "1h",
+      "updated_at": "2026-02-09T12:00:00Z"
+    }
+  ],
+  "total": 1,
+  "limit": 50,
+  "offset": 0
+}
+```
 
 #### Create Strategy
 ```
 POST /api/strategies
 Content-Type: application/json
+Authorization: Required (session cookie)
 
 {
   "name": "RSI Mean Reversion",
+  "description": "Mean reversion strategy using RSI indicator",
   "format": "yaml",
-  "content": "<yaml string>"
+  "content": "<yaml string>",
+  "trading_pair": "BTC/USD",
+  "timeframe": "1h",
+  "status": "draft"
 }
 
 Response: 201 Created
 {
-  "strategy_id": "uuid",
+  "id": "uuid",
+  "user_id": "user-uuid",
   "name": "RSI Mean Reversion",
-  "status": "active"
+  "status": "draft",
+  "version": 1,
+  "lock_version": 1,
+  "created_at": "2026-02-09T12:00:00Z"
 }
 ```
 
@@ -54,8 +113,79 @@ Response: 200 OK
 #### Update Strategy
 ```
 PUT /api/strategies/:id
+Content-Type: application/json
+Authorization: Required (session cookie)
 
-Request/Response: Same as Create
+{
+  "name": "Updated Strategy Name",
+  "content": "<updated yaml>",
+  "lock_version": 1  // Required for optimistic locking
+}
+
+Response: 200 OK
+{
+  "id": "uuid",
+  "name": "Updated Strategy Name",
+  "status": "draft",
+  "version": 1,
+  "lock_version": 2,  // Incremented
+  "updated_at": "2026-02-09T12:30:00Z"
+}
+
+Response: 409 Conflict (if lock_version mismatch)
+{
+  "error": {
+    "code": "stale_entry",
+    "message": "Strategy was modified by another user. Please reload and try again.",
+    "current_lock_version": 3
+  }
+}
+```
+
+#### Test Strategy Syntax
+```
+POST /api/strategies/test_syntax
+Content-Type: application/json
+
+{
+  "content": "<yaml string>",
+  "format": "yaml"
+}
+
+Response: 200 OK
+{
+  "valid": true,
+  "parsed": {
+    "indicators": ["rsi_14", "sma_50"],
+    "entry_conditions": "rsi_14 < 30",
+    "exit_conditions": "rsi_14 > 70"
+  },
+  "summary": "Strategy uses 2 indicators with buy signal on RSI < 30"
+}
+
+Response: 422 Unprocessable Entity (syntax errors)
+{
+  "valid": false,
+  "errors": [
+    "Line 5: Unknown indicator type 'invalid_indicator'",
+    "Entry conditions: Undefined variable 'unknown_var'"
+  ]
+}
+```
+
+#### Duplicate Strategy
+```
+POST /api/strategies/:id/duplicate
+Authorization: Required (session cookie)
+
+Response: 201 Created
+{
+  "id": "new-uuid",
+  "name": "RSI Mean Reversion - Copy",  // " - Copy" appended
+  "status": "draft",
+  "version": 1,
+  "lock_version": 1
+}
 ```
 
 #### Delete Strategy
@@ -246,10 +376,47 @@ channel.on("position_opened", payload => {
 })
 ```
 
+## Elixir Context Functions (Feature 004)
+
+For programmatic access from within the application:
+
+```elixir
+alias TradingStrategy.Strategies
+alias TradingStrategy.Accounts.User
+
+# User-scoped functions
+Strategies.list_strategies(%User{id: user_id}, status: "active", limit: 50)
+Strategies.get_strategy(strategy_id, %User{id: user_id})
+Strategies.create_strategy(attrs, %User{id: user_id})
+Strategies.update_strategy(strategy, attrs, %User{id: user_id})
+Strategies.delete_strategy(strategy, %User{id: user_id})
+
+# Strategy operations
+Strategies.can_edit?(strategy)  # => true/false
+Strategies.can_activate?(strategy)  # => {:ok, :allowed} | {:error, reason}
+Strategies.activate_strategy(strategy)
+Strategies.test_strategy_syntax(content, :yaml)
+Strategies.duplicate_strategy(strategy, %User{id: user_id})
+
+# Version management
+Strategies.get_strategy_versions(name, %User{id: user_id})
+Strategies.create_new_version(strategy, attrs)
+```
+
+**Key Features**:
+- All functions are user-scoped for security
+- Optimistic locking prevents concurrent edit conflicts
+- Status validation prevents editing active strategies
+- Syntax testing validates DSL without execution
+- PubSub broadcasts for real-time UI updates
+
 ## Complete Contracts
 
 Full API contracts available in:
 - `specs/001-strategy-dsl-library/contracts/strategy_api.ex`
+- `specs/004-strategy-ui/contracts/liveview_routes.md` - LiveView routes and events
+- `specs/004-strategy-ui/contracts/validation_api.md` - Validation flow and errors
+- `specs/004-strategy-ui/data-model.md` - Database schema and relationships
 - `specs/001-strategy-dsl-library/contracts/backtest_api.ex`
 - `specs/001-strategy-dsl-library/contracts/paper_trading_api.ex`
 - `specs/001-strategy-dsl-library/contracts/live_trading_api.ex`

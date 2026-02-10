@@ -23,7 +23,8 @@ defmodule TradingStrategyWeb.StrategyController do
       ]
       |> Enum.reject(fn {_k, v} -> is_nil(v) end)
 
-    strategies = Strategies.list_strategies(opts)
+    # Use list_all_strategies for API (admin function, not user-scoped)
+    strategies = Strategies.list_all_strategies(opts)
     render(conn, :index, strategies: strategies)
   end
 
@@ -37,11 +38,13 @@ defmodule TradingStrategyWeb.StrategyController do
     "format": "yaml",
     "content": "name: RSI Mean Reversion\\n...",
     "trading_pair": "BTC/USD",
-    "timeframe": "1h"
+    "timeframe": "1h",
+    "user_id": 123  # Required until authentication is implemented
   }
   """
   def create(conn, %{"strategy" => strategy_params}) do
-    case Strategies.create_strategy(strategy_params) do
+    # TODO: Add authentication and use create_strategy/2 with current_user
+    case Strategies.create_strategy_admin(strategy_params) do
       {:ok, %Strategy{} = strategy} ->
         conn
         |> put_status(:created)
@@ -63,7 +66,7 @@ defmodule TradingStrategyWeb.StrategyController do
   Shows a single strategy by ID.
   """
   def show(conn, %{"id" => id}) do
-    case Strategies.get_strategy(id) do
+    case Strategies.get_strategy_admin(id) do
       nil ->
         {:error, :not_found}
 
@@ -83,12 +86,13 @@ defmodule TradingStrategyWeb.StrategyController do
   }
   """
   def update(conn, %{"id" => id, "strategy" => strategy_params}) do
-    case Strategies.get_strategy(id) do
+    case Strategies.get_strategy_admin(id) do
       nil ->
         {:error, :not_found}
 
       strategy ->
-        case Strategies.update_strategy(strategy, strategy_params) do
+        # TODO: Add user authentication and use update_strategy/3 with user parameter
+        case Strategies.update_strategy(strategy, strategy_params, %TradingStrategy.Accounts.User{id: strategy.user_id}) do
           {:ok, %Strategy{} = updated_strategy} ->
             render(conn, :show, strategy: updated_strategy)
 
@@ -110,12 +114,13 @@ defmodule TradingStrategyWeb.StrategyController do
   Returns 204 No Content on success.
   """
   def delete(conn, %{"id" => id}) do
-    case Strategies.get_strategy(id) do
+    case Strategies.get_strategy_admin(id) do
       nil ->
         {:error, :not_found}
 
       strategy ->
-        case Strategies.delete_strategy(strategy) do
+        # TODO: Add user authentication and use delete_strategy/2 with user parameter
+        case Strategies.delete_strategy(strategy, %TradingStrategy.Accounts.User{id: strategy.user_id}) do
           {:ok, _deleted_strategy} ->
             send_resp(conn, :no_content, "")
 

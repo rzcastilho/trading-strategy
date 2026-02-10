@@ -1,5 +1,8 @@
 import Config
 
+# Only in tests, remove the complexity from the password hashing algorithm
+config :bcrypt_elixir, :log_rounds, 1
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
@@ -33,3 +36,6 @@ config :trading_strategy,
   backtest_test_mode: false,
   # Set low concurrency limit for testing
   max_concurrent_backtests: 3
+
+# Disable swoosh mailer in tests
+config :trading_strategy, TradingStrategy.Mailer, adapter: Swoosh.Adapters.Test

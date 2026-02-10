@@ -5,25 +5,14 @@ defmodule TradingStrategy.BacktestingTest do
   alias TradingStrategy.Backtesting.{TradingSession, PerformanceMetrics}
   alias TradingStrategy.Repo
   import TradingStrategy.BacktestHelpers
+  import TradingStrategy.AccountsFixtures
 
   describe "backtest result with equity curve" do
     setup do
-      # Create a test strategy first
-      strategy_id = Ecto.UUID.generate()
+      # Create a test strategy using the helper
+      {:ok, strategy} = create_test_strategy()
 
-      {:ok, _} = Repo.insert(%TradingStrategy.Strategies.Strategy{
-        id: strategy_id,
-        name: "Test Strategy",
-        description: "For testing",
-        version: 1,
-        status: "active",
-        format: "yaml",
-        content: "indicators: []",
-        trading_pair: "BTC/USD",
-        timeframe: "1h"
-      })
-
-      {:ok, strategy_id: strategy_id}
+      {:ok, strategy_id: strategy.id}
     end
 
     test "get_backtest_result includes equity curve from performance_metrics", %{strategy_id: strategy_id} do

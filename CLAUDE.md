@@ -26,10 +26,57 @@ tests/
 Elixir 1.17+ (OTP 27+): Follow standard conventions
 
 ## Recent Changes
+- 004-strategy-ui: Added Elixir 1.17+ (OTP 27+) + Phoenix 1.7+, Phoenix LiveView (dashboards), Ecto (database)
 - 003-fix-backtesting: Added Elixir 1.17+ (OTP 27+) + Phoenix 1.7+, Phoenix LiveView (dashboards), Ecto (database)
 - 002-postman-api-collection: Added Postman Collection v2.1 JSON forma
 
-- 001-strategy-dsl-library: Added Elixir 1.17+ (OTP 27+)
+
+<!-- MANUAL ADDITIONS START -->
+
+## Phoenix Authentication Setup (Feature 004)
+
+### Authentication Architecture
+- **Generator Used**: `mix phx.gen.auth Accounts User users`
+- **Pattern**: Phoenix 1.7+ passwordless magic link authentication with optional password support
+- **Location**:
+  - Context: `lib/trading_strategy/accounts.ex`
+  - Schema: `lib/trading_strategy/accounts/user.ex`
+  - LiveViews: `lib/trading_strategy_web/live/user_live/`
+  - Auth Module: `lib/trading_strategy_web/user_auth.ex`
+
+### Core Components Setup
+- **File**: `lib/trading_strategy_web/components/core_components.ex`
+- **Components Added**:
+  - `button/1` - Flexible button with navigation support (href, navigate, patch)
+  - `input/1` - Form inputs (text, email, password, checkbox, select, textarea)
+  - `header/1` - Page headers with title, subtitle, and actions slots
+  - `icon/1` - Heroicon SVG rendering
+  - `table/1` - Generic table with columns and actions
+  - `list/1` - Data list rendering
+  - `flash/1` - Toast-style flash notifications
+  - `flash_group/1` - Flash message group wrapper
+- **Styling**: daisyUI + Tailwind CSS
+- **Helper Functions**: `show/2`, `hide/2` (JS animations), `translate_error/1`
+
+### Database Schema
+- **Tables Created**:
+  - `users` - User accounts with email (citext), hashed_password, confirmed_at
+  - `users_tokens` - Authentication tokens (magic links, sessions, confirmations)
+- **Indexes**:
+  - `users_email_index` - Unique email lookup
+  - `users_tokens_user_id_index` - Token lookup by user
+  - `users_tokens_context_token_index` - Token validation
+
+### LiveView Auth Pages
+- **Login** (`login.ex`) - Magic link + password authentication
+- **Registration** (`registration.ex`) - Email-based signup
+- **Settings** (`settings.ex`) - Password management, sudo mode protected
+- **Confirmation** (`confirmation.ex`) - Email confirmation via magic link
+- **Module Fixes**: Added `alias TradingStrategyWeb.Layouts` and `alias Phoenix.LiveView.JS` to all auth LiveViews
+
+### Known Issues
+- Router needs root path ("/") configuration (warnings in UserAuth module)
+- Mailer is configured for local development (Swoosh.Adapters.Local)
 
 <!-- MANUAL ADDITIONS START -->
 

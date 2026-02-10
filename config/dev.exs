@@ -61,3 +61,10 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Configure Swoosh mailer for development (Local adapter for testing)
+config :trading_strategy, TradingStrategy.Mailer, adapter: Swoosh.Adapters.Local
+
+# Swoosh API client is used to communicate with adapters that support HTTP.
+# See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
+config :swoosh, :api_client, false

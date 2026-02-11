@@ -44,16 +44,45 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
     "macd" => %{
       name: "MACD",
       params: [
-        %{key: "fast_period", type: "number", label: "Fast Period", default: 12, min: 1, max: 100},
-        %{key: "slow_period", type: "number", label: "Slow Period", default: 26, min: 1, max: 100},
-        %{key: "signal_period", type: "number", label: "Signal Period", default: 9, min: 1, max: 100}
+        %{
+          key: "fast_period",
+          type: "number",
+          label: "Fast Period",
+          default: 12,
+          min: 1,
+          max: 100
+        },
+        %{
+          key: "slow_period",
+          type: "number",
+          label: "Slow Period",
+          default: 26,
+          min: 1,
+          max: 100
+        },
+        %{
+          key: "signal_period",
+          type: "number",
+          label: "Signal Period",
+          default: 9,
+          min: 1,
+          max: 100
+        }
       ]
     },
     "bollinger_bands" => %{
       name: "Bollinger Bands",
       params: [
         %{key: "period", type: "number", label: "Period", default: 20, min: 1, max: 100},
-        %{key: "std_dev", type: "number", label: "Standard Deviations", default: 2.0, min: 0.5, max: 5.0, step: 0.1}
+        %{
+          key: "std_dev",
+          type: "number",
+          label: "Standard Deviations",
+          default: 2.0,
+          min: 0.5,
+          max: 5.0,
+          step: 0.1
+        }
       ]
     },
     "stochastic" => %{
@@ -347,7 +376,9 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
 
   defp parse_param_value(value) when is_binary(value) do
     case Float.parse(value) do
-      {float, ""} -> float
+      {float, ""} ->
+        float
+
       _ ->
         case Integer.parse(value) do
           {int, ""} -> int

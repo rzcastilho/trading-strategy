@@ -245,7 +245,12 @@ defmodule TradingStrategy.MarketData do
     end
   end
 
-  defp convert_kline_to_market_data(%CryptoExchange.Models.Kline{} = kline, symbol, timeframe, exchange) do
+  defp convert_kline_to_market_data(
+         %CryptoExchange.Models.Kline{} = kline,
+         symbol,
+         timeframe,
+         exchange
+       ) do
     # CryptoExchange returns a Kline struct with string prices and millisecond timestamps
     # Convert millisecond timestamp to microseconds, then create DateTime with microsecond precision
     timestamp = DateTime.from_unix!(kline.kline_start_time * 1000, :microsecond)

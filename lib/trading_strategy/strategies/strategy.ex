@@ -61,9 +61,7 @@ defmodule TradingStrategy.Strategies.Strategy do
       max: 200,
       message: "must be between 3 and 200 characters"
     )
-    |> validate_inclusion(:format, ["yaml", "toml"],
-      message: "must be either 'yaml' or 'toml'"
-    )
+    |> validate_inclusion(:format, ["yaml", "toml"], message: "must be either 'yaml' or 'toml'")
     |> validate_inclusion(:status, ["draft", "active", "inactive", "archived"],
       message: "must be one of: draft, active, inactive, archived"
     )

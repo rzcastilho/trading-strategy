@@ -21,6 +21,8 @@ defmodule TradingStrategy.Application do
       TradingStrategy.Backtesting.Supervisor,
       TradingStrategy.PaperTrading.Supervisor,
       TradingStrategy.LiveTrading.Supervisor,
+      # Feature 005: Strategy Editor - Undo/Redo History
+      TradingStrategy.StrategyEditor.EditHistory,
       # Start to serve requests, typically the last entry
       TradingStrategyWeb.Endpoint
     ]

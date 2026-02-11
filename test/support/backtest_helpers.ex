@@ -83,6 +83,7 @@ defmodule TradingStrategy.BacktestHelpers do
     case Code.ensure_loaded(Mox) do
       {:module, Mox} ->
         mock_with_mox(mode)
+
       {:error, _} ->
         mock_with_process_dict(mode)
     end

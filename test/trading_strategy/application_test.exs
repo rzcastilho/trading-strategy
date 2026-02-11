@@ -14,57 +14,60 @@ defmodule TradingStrategy.ApplicationTest do
 
     test "marks running sessions as failed after application restart" do
       # Create a session that was "running" before restart
-      stale_session = insert(:trading_session, %{
-        status: "running",
-        strategy_id: "test_strategy",
-        mode: "backtest",
-        initial_capital: Decimal.new("10000"),
-        config: %{
-          trading_pair: "BTC/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-31 23:59:59Z],
-          timeframe: "1h"
-        },
-        metadata: %{
-          checkpoint: %{
-            bar_index: 500,
-            bars_processed: 500,
-            total_bars: 1000
-          }
-        },
-        # Simulate that this session was updated more than 5 minutes ago
-        updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
-      })
+      stale_session =
+        insert(:trading_session, %{
+          status: "running",
+          strategy_id: "test_strategy",
+          mode: "backtest",
+          initial_capital: Decimal.new("10000"),
+          config: %{
+            trading_pair: "BTC/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-31 23:59:59Z],
+            timeframe: "1h"
+          },
+          metadata: %{
+            checkpoint: %{
+              bar_index: 500,
+              bars_processed: 500,
+              total_bars: 1000
+            }
+          },
+          # Simulate that this session was updated more than 5 minutes ago
+          updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
+        })
 
       # Create a recently updated running session (should not be marked as failed)
-      recent_session = insert(:trading_session, %{
-        status: "running",
-        strategy_id: "test_strategy",
-        mode: "backtest",
-        initial_capital: Decimal.new("10000"),
-        config: %{
-          trading_pair: "ETH/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-31 23:59:59Z],
-          timeframe: "1h"
-        },
-        updated_at: DateTime.utc_now()
-      })
+      recent_session =
+        insert(:trading_session, %{
+          status: "running",
+          strategy_id: "test_strategy",
+          mode: "backtest",
+          initial_capital: Decimal.new("10000"),
+          config: %{
+            trading_pair: "ETH/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-31 23:59:59Z],
+            timeframe: "1h"
+          },
+          updated_at: DateTime.utc_now()
+        })
 
       # Create a completed session (should not be affected)
-      completed_session = insert(:trading_session, %{
-        status: "completed",
-        strategy_id: "test_strategy",
-        mode: "backtest",
-        initial_capital: Decimal.new("10000"),
-        config: %{
-          trading_pair: "SOL/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-31 23:59:59Z],
-          timeframe: "1h"
-        },
-        updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
-      })
+      completed_session =
+        insert(:trading_session, %{
+          status: "completed",
+          strategy_id: "test_strategy",
+          mode: "backtest",
+          initial_capital: Decimal.new("10000"),
+          config: %{
+            trading_pair: "SOL/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-31 23:59:59Z],
+            timeframe: "1h"
+          },
+          updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
+        })
 
       # Simulate restart detection by calling the private function
       # (In real app, this is called automatically in Application.start/2)
@@ -88,29 +91,30 @@ defmodule TradingStrategy.ApplicationTest do
 
     test "preserves checkpoint data when marking session as failed" do
       # Create a running session with checkpoint data
-      session_with_checkpoint = insert(:trading_session, %{
-        status: "running",
-        strategy_id: "test_strategy",
-        mode: "backtest",
-        initial_capital: Decimal.new("10000"),
-        config: %{
-          trading_pair: "BTC/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-31 23:59:59Z],
-          timeframe: "1h"
-        },
-        metadata: %{
-          checkpoint: %{
-            bar_index: 750,
-            bars_processed: 750,
-            total_bars: 1000,
-            last_equity: 10500.0,
-            completed_trades: 15
+      session_with_checkpoint =
+        insert(:trading_session, %{
+          status: "running",
+          strategy_id: "test_strategy",
+          mode: "backtest",
+          initial_capital: Decimal.new("10000"),
+          config: %{
+            trading_pair: "BTC/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-31 23:59:59Z],
+            timeframe: "1h"
           },
-          execution_started_at: ~U[2024-01-15 10:00:00Z]
-        },
-        updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
-      })
+          metadata: %{
+            checkpoint: %{
+              bar_index: 750,
+              bars_processed: 750,
+              total_bars: 1000,
+              last_equity: 10500.0,
+              completed_trades: 15
+            },
+            execution_started_at: ~U[2024-01-15 10:00:00Z]
+          },
+          updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
+        })
 
       # Handle stale sessions
       TradingStrategy.Application.handle_stale_sessions()
@@ -126,21 +130,22 @@ defmodule TradingStrategy.ApplicationTest do
 
     test "handles multiple stale sessions in a single restart" do
       # Create multiple stale running sessions
-      sessions = for i <- 1..5 do
-        insert(:trading_session, %{
-          status: "running",
-          strategy_id: "test_strategy_#{i}",
-          mode: "backtest",
-          initial_capital: Decimal.new("10000"),
-          config: %{
-            trading_pair: "BTC/USD",
-            start_time: ~U[2024-01-01 00:00:00Z],
-            end_time: ~U[2024-01-31 23:59:59Z],
-            timeframe: "1h"
-          },
-          updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
-        })
-      end
+      sessions =
+        for i <- 1..5 do
+          insert(:trading_session, %{
+            status: "running",
+            strategy_id: "test_strategy_#{i}",
+            mode: "backtest",
+            initial_capital: Decimal.new("10000"),
+            config: %{
+              trading_pair: "BTC/USD",
+              start_time: ~U[2024-01-01 00:00:00Z],
+              end_time: ~U[2024-01-31 23:59:59Z],
+              timeframe: "1h"
+            },
+            updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
+          })
+        end
 
       # Handle stale sessions
       TradingStrategy.Application.handle_stale_sessions()
@@ -155,20 +160,21 @@ defmodule TradingStrategy.ApplicationTest do
 
     test "does not mark queued sessions as failed" do
       # Create a queued session (not yet running)
-      queued_session = insert(:trading_session, %{
-        status: "queued",
-        strategy_id: "test_strategy",
-        mode: "backtest",
-        initial_capital: Decimal.new("10000"),
-        config: %{
-          trading_pair: "BTC/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-31 23:59:59Z],
-          timeframe: "1h"
-        },
-        queued_at: DateTime.add(DateTime.utc_now(), -10, :minute),
-        updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
-      })
+      queued_session =
+        insert(:trading_session, %{
+          status: "queued",
+          strategy_id: "test_strategy",
+          mode: "backtest",
+          initial_capital: Decimal.new("10000"),
+          config: %{
+            trading_pair: "BTC/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-31 23:59:59Z],
+            timeframe: "1h"
+          },
+          queued_at: DateTime.add(DateTime.utc_now(), -10, :minute),
+          updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
+        })
 
       # Handle stale sessions
       TradingStrategy.Application.handle_stale_sessions()
@@ -180,19 +186,20 @@ defmodule TradingStrategy.ApplicationTest do
 
     test "does not mark pending sessions as failed" do
       # Create a pending session
-      pending_session = insert(:trading_session, %{
-        status: "pending",
-        strategy_id: "test_strategy",
-        mode: "backtest",
-        initial_capital: Decimal.new("10000"),
-        config: %{
-          trading_pair: "BTC/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-31 23:59:59Z],
-          timeframe: "1h"
-        },
-        updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
-      })
+      pending_session =
+        insert(:trading_session, %{
+          status: "pending",
+          strategy_id: "test_strategy",
+          mode: "backtest",
+          initial_capital: Decimal.new("10000"),
+          config: %{
+            trading_pair: "BTC/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-31 23:59:59Z],
+            timeframe: "1h"
+          },
+          updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
+        })
 
       # Handle stale sessions
       TradingStrategy.Application.handle_stale_sessions()
@@ -204,24 +211,26 @@ defmodule TradingStrategy.ApplicationTest do
 
     test "logs warning for each stale session found" do
       # Create a stale running session
-      stale_session = insert(:trading_session, %{
-        status: "running",
-        strategy_id: "test_strategy",
-        mode: "backtest",
-        initial_capital: Decimal.new("10000"),
-        config: %{
-          trading_pair: "BTC/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-31 23:59:59Z],
-          timeframe: "1h"
-        },
-        updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
-      })
+      stale_session =
+        insert(:trading_session, %{
+          status: "running",
+          strategy_id: "test_strategy",
+          mode: "backtest",
+          initial_capital: Decimal.new("10000"),
+          config: %{
+            trading_pair: "BTC/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-31 23:59:59Z],
+            timeframe: "1h"
+          },
+          updated_at: DateTime.add(DateTime.utc_now(), -10, :minute)
+        })
 
       # Capture logs
-      log = capture_log(fn ->
-        TradingStrategy.Application.handle_stale_sessions()
-      end)
+      log =
+        capture_log(fn ->
+          TradingStrategy.Application.handle_stale_sessions()
+        end)
 
       # Verify warning was logged
       assert log =~ "Marking interrupted backtest as failed"
@@ -238,34 +247,36 @@ defmodule TradingStrategy.ApplicationTest do
 
     test "cutoff time is 5 minutes" do
       # Create session updated exactly 5 minutes ago (should NOT be marked as stale)
-      edge_session = insert(:trading_session, %{
-        status: "running",
-        strategy_id: "test_strategy",
-        mode: "backtest",
-        initial_capital: Decimal.new("10000"),
-        config: %{
-          trading_pair: "BTC/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-31 23:59:59Z],
-          timeframe: "1h"
-        },
-        updated_at: DateTime.add(DateTime.utc_now(), -5, :minute)
-      })
+      edge_session =
+        insert(:trading_session, %{
+          status: "running",
+          strategy_id: "test_strategy",
+          mode: "backtest",
+          initial_capital: Decimal.new("10000"),
+          config: %{
+            trading_pair: "BTC/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-31 23:59:59Z],
+            timeframe: "1h"
+          },
+          updated_at: DateTime.add(DateTime.utc_now(), -5, :minute)
+        })
 
       # Create session updated 6 minutes ago (should be marked as stale)
-      stale_session = insert(:trading_session, %{
-        status: "running",
-        strategy_id: "test_strategy",
-        mode: "backtest",
-        initial_capital: Decimal.new("10000"),
-        config: %{
-          trading_pair: "ETH/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-31 23:59:59Z],
-          timeframe: "1h"
-        },
-        updated_at: DateTime.add(DateTime.utc_now(), -6, :minute)
-      })
+      stale_session =
+        insert(:trading_session, %{
+          status: "running",
+          strategy_id: "test_strategy",
+          mode: "backtest",
+          initial_capital: Decimal.new("10000"),
+          config: %{
+            trading_pair: "ETH/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-31 23:59:59Z],
+            timeframe: "1h"
+          },
+          updated_at: DateTime.add(DateTime.utc_now(), -6, :minute)
+        })
 
       # Handle stale sessions
       TradingStrategy.Application.handle_stale_sessions()
@@ -282,18 +293,19 @@ defmodule TradingStrategy.ApplicationTest do
 
   describe "integration with Backtesting context" do
     test "mark_as_failed/2 function sets correct error metadata" do
-      session = insert(:trading_session, %{
-        status: "running",
-        strategy_id: "test_strategy",
-        mode: "backtest",
-        initial_capital: Decimal.new("10000"),
-        config: %{
-          trading_pair: "BTC/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-31 23:59:59Z],
-          timeframe: "1h"
-        }
-      })
+      session =
+        insert(:trading_session, %{
+          status: "running",
+          strategy_id: "test_strategy",
+          mode: "backtest",
+          initial_capital: Decimal.new("10000"),
+          config: %{
+            trading_pair: "BTC/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-31 23:59:59Z],
+            timeframe: "1h"
+          }
+        })
 
       error_info = %{
         error_type: "test_error",
@@ -310,24 +322,25 @@ defmodule TradingStrategy.ApplicationTest do
     end
 
     test "mark_as_failed/2 preserves existing metadata" do
-      session = insert(:trading_session, %{
-        status: "running",
-        strategy_id: "test_strategy",
-        mode: "backtest",
-        initial_capital: Decimal.new("10000"),
-        config: %{
-          trading_pair: "BTC/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-31 23:59:59Z],
-          timeframe: "1h"
-        },
-        metadata: %{
-          checkpoint: %{
-            bar_index: 500
+      session =
+        insert(:trading_session, %{
+          status: "running",
+          strategy_id: "test_strategy",
+          mode: "backtest",
+          initial_capital: Decimal.new("10000"),
+          config: %{
+            trading_pair: "BTC/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-31 23:59:59Z],
+            timeframe: "1h"
           },
-          custom_field: "preserved"
-        }
-      })
+          metadata: %{
+            checkpoint: %{
+              bar_index: 500
+            },
+            custom_field: "preserved"
+          }
+        })
 
       error_info = %{
         error_type: "restart",

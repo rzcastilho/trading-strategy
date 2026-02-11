@@ -33,10 +33,11 @@ defmodule TradingStrategy.Strategies do
       [%Strategy{}, ...]
   """
   def list_strategies(%User{id: user_id}, opts \\ []) do
-    query = from(s in Strategy,
-      where: s.user_id == ^user_id,
-      order_by: [desc: s.inserted_at]
-    )
+    query =
+      from(s in Strategy,
+        where: s.user_id == ^user_id,
+        order_by: [desc: s.inserted_at]
+      )
 
     query
     |> maybe_filter_by_status(opts[:status])
@@ -86,8 +87,10 @@ defmodule TradingStrategy.Strategies do
       nil
   """
   def get_strategy(id, %User{id: user_id}) do
-    Repo.one(from s in Strategy,
-      where: s.id == ^id and s.user_id == ^user_id)
+    Repo.one(
+      from s in Strategy,
+        where: s.id == ^id and s.user_id == ^user_id
+    )
   end
 
   @doc """
@@ -104,8 +107,10 @@ defmodule TradingStrategy.Strategies do
       ** (Ecto.NoResultsError)
   """
   def get_strategy!(id, %User{id: user_id}) do
-    Repo.one!(from s in Strategy,
-      where: s.id == ^id and s.user_id == ^user_id)
+    Repo.one!(
+      from s in Strategy,
+        where: s.id == ^id and s.user_id == ^user_id
+    )
   end
 
   @doc """
@@ -152,8 +157,10 @@ defmodule TradingStrategy.Strategies do
       %Strategy{}
   """
   def get_strategy_by_name(name, %User{id: user_id}, version \\ nil) do
-    query = from(s in Strategy,
-      where: s.name == ^name and s.user_id == ^user_id)
+    query =
+      from(s in Strategy,
+        where: s.name == ^name and s.user_id == ^user_id
+      )
 
     query =
       if version do
@@ -214,7 +221,9 @@ defmodule TradingStrategy.Strategies do
         else
           result
         end
-      error -> error
+
+      error ->
+        error
     end
   end
 
@@ -309,8 +318,13 @@ defmodule TradingStrategy.Strategies do
       {:error, "Cannot activate archived strategy"}
   """
   def can_activate?(%Strategy{status: "active"}), do: {:error, "Strategy is already active"}
-  def can_activate?(%Strategy{status: "archived"}), do: {:error, "Cannot activate archived strategy"}
-  def can_activate?(%Strategy{content: content}) when content in [nil, ""], do: {:error, "Strategy content is required"}
+
+  def can_activate?(%Strategy{status: "archived"}),
+    do: {:error, "Cannot activate archived strategy"}
+
+  def can_activate?(%Strategy{content: content}) when content in [nil, ""],
+    do: {:error, "Strategy content is required"}
+
   def can_activate?(%Strategy{}), do: {:ok, :allowed}
 
   @doc """
@@ -398,9 +412,11 @@ defmodule TradingStrategy.Strategies do
       [%Strategy{version: 3}, %Strategy{version: 2}, %Strategy{version: 1}]
   """
   def get_strategy_versions(strategy_name, %User{id: user_id}) do
-    Repo.all(from s in Strategy,
-      where: s.name == ^strategy_name and s.user_id == ^user_id,
-      order_by: [desc: s.version])
+    Repo.all(
+      from s in Strategy,
+        where: s.name == ^strategy_name and s.user_id == ^user_id,
+        order_by: [desc: s.version]
+    )
   end
 
   @doc """
@@ -469,8 +485,10 @@ defmodule TradingStrategy.Strategies do
         content: strategy.content,
         trading_pair: strategy.trading_pair,
         timeframe: strategy.timeframe,
-        status: "draft",  # Always create as draft
-        version: 1,       # New strategy starts at version 1
+        # Always create as draft
+        status: "draft",
+        # New strategy starts at version 1
+        version: 1,
         metadata: strategy.metadata
       }
 

@@ -40,7 +40,13 @@ defmodule TradingStrategy.Strategies.SignalEvaluator do
   """
   @spec evaluate_signals(map(), list(map()), map(), map() | nil, map()) ::
           {:ok, map()} | {:error, term()}
-  def evaluate_signals(strategy, market_data, current_bar, indicator_values \\ nil, position_context \\ %{}) do
+  def evaluate_signals(
+        strategy,
+        market_data,
+        current_bar,
+        indicator_values \\ nil,
+        position_context \\ %{}
+      ) do
     # Calculate indicators if not provided
     with {:ok, indicators} <-
            get_or_calculate_indicators(strategy, market_data, current_bar, indicator_values) do

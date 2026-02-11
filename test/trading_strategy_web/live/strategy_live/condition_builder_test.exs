@@ -44,7 +44,9 @@ defmodule TradingStrategyWeb.StrategyLive.ConditionBuilderTest do
 
       # Remove condition
       view
-      |> element("#entry-condition-builder button[phx-click='remove_condition'][phx-value-index='0']")
+      |> element(
+        "#entry-condition-builder button[phx-click='remove_condition'][phx-value-index='0']"
+      )
       |> render_click()
 
       # Verify condition was removed

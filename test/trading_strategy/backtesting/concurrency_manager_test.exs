@@ -231,6 +231,7 @@ defmodule TradingStrategy.Backtesting.ConcurrencyManagerTest do
         Process.sleep(50)
 
         status = ConcurrencyManager.get_status()
+
         assert MapSet.member?(status.running, expected_queued),
                "Expected #{expected_queued} to be running in FIFO order"
       end)
@@ -243,6 +244,7 @@ defmodule TradingStrategy.Backtesting.ConcurrencyManagerTest do
         Process.sleep(50)
 
         status = ConcurrencyManager.get_status()
+
         assert MapSet.member?(status.running, next_expected),
                "Expected #{next_expected} to be running in FIFO order"
       end)

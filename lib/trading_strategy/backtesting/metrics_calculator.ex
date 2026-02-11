@@ -57,8 +57,7 @@ defmodule TradingStrategy.Backtesting.MetricsCalculator do
         # N/A for zero trades
         max_drawdown: Float.round(max_drawdown, 4),
         # Calculate from equity curve
-        sharpe_ratio:
-          if(sharpe_ratio == 0.0, do: nil, else: Float.round(sharpe_ratio, 4)),
+        sharpe_ratio: if(sharpe_ratio == 0.0, do: nil, else: Float.round(sharpe_ratio, 4)),
         # nil if zero
         trade_count: 0,
         winning_trades: 0,
@@ -201,7 +200,8 @@ defmodule TradingStrategy.Backtesting.MetricsCalculator do
     durations =
       trades
       |> Enum.filter(fn t -> Map.get(t, :duration_seconds) != nil end)
-      |> Enum.map(fn t -> Map.get(t, :duration_seconds, 0) / 60 end)  # Convert to minutes
+      # Convert to minutes
+      |> Enum.map(fn t -> Map.get(t, :duration_seconds, 0) / 60 end)
 
     if length(durations) > 0 do
       round(Enum.sum(durations) / length(durations))

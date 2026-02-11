@@ -373,7 +373,11 @@ defmodule TradingStrategyWeb.StrategyLive.ConditionBuilder do
     conditions
     |> Enum.with_index()
     |> Enum.map(fn {condition, index} ->
-      prefix = if index > 0 && condition.connector, do: "#{String.upcase(condition.connector)} ", else: ""
+      prefix =
+        if index > 0 && condition.connector,
+          do: "#{String.upcase(condition.connector)} ",
+          else: ""
+
       operator = get_operator_symbol(condition.operator, available_operators)
       "#{prefix}(#{condition.left} #{operator} #{condition.right})"
     end)

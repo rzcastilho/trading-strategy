@@ -183,7 +183,11 @@ defmodule TradingStrategyWeb.StrategyLive.Show do
   def handle_event("deactivate", _params, socket) do
     strategy = socket.assigns.strategy
 
-    case Strategies.update_strategy(strategy, %{status: "inactive"}, socket.assigns.current_scope.user) do
+    case Strategies.update_strategy(
+           strategy,
+           %{status: "inactive"},
+           socket.assigns.current_scope.user
+         ) do
       {:ok, updated_strategy} ->
         {:noreply,
          socket

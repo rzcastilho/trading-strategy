@@ -92,7 +92,9 @@ defmodule TradingStrategyWeb.StrategyController do
 
       strategy ->
         # TODO: Add user authentication and use update_strategy/3 with user parameter
-        case Strategies.update_strategy(strategy, strategy_params, %TradingStrategy.Accounts.User{id: strategy.user_id}) do
+        case Strategies.update_strategy(strategy, strategy_params, %TradingStrategy.Accounts.User{
+               id: strategy.user_id
+             }) do
           {:ok, %Strategy{} = updated_strategy} ->
             render(conn, :show, strategy: updated_strategy)
 
@@ -120,7 +122,9 @@ defmodule TradingStrategyWeb.StrategyController do
 
       strategy ->
         # TODO: Add user authentication and use delete_strategy/2 with user parameter
-        case Strategies.delete_strategy(strategy, %TradingStrategy.Accounts.User{id: strategy.user_id}) do
+        case Strategies.delete_strategy(strategy, %TradingStrategy.Accounts.User{
+               id: strategy.user_id
+             }) do
           {:ok, _deleted_strategy} ->
             send_resp(conn, :no_content, "")
 

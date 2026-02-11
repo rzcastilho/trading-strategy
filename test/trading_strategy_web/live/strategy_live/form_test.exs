@@ -162,14 +162,15 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
     setup :register_and_log_in_user
 
     test "T047: loads existing strategy in edit mode", %{conn: conn, user: user} do
-      strategy = strategy_fixture(%{
-        user: user,
-        name: "Existing Strategy",
-        description: "Original description",
-        trading_pair: "BTC/USD",
-        timeframe: "1h",
-        status: "draft"
-      })
+      strategy =
+        strategy_fixture(%{
+          user: user,
+          name: "Existing Strategy",
+          description: "Original description",
+          trading_pair: "BTC/USD",
+          timeframe: "1h",
+          status: "draft"
+        })
 
       {:ok, view, html} = live(conn, ~p"/strategies/#{strategy.id}/edit")
 
@@ -212,22 +213,27 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
       assert updated.name == "Updated Inactive"
     end
 
-    test "T048: handles version conflict when strategy is modified elsewhere", %{conn: conn, user: user} do
+    test "T048: handles version conflict when strategy is modified elsewhere", %{
+      conn: conn,
+      user: user
+    } do
       strategy = strategy_fixture(%{user: user, name: "Conflict Test", status: "draft"})
 
       {:ok, view, _html} = live(conn, ~p"/strategies/#{strategy.id}/edit")
 
       # Simulate another update happening elsewhere (increment lock_version)
-      {:ok, _updated} = Strategies.update_strategy(
-        strategy,
-        %{description: "Updated elsewhere"},
-        user
-      )
+      {:ok, _updated} =
+        Strategies.update_strategy(
+          strategy,
+          %{description: "Updated elsewhere"},
+          user
+        )
 
       # Now try to save this form - should detect stale version
-      result = view
-      |> form("#strategy-form", strategy: %{"name" => "My Update"})
-      |> render_submit()
+      result =
+        view
+        |> form("#strategy-form", strategy: %{"name" => "My Update"})
+        |> render_submit()
 
       # Should show error about version conflict
       html = render(view)
@@ -247,7 +253,8 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
 
         {:error, {:live_redirect, %{to: redirect_path}}} ->
           # Or it should redirect away
-          assert redirect_path == ~p"/strategies/#{strategy.id}" or redirect_path == ~p"/strategies"
+          assert redirect_path == ~p"/strategies/#{strategy.id}" or
+                   redirect_path == ~p"/strategies"
       end
     end
 
@@ -262,7 +269,8 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
           assert html =~ "archived" or html =~ "cannot edit" or html =~ "read-only"
 
         {:error, {:live_redirect, %{to: redirect_path}}} ->
-          assert redirect_path == ~p"/strategies/#{strategy.id}" or redirect_path == ~p"/strategies"
+          assert redirect_path == ~p"/strategies/#{strategy.id}" or
+                   redirect_path == ~p"/strategies"
       end
     end
 
@@ -327,6 +335,7 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
 
       # Test maximum length validation
       long_name = String.duplicate("A", 201)
+
       view
       |> form("#strategy-form", strategy: %{"name" => long_name})
       |> render_change()
@@ -349,7 +358,10 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
       refute html =~ "xml"
     end
 
-    test "T033: displays uniqueness validation error for duplicate strategy name", %{conn: conn, user: user} do
+    test "T033: displays uniqueness validation error for duplicate strategy name", %{
+      conn: conn,
+      user: user
+    } do
       # Create an existing strategy
       _existing_strategy = strategy_fixture(%{user: user, name: "Existing Strategy", version: 1})
 
@@ -357,13 +369,15 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
 
       # Fill form with duplicate name
       view
-      |> form("#strategy-form", strategy: %{
-        "name" => "Existing Strategy",
-        "format" => "yaml",
-        "content" => valid_yaml_strategy(),
-        "trading_pair" => "BTC/USD",
-        "timeframe" => "1h"
-      })
+      |> form("#strategy-form",
+        strategy: %{
+          "name" => "Existing Strategy",
+          "format" => "yaml",
+          "content" => valid_yaml_strategy(),
+          "trading_pair" => "BTC/USD",
+          "timeframe" => "1h"
+        }
+      )
       |> render_change()
 
       # Note: uniqueness check happens on blur, so we need to trigger it explicitly
@@ -378,13 +392,15 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
 
       # Fill form with invalid YAML
       view
-      |> form("#strategy-form", strategy: %{
-        "name" => "Invalid DSL Strategy",
-        "format" => "yaml",
-        "content" => "invalid: yaml: content: [[[",
-        "trading_pair" => "BTC/USD",
-        "timeframe" => "1h"
-      })
+      |> form("#strategy-form",
+        strategy: %{
+          "name" => "Invalid DSL Strategy",
+          "format" => "yaml",
+          "content" => "invalid: yaml: content: [[[",
+          "trading_pair" => "BTC/USD",
+          "timeframe" => "1h"
+        }
+      )
       |> render_change()
 
       html = render(view)
@@ -401,10 +417,12 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
       start_time = System.monotonic_time(:millisecond)
 
       view
-      |> form("#strategy-form", strategy: %{
-        "name" => "",
-        "content" => "invalid"
-      })
+      |> form("#strategy-form",
+        strategy: %{
+          "name" => "",
+          "content" => "invalid"
+        }
+      )
       |> render_change()
 
       end_time = System.monotonic_time(:millisecond)
@@ -423,19 +441,22 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
 
       # Fill form with valid YAML strategy
       view
-      |> form("#strategy-form", strategy: %{
-        "name" => "Syntax Test Strategy",
-        "format" => "yaml",
-        "content" => valid_yaml_strategy(),
-        "trading_pair" => "BTC/USD",
-        "timeframe" => "1h"
-      })
+      |> form("#strategy-form",
+        strategy: %{
+          "name" => "Syntax Test Strategy",
+          "format" => "yaml",
+          "content" => valid_yaml_strategy(),
+          "trading_pair" => "BTC/USD",
+          "timeframe" => "1h"
+        }
+      )
       |> render_change()
 
       # Click the "Test Syntax" button
-      html = view
-      |> element("button[phx-click=\"test_syntax\"]")
-      |> render_click()
+      html =
+        view
+        |> element("button[phx-click=\"test_syntax\"]")
+        |> render_click()
 
       # Should show success message with parsed strategy summary
       assert html =~ "success" or html =~ "valid" or html =~ "passed"
@@ -451,19 +472,22 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
 
       # Fill form with invalid YAML
       view
-      |> form("#strategy-form", strategy: %{
-        "name" => "Invalid Syntax Test",
-        "format" => "yaml",
-        "content" => "invalid: [yaml: structure: {{{",
-        "trading_pair" => "BTC/USD",
-        "timeframe" => "1h"
-      })
+      |> form("#strategy-form",
+        strategy: %{
+          "name" => "Invalid Syntax Test",
+          "format" => "yaml",
+          "content" => "invalid: [yaml: structure: {{{",
+          "trading_pair" => "BTC/USD",
+          "timeframe" => "1h"
+        }
+      )
       |> render_change()
 
       # Click the "Test Syntax" button
-      html = view
-      |> element("button[phx-click=\"test_syntax\"]")
-      |> render_click()
+      html =
+        view
+        |> element("button[phx-click=\"test_syntax\"]")
+        |> render_click()
 
       # Should show error message
       assert html =~ "error" or html =~ "invalid" or html =~ "failed"
@@ -497,13 +521,15 @@ defmodule TradingStrategyWeb.StrategyLive.FormTest do
       """
 
       view
-      |> form("#strategy-form", strategy: %{
-        "name" => "Complex Syntax Test",
-        "format" => "yaml",
-        "content" => complex_strategy,
-        "trading_pair" => "BTC/USD",
-        "timeframe" => "1h"
-      })
+      |> form("#strategy-form",
+        strategy: %{
+          "name" => "Complex Syntax Test",
+          "format" => "yaml",
+          "content" => complex_strategy,
+          "trading_pair" => "BTC/USD",
+          "timeframe" => "1h"
+        }
+      )
       |> render_change()
 
       # Measure syntax test time

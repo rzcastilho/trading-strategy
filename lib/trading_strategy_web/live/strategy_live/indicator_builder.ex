@@ -21,6 +21,7 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
   use TradingStrategyWeb, :live_component
 
   alias Phoenix.LiveView.JS
+  alias TradingStrategy.StrategyEditor.IndicatorMetadata
 
   @available_indicators %{
     "sma" => %{
@@ -114,16 +115,22 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
      |> assign(:available_indicators, @available_indicators)
      |> assign(:new_indicator_type, nil)
      |> assign(:new_indicator_params, %{})
-     |> assign(:show_add_form, false)}
+     |> assign(:show_add_form, false)
+     |> assign(:indicator_help_text, nil)}
   end
 
   @impl true
   def update(%{indicators: indicators} = assigns, socket) when is_list(indicators) do
     # Update from parent with existing indicators
+    normalized_indicators =
+      indicators
+      |> normalize_indicators()
+      |> enrich_indicators_with_metadata()
+
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:selected_indicators, normalize_indicators(indicators))}
+     |> assign(:selected_indicators, normalized_indicators)}
   end
 
   def update(assigns, socket) do
@@ -150,9 +157,24 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
       <%= if @show_add_form do %>
         <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Select Indicator Type
-            </label>
+            <div class="flex items-center gap-2 mb-2">
+              <label class="block text-sm font-medium text-gray-700">
+                Select Indicator Type
+              </label>
+
+              <%= if assigns[:indicator_help_text] do %>
+                <.tooltip id="indicator-output-info" content={@indicator_help_text} position="right">
+                  <button
+                    type="button"
+                    class="btn btn-circle btn-ghost btn-xs"
+                    aria-label="View indicator output values"
+                  >
+                    <.icon name="hero-information-circle" class="size-4" />
+                  </button>
+                </.tooltip>
+              <% end %>
+            </div>
+
             <select
               name="indicator_type"
               phx-change="select_indicator_type"
@@ -236,6 +258,23 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
                   <h4 class="font-medium text-gray-900">
                     <%= get_indicator_name(indicator.type, @available_indicators) %>
                   </h4>
+
+                  <%= if indicator[:help_text] do %>
+                    <.tooltip
+                      id={"configured-#{indicator.id}-info"}
+                      content={format_configured_indicator_help(indicator)}
+                      position="left"
+                    >
+                      <button
+                        type="button"
+                        class="btn btn-circle btn-ghost btn-xs"
+                        aria-label={"View #{get_indicator_name(indicator.type, @available_indicators)} output values"}
+                      >
+                        <.icon name="hero-information-circle" class="size-4" />
+                      </button>
+                    </.tooltip>
+                  <% end %>
+
                   <span class={[
                     "px-2 py-0.5 text-xs rounded-full",
                     if(indicator.valid?, do: "bg-green-100 text-green-800", else: "bg-red-100 text-red-800")
@@ -297,7 +336,8 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
     {:noreply,
      socket
      |> assign(:new_indicator_type, type)
-     |> assign(:new_indicator_params, default_params)}
+     |> assign(:new_indicator_params, default_params)
+     |> maybe_fetch_indicator_help(type)}
   end
 
   @impl true
@@ -312,12 +352,20 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
     type = socket.assigns.new_indicator_type
     params = socket.assigns.new_indicator_params
 
+    # Fetch metadata for the new indicator
+    help_text =
+      case IndicatorMetadata.format_help(type) do
+        {:ok, text} -> text
+        {:error, _reason} -> nil
+      end
+
     # Create new indicator
     new_indicator = %{
       id: generate_indicator_id(),
       type: type,
       params: params,
-      valid?: validate_indicator(type, params, socket.assigns.available_indicators)
+      valid?: validate_indicator(type, params, socket.assigns.available_indicators),
+      help_text: help_text
     }
 
     # Add to selected indicators
@@ -359,6 +407,20 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
 
   # Private helpers
 
+  defp maybe_fetch_indicator_help(socket, indicator_type)
+       when is_binary(indicator_type) and indicator_type != "" do
+    case IndicatorMetadata.format_help(indicator_type) do
+      {:ok, help_text} ->
+        assign(socket, :indicator_help_text, help_text)
+
+      {:error, _reason} ->
+        # Graceful degradation - no tooltip will be shown
+        assign(socket, :indicator_help_text, nil)
+    end
+  end
+
+  defp maybe_fetch_indicator_help(socket, _), do: assign(socket, :indicator_help_text, nil)
+
   defp normalize_indicators(indicators) when is_list(indicators) do
     Enum.map(indicators, fn indicator ->
       %{
@@ -367,6 +429,18 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
         params: indicator[:params] || indicator["params"] || %{},
         valid?: indicator[:valid?] || true
       }
+    end)
+  end
+
+  defp enrich_indicators_with_metadata(indicators) when is_list(indicators) do
+    Enum.map(indicators, fn indicator ->
+      help_text =
+        case IndicatorMetadata.format_help(indicator.type) do
+          {:ok, text} -> text
+          {:error, _reason} -> nil
+        end
+
+      Map.put(indicator, :help_text, help_text)
     end)
   end
 
@@ -421,4 +495,37 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
   end
 
   defp format_indicator_params(_), do: ""
+
+  defp format_configured_indicator_help(indicator) do
+    base_help = indicator.help_text || "Output information unavailable"
+
+    # Generate instance name based on type and params
+    instance_name = generate_instance_name(indicator.type, indicator.params)
+
+    # Append instance-specific usage example if metadata is available
+    if indicator.help_text do
+      """
+      #{base_help}
+
+      ---
+      Your configured instance: #{instance_name}
+      Parameters: #{format_indicator_params(indicator.params)}
+      """
+    else
+      base_help
+    end
+  end
+
+  defp generate_instance_name(type, params) do
+    # Generate instance name following naming convention: {type}_{period}
+    period =
+      cond do
+        params["period"] -> params["period"]
+        params[:period] -> params[:period]
+        # For multi-parameter indicators like MACD, use default notation
+        true -> "1"
+      end
+
+    "#{type}_#{period}"
+  end
 end

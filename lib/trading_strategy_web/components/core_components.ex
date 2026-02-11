@@ -437,6 +437,59 @@ defmodule TradingStrategyWeb.CoreComponents do
   end
 
   @doc """
+  Renders a tooltip with keyboard accessibility.
+
+  Provides an accessible tooltip that can be triggered by hover, click, or keyboard navigation.
+  Implements WCAG 2.1 Success Criterion 1.4.13 (Content on Hover or Focus).
+
+  ## Examples
+
+      <.tooltip id="bb-output-info" content={@indicator_help_text}>
+        <button type="button" class="btn btn-circle btn-ghost btn-xs">
+          <.icon name="hero-information-circle" class="size-4" />
+        </button>
+      </.tooltip>
+
+      <.tooltip id="rsi-help" content="RSI values range from 0-100" position="right">
+        <.icon name="hero-question-mark-circle" class="size-4" />
+      </.tooltip>
+  """
+  attr :id, :string, required: true, doc: "Unique identifier for this tooltip instance"
+  attr :content, :string, required: true, doc: "Tooltip text content"
+  attr :position, :string, default: "top", values: ~w(top bottom left right), doc: "Tooltip placement preference"
+  slot :inner_block, required: true, doc: "Trigger element (button, icon, etc.)"
+
+  def tooltip(assigns) do
+    ~H"""
+    <div
+      id={"#{@id}-container"}
+      class="tooltip-container inline-block relative"
+      phx-hook="TooltipHook"
+      data-tooltip-id={@id}
+      data-tooltip-position={@position}
+    >
+      <div
+        id={"#{@id}-trigger"}
+        class="tooltip-trigger cursor-pointer"
+        tabindex="0"
+        role="button"
+        aria-describedby={"#{@id}-content"}
+        aria-expanded="false"
+      >
+        {render_slot(@inner_block)}
+      </div>
+      <div
+        id={"#{@id}-content"}
+        role="tooltip"
+        class="tooltip-content hidden absolute z-50 bg-base-300 text-base-content rounded-lg px-3 py-2 text-sm max-w-xs shadow-lg whitespace-pre-line"
+      >
+        {@content}
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
   Renders a [Heroicon](https://heroicons.com).
 
   Heroicons come in three styles – outline, solid, and mini.

@@ -1,4 +1,4 @@
-defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilderTest do
+defmodule TradingStrategyWeb.StrategyBuilderLive.IndicatorBuilderTest do
   use TradingStrategyWeb.ConnCase
   use Wallaby.Feature
 

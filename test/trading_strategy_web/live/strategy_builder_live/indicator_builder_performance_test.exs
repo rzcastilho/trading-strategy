@@ -1,4 +1,4 @@
-defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilderPerformanceTest do
+defmodule TradingStrategyWeb.StrategyBuilderLive.IndicatorBuilderPerformanceTest do
   @moduledoc """
   Performance tests for IndicatorBuilder LiveComponent tooltip display.
 

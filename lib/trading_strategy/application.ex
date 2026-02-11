@@ -33,6 +33,9 @@ defmodule TradingStrategy.Application do
 
     case Supervisor.start_link(children, opts) do
       {:ok, pid} = result ->
+        # Feature 005: Attach telemetry handlers for strategy editor
+        TradingStrategy.StrategyEditor.Telemetry.attach_default_handlers()
+
         # Detect and mark stale running sessions from previous application run
         # Skip in test environment to avoid DBConnection.OwnershipError with Sandbox
         if Mix.env() != :test do

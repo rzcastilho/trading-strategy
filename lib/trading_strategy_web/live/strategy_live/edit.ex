@@ -263,12 +263,15 @@ defmodule TradingStrategyWeb.StrategyLive.Edit do
 
               # Push change event to undo stack
               change_event = %ChangeEvent{
+                id: Ecto.UUID.generate(),
+                timestamp: DateTime.utc_now(),
                 session_id: socket.assigns.session_id,
                 source: :dsl,
                 operation_type: :update_dsl_text,
                 path: ["dsl_text"],
                 delta: {socket.assigns.dsl_text, dsl_text},
-                user_id: socket.assigns.current_user.id,
+                inverse: {dsl_text, socket.assigns.dsl_text},
+                user_id: socket.assigns.current_scope.user.id,
                 version: (socket.assigns[:version] || 0) + 1
               }
 
@@ -472,21 +475,6 @@ defmodule TradingStrategyWeb.StrategyLive.Edit do
 
         {:noreply, socket}
     end
-  end
-
-  @impl true
-  def handle_event("validate_dsl", _params, socket) do
-    # T056: Manual validation trigger
-    # Validate the DSL text and display errors
-
-    # TODO: Implement validation using Validator module
-
-    socket =
-      socket
-      |> assign(:validation_result, ValidationResult.success())
-      |> put_flash(:info, "Validation passed")
-
-    {:noreply, socket}
   end
 
   # Message Handlers
@@ -734,7 +722,7 @@ defmodule TradingStrategyWeb.StrategyLive.Edit do
             <textarea
               class="w-full h-full p-4"
               placeholder="# DSL code will appear here..."
-              phx-debounce={@debounce_delay}
+              phx-debounce="300"
             ><%= @dsl_text %></textarea>
           </div>
 

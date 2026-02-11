@@ -378,29 +378,60 @@ defmodule TradingStrategy.StrategyEditor.Validator do
     end)
   end
 
+  # Whitelist of valid indicator parameter keys to prevent atom exhaustion
+  @valid_param_keys ~w(
+    period fast_period slow_period signal_period
+    std_dev k_period d_period
+    multiplier upper lower
+    smoothing length
+  )a
+
   defp parse_indicator_params(params_str) do
     # Parse "period: 14" or "period: -5", etc.
+    # SECURITY: Use whitelist to prevent atom exhaustion attacks
     params_str
     |> String.split(",")
     |> Enum.reduce(%{}, fn param, acc ->
       case String.split(param, ":", parts: 2) do
         [key, value] ->
-          key = String.trim(key) |> String.to_atom()
+          key_str = String.trim(key)
           value = String.trim(value)
 
-          # Try to parse as integer
-          parsed_value =
-            case Integer.parse(value) do
-              {int, ""} -> int
-              _ -> value
-            end
+          # SECURITY FIX: Only convert whitelisted keys to atoms
+          case safe_string_to_atom(key_str) do
+            {:ok, key_atom} ->
+              # Try to parse as integer
+              parsed_value =
+                case Integer.parse(value) do
+                  {int, ""} -> int
+                  _ -> value
+                end
 
-          Map.put(acc, key, parsed_value)
+              Map.put(acc, key_atom, parsed_value)
+
+            {:error, _} ->
+              # Invalid/unknown parameter key - skip it
+              acc
+          end
 
         _ ->
           acc
       end
     end)
+  end
+
+  # Safely convert string to atom only if it's in the whitelist
+  defp safe_string_to_atom(str) do
+    atom = String.to_atom(str)
+
+    if atom in @valid_param_keys do
+      {:ok, atom}
+    else
+      {:error, :invalid_key}
+    end
+  rescue
+    ArgumentError ->
+      {:error, :invalid_atom}
   end
 
   # Step 3: Detect Unsupported Features (T052 - FR-009)

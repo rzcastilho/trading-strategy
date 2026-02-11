@@ -13,7 +13,7 @@ import { EditorView, basicSetup } from "codemirror";
 import { EditorState, Compartment } from "@codemirror/state";
 import { javascript } from "@codemirror/lang-javascript";
 import { syntaxTree } from "@codemirror/language";
-import { Decoration, DecorationSet } from "@codemirror/view";
+import { Decoration } from "@codemirror/view";
 
 const DSLEditorHook = {
   mounted() {

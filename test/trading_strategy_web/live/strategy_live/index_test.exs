@@ -60,7 +60,9 @@ defmodule TradingStrategyWeb.StrategyLive.IndexTest do
 
     test "filters strategies by status - inactive", %{conn: conn, user: user} do
       _draft_strategy = strategy_fixture(user: user, name: "Draft Strategy", status: "draft")
-      inactive_strategy = strategy_fixture(user: user, name: "Inactive Strategy", status: "inactive")
+
+      inactive_strategy =
+        strategy_fixture(user: user, name: "Inactive Strategy", status: "inactive")
 
       {:ok, _view, html} = live(conn, ~p"/strategies?status=inactive")
 
@@ -71,7 +73,8 @@ defmodule TradingStrategyWeb.StrategyLive.IndexTest do
     test "shows empty state when no strategies exist", %{conn: conn} do
       {:ok, _view, html} = live(conn, ~p"/strategies")
 
-      assert html =~ "No strategies" # Text is "No strategies" not "No strategies found"
+      # Text is "No strategies" not "No strategies found"
+      assert html =~ "No strategies"
       assert html =~ "Get started by creating a new strategy"
     end
 
@@ -126,11 +129,12 @@ defmodule TradingStrategyWeb.StrategyLive.IndexTest do
       assert html =~ "draft"
 
       # Update strategy
-      {:ok, _updated} = TradingStrategy.Strategies.update_strategy(
-        strategy,
-        %{name: "Updated Name", status: "active"},
-        user
-      )
+      {:ok, _updated} =
+        TradingStrategy.Strategies.update_strategy(
+          strategy,
+          %{name: "Updated Name", status: "active"},
+          user
+        )
 
       # Give LiveView time to receive PubSub message
       :timer.sleep(100)

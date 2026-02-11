@@ -343,7 +343,11 @@ defmodule TradingStrategyWeb.StrategyLive.Form do
         end
 
       :edit ->
-        case Strategies.update_strategy(socket.assigns.strategy, params, socket.assigns.current_scope.user) do
+        case Strategies.update_strategy(
+               socket.assigns.strategy,
+               params,
+               socket.assigns.current_scope.user
+             ) do
           {:ok, strategy} ->
             {:noreply,
              socket
@@ -507,7 +511,8 @@ defmodule TradingStrategyWeb.StrategyLive.Form do
   rescue
     Ecto.StaleEntryError ->
       # Version conflict - reload latest version
-      latest = Strategies.get_strategy(socket.assigns.strategy.id, socket.assigns.current_scope.user)
+      latest =
+        Strategies.get_strategy(socket.assigns.strategy.id, socket.assigns.current_scope.user)
 
       {:noreply,
        socket

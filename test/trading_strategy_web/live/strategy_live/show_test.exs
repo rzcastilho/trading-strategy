@@ -9,14 +9,15 @@ defmodule TradingStrategyWeb.StrategyLive.ShowTest do
 
   describe "Show" do
     test "mounts and displays strategy details", %{conn: conn, user: user} do
-      strategy = strategy_fixture(
-        user: user,
-        name: "Test Strategy",
-        description: "A test trading strategy",
-        trading_pair: "BTC/USD",
-        timeframe: "1h",
-        status: "draft"
-      )
+      strategy =
+        strategy_fixture(
+          user: user,
+          name: "Test Strategy",
+          description: "A test trading strategy",
+          trading_pair: "BTC/USD",
+          timeframe: "1h",
+          status: "draft"
+        )
 
       {:ok, _view, html} = live(conn, ~p"/strategies/#{strategy.id}")
 
@@ -157,18 +158,20 @@ defmodule TradingStrategyWeb.StrategyLive.ShowTest do
 
       # Check for link to strategies list (uses SVG arrow, not text "Back")
       assert html =~ ~p"/strategies"
-      assert html =~ "M10 19l-7-7m0 0l7-7m-7 7h18" # SVG path for back arrow
+      # SVG path for back arrow
+      assert html =~ "M10 19l-7-7m0 0l7-7m-7 7h18"
     end
 
     test "displays strategy metadata if present", %{conn: conn, user: user} do
-      strategy = strategy_fixture(
-        user: user,
-        name: "Strategy with Metadata",
-        metadata: %{
-          "last_validation_at" => "2026-02-08T10:30:00Z",
-          "syntax_test_passed" => true
-        }
-      )
+      strategy =
+        strategy_fixture(
+          user: user,
+          name: "Strategy with Metadata",
+          metadata: %{
+            "last_validation_at" => "2026-02-08T10:30:00Z",
+            "syntax_test_passed" => true
+          }
+        )
 
       {:ok, _view, html} = live(conn, ~p"/strategies/#{strategy.id}")
 
@@ -209,14 +212,15 @@ defmodule TradingStrategyWeb.StrategyLive.ShowTest do
     end
 
     test "duplicates strategy when duplicate button clicked", %{conn: conn, user: user} do
-      strategy = strategy_fixture(
-        user: user,
-        name: "Original Strategy",
-        description: "Original description",
-        trading_pair: "BTC/USD",
-        timeframe: "1h",
-        status: "draft"
-      )
+      strategy =
+        strategy_fixture(
+          user: user,
+          name: "Original Strategy",
+          description: "Original description",
+          trading_pair: "BTC/USD",
+          timeframe: "1h",
+          status: "draft"
+        )
 
       {:ok, view, _html} = live(conn, ~p"/strategies/#{strategy.id}")
 

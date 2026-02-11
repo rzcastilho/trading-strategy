@@ -82,13 +82,14 @@ defmodule TradingStrategy.Backtesting.ConcurrencyManager do
   def init(opts) do
     max_concurrent =
       Keyword.get(opts, :max_concurrent) ||
-      Application.get_env(:trading_strategy, :max_concurrent_backtests, @default_max_concurrent)
+        Application.get_env(:trading_strategy, :max_concurrent_backtests, @default_max_concurrent)
 
     state = %{
       running: MapSet.new(),
       queue: :queue.new(),
       max_concurrent: max_concurrent,
-      waiting: %{}  # Map of session_id -> from_pid for replying when slot available
+      # Map of session_id -> from_pid for replying when slot available
+      waiting: %{}
     }
 
     Logger.info("ConcurrencyManager started (max concurrent: #{max_concurrent})")
@@ -105,7 +106,11 @@ defmodule TradingStrategy.Backtesting.ConcurrencyManager do
       # Slot available - grant immediately
       MapSet.size(state.running) < state.max_concurrent ->
         new_running = MapSet.put(state.running, session_id)
-        Logger.debug("Granted slot to session #{session_id} (#{MapSet.size(new_running)}/#{state.max_concurrent})")
+
+        Logger.debug(
+          "Granted slot to session #{session_id} (#{MapSet.size(new_running)}/#{state.max_concurrent})"
+        )
+
         {:reply, {:ok, :granted}, %{state | running: new_running}}
 
       # No slots available - add to queue
@@ -114,10 +119,13 @@ defmodule TradingStrategy.Backtesting.ConcurrencyManager do
         new_waiting = Map.put(state.waiting, session_id, from)
         queue_position = :queue.len(new_queue)
 
-        Logger.info("Session #{session_id} queued (position: #{queue_position}, running: #{MapSet.size(state.running)})")
+        Logger.info(
+          "Session #{session_id} queued (position: #{queue_position}, running: #{MapSet.size(state.running)})"
+        )
 
         # Reply immediately with queued status
-        {:reply, {:ok, {:queued, queue_position}}, %{state | queue: new_queue, waiting: new_waiting}}
+        {:reply, {:ok, {:queued, queue_position}},
+         %{state | queue: new_queue, waiting: new_waiting}}
     end
   end
 
@@ -149,7 +157,10 @@ defmodule TradingStrategy.Backtesting.ConcurrencyManager do
     # Only release if actually running
     if MapSet.member?(state.running, session_id) do
       new_running = MapSet.delete(state.running, session_id)
-      Logger.debug("Released slot for session #{session_id} (#{MapSet.size(new_running)}/#{state.max_concurrent})")
+
+      Logger.debug(
+        "Released slot for session #{session_id} (#{MapSet.size(new_running)}/#{state.max_concurrent})"
+      )
 
       # Check if there are queued backtests
       case :queue.out(state.queue) do

@@ -10,7 +10,14 @@ defmodule TradingStrategy.Backtesting do
 
   alias TradingStrategy.Backtesting.Engine
   alias TradingStrategy.{Strategies, MarketData, Repo}
-  alias TradingStrategy.Backtesting.{TradingSession, ProgressTracker, ConcurrencyManager, Supervisor}
+
+  alias TradingStrategy.Backtesting.{
+    TradingSession,
+    ProgressTracker,
+    ConcurrencyManager,
+    Supervisor
+  }
+
   require Logger
 
   import Ecto.Query
@@ -90,7 +97,8 @@ defmodule TradingStrategy.Backtesting do
         case ConcurrencyManager.request_slot(session_id) do
           {:ok, :granted} ->
             # Slot available - start backtest immediately
-            session = session
+            session =
+              session
               |> TradingSession.changeset(%{
                 status: "running",
                 started_at: DateTime.utc_now()
@@ -104,14 +112,16 @@ defmodule TradingStrategy.Backtesting do
 
           {:ok, {:queued, position}} ->
             # No slot available - queue the backtest
-            session = session
+            session =
+              session
               |> TradingSession.changeset(%{
                 status: "queued",
                 queued_at: DateTime.utc_now(),
-                metadata: Map.merge(session.metadata || %{}, %{
-                  queue_position: position,
-                  queued_at: DateTime.utc_now()
-                })
+                metadata:
+                  Map.merge(session.metadata || %{}, %{
+                    queue_position: position,
+                    queued_at: DateTime.utc_now()
+                  })
               })
               |> Repo.update!()
 
@@ -242,10 +252,11 @@ defmodule TradingStrategy.Backtesting do
         |> TradingSession.changeset(%{
           status: "cancelled",
           ended_at: DateTime.utc_now(),
-          metadata: Map.merge(session.metadata || %{}, %{
-            cancelled_at: DateTime.utc_now(),
-            cancellation_reason: "user_requested"
-          })
+          metadata:
+            Map.merge(session.metadata || %{}, %{
+              cancelled_at: DateTime.utc_now(),
+              cancellation_reason: "user_requested"
+            })
         })
         |> Repo.update()
 
@@ -258,10 +269,11 @@ defmodule TradingStrategy.Backtesting do
         |> TradingSession.changeset(%{
           status: "cancelled",
           ended_at: DateTime.utc_now(),
-          metadata: Map.merge(session.metadata || %{}, %{
-            cancelled_at: DateTime.utc_now(),
-            cancellation_reason: "user_requested"
-          })
+          metadata:
+            Map.merge(session.metadata || %{}, %{
+              cancelled_at: DateTime.utc_now(),
+              cancellation_reason: "user_requested"
+            })
         })
         |> Repo.update()
 
@@ -568,9 +580,17 @@ defmodule TradingStrategy.Backtesting do
       total_return: safe_decimal.(result.metrics.total_return_abs),
       total_return_pct: safe_decimal.(result.metrics.total_return),
       # Convert percentage to decimal (handle nil for 0 trades)
-      win_rate: if(result.metrics.win_rate, do: Decimal.from_float(result.metrics.win_rate / 100.0), else: Decimal.new("0")),
+      win_rate:
+        if(result.metrics.win_rate,
+          do: Decimal.from_float(result.metrics.win_rate / 100.0),
+          else: Decimal.new("0")
+        ),
       max_drawdown: safe_decimal.(result.metrics.max_drawdown),
-      max_drawdown_pct: if(result.metrics.max_drawdown, do: Decimal.from_float(abs(result.metrics.max_drawdown) / 100.0), else: Decimal.new("0")),
+      max_drawdown_pct:
+        if(result.metrics.max_drawdown,
+          do: Decimal.from_float(abs(result.metrics.max_drawdown) / 100.0),
+          else: Decimal.new("0")
+        ),
       sharpe_ratio: safe_decimal.(result.metrics.sharpe_ratio),
       total_trades: result.metrics.trade_count || 0,
       winning_trades: result.metrics.winning_trades || 0,
@@ -602,8 +622,8 @@ defmodule TradingStrategy.Backtesting do
   end
 
   defp get_running_progress(session, backtest_id) do
+    # Try to get progress from ProgressTracker
     base_progress =
-      # Try to get progress from ProgressTracker
       case ProgressTracker.get(backtest_id) do
         {:ok, progress} ->
           %{
@@ -631,7 +651,10 @@ defmodule TradingStrategy.Backtesting do
 
     # Add queue information if queued
     if session.status == "queued" do
-      queue_position = get_in(session.metadata, ["queue_position"]) || get_in(session.metadata, [:queue_position])
+      queue_position =
+        get_in(session.metadata, ["queue_position"]) ||
+          get_in(session.metadata, [:queue_position])
+
       Map.put(base_progress, :queue_position, queue_position)
     else
       base_progress
@@ -720,11 +743,18 @@ defmodule TradingStrategy.Backtesting do
     config =
       if session.config && map_size(session.config) > 0 do
         %{
-          trading_pair: Map.get(session.config, "trading_pair") || Map.get(session.config, :trading_pair) || "BTC/USD",
-          start_time: Map.get(session.config, "start_time") || Map.get(session.config, :start_time) || session.started_at,
-          end_time: Map.get(session.config, "end_time") || Map.get(session.config, :end_time) || session.ended_at,
+          trading_pair:
+            Map.get(session.config, "trading_pair") || Map.get(session.config, :trading_pair) ||
+              "BTC/USD",
+          start_time:
+            Map.get(session.config, "start_time") || Map.get(session.config, :start_time) ||
+              session.started_at,
+          end_time:
+            Map.get(session.config, "end_time") || Map.get(session.config, :end_time) ||
+              session.ended_at,
           initial_capital: session.initial_capital,
-          timeframe: Map.get(session.config, "timeframe") || Map.get(session.config, :timeframe) || "1h"
+          timeframe:
+            Map.get(session.config, "timeframe") || Map.get(session.config, :timeframe) || "1h"
         }
       else
         %{
@@ -742,7 +772,8 @@ defmodule TradingStrategy.Backtesting do
       config: config,
       performance_metrics: metrics,
       trades: trades,
-      equity_curve: equity_curve,  # Now populated from database
+      # Now populated from database
+      equity_curve: equity_curve,
       started_at: session.started_at,
       completed_at: session.ended_at,
       data_quality_warnings: []
@@ -905,11 +936,19 @@ defmodule TradingStrategy.Backtesting do
 
           {:error, reason} ->
             Logger.error("Backtest #{session.id} failed: #{inspect(reason)}")
-            mark_as_failed(session.id, "execution_error", "Backtest execution failed: #{inspect(reason)}")
+
+            mark_as_failed(
+              session.id,
+              "execution_error",
+              "Backtest execution failed: #{inspect(reason)}"
+            )
         end
       rescue
         error ->
-          Logger.error("Backtest #{session.id} crashed: #{inspect(error)}\n#{Exception.format_stacktrace()}")
+          Logger.error(
+            "Backtest #{session.id} crashed: #{inspect(error)}\n#{Exception.format_stacktrace()}"
+          )
+
           mark_as_failed(session.id, "crash", "Backtest crashed: #{inspect(error)}")
       end
     end
@@ -962,14 +1001,16 @@ defmodule TradingStrategy.Backtesting do
 
       session ->
         # Preserve checkpoint data if it exists
-        updated_metadata = Map.merge(session.metadata || %{}, %{
-          "error_type" => error_type,
-          "error_message" => error_message,
-          "partial_data_saved" => true,
-          "failed_at" => DateTime.to_iso8601(DateTime.utc_now())
-        })
+        updated_metadata =
+          Map.merge(session.metadata || %{}, %{
+            "error_type" => error_type,
+            "error_message" => error_message,
+            "partial_data_saved" => true,
+            "failed_at" => DateTime.to_iso8601(DateTime.utc_now())
+          })
 
-        updated_session = session
+        updated_session =
+          session
           |> TradingSession.changeset(%{
             status: "error",
             ended_at: DateTime.utc_now(),
@@ -1014,7 +1055,9 @@ defmodule TradingStrategy.Backtesting do
         "Backtest interrupted by application restart#{checkpoint_info}"
       )
 
-      Logger.warning("Marked stale backtest session #{session.id} as failed (was running before restart)")
+      Logger.warning(
+        "Marked stale backtest session #{session.id} as failed (was running before restart)"
+      )
     end)
 
     {:ok, length(stale_sessions)}
@@ -1032,7 +1075,8 @@ defmodule TradingStrategy.Backtesting do
 
       session ->
         # Update status to running
-        updated_session = session
+        updated_session =
+          session
           |> TradingSession.changeset(%{
             status: "running",
             started_at: DateTime.utc_now()
@@ -1047,12 +1091,14 @@ defmodule TradingStrategy.Backtesting do
   end
 
   defp parse_datetime(%DateTime{} = dt), do: dt
+
   defp parse_datetime(iso_string) when is_binary(iso_string) do
     case DateTime.from_iso8601(iso_string) do
       {:ok, dt, _offset} -> dt
       _ -> DateTime.utc_now()
     end
   end
+
   defp parse_datetime(_), do: DateTime.utc_now()
 
   @doc """

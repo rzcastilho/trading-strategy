@@ -202,14 +202,15 @@ defmodule TradingStrategy.StrategiesTest do
     end
 
     test "T078: successfully duplicates a strategy with ' - Copy' suffix", %{user: user} do
-      original = strategy_fixture(
-        user: user,
-        name: "Original Strategy",
-        description: "Original description",
-        trading_pair: "BTC/USD",
-        timeframe: "1h",
-        status: "draft"
-      )
+      original =
+        strategy_fixture(
+          user: user,
+          name: "Original Strategy",
+          description: "Original description",
+          trading_pair: "BTC/USD",
+          timeframe: "1h",
+          status: "draft"
+        )
 
       assert {:ok, duplicate} = Strategies.duplicate_strategy(original, user)
 
@@ -237,11 +238,12 @@ defmodule TradingStrategy.StrategiesTest do
     end
 
     test "T078: duplicates active strategy as draft", %{user: user} do
-      active_strategy = strategy_fixture(
-        user: user,
-        name: "Active Strategy",
-        status: "active"
-      )
+      active_strategy =
+        strategy_fixture(
+          user: user,
+          name: "Active Strategy",
+          status: "active"
+        )
 
       assert {:ok, duplicate} = Strategies.duplicate_strategy(active_strategy, user)
 
@@ -284,11 +286,12 @@ defmodule TradingStrategy.StrategiesTest do
         "last_validation_at" => "2026-02-08T10:30:00Z"
       }
 
-      original = strategy_fixture(
-        user: user,
-        name: "Strategy with Metadata",
-        metadata: metadata
-      )
+      original =
+        strategy_fixture(
+          user: user,
+          name: "Strategy with Metadata",
+          metadata: metadata
+        )
 
       assert {:ok, duplicate} = Strategies.duplicate_strategy(original, user)
 
@@ -297,18 +300,24 @@ defmodule TradingStrategy.StrategiesTest do
     end
 
     test "T078: duplicate is independent from original", %{user: user} do
-      original = strategy_fixture(
-        user: user,
-        name: "Original Strategy",
-        description: "Original description"
-      )
+      original =
+        strategy_fixture(
+          user: user,
+          name: "Original Strategy",
+          description: "Original description"
+        )
 
       {:ok, duplicate} = Strategies.duplicate_strategy(original, user)
 
       # Modify the duplicate
-      {:ok, updated_duplicate} = Strategies.update_strategy(duplicate, %{
-        description: "Modified description"
-      }, user)
+      {:ok, updated_duplicate} =
+        Strategies.update_strategy(
+          duplicate,
+          %{
+            description: "Modified description"
+          },
+          user
+        )
 
       # Original should remain unchanged
       refreshed_original = Strategies.get_strategy(original.id, user)

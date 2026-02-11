@@ -11,8 +11,10 @@ defmodule TradingStrategy.Backtesting.ProgressTracker do
   require Logger
 
   @table_name :backtest_progress
-  @cleanup_interval 60_000  # 1 minute
-  @stale_threshold 86_400_000  # 24 hours in milliseconds
+  # 1 minute
+  @cleanup_interval 60_000
+  # 24 hours in milliseconds
+  @stale_threshold 86_400_000
 
   ## Client API
 
@@ -43,10 +45,12 @@ defmodule TradingStrategy.Backtesting.ProgressTracker do
   """
   def update(session_id, bars_processed) do
     now = System.monotonic_time(:millisecond)
-    result = :ets.update_element(@table_name, session_id, [
-      {2, bars_processed},
-      {4, now}
-    ])
+
+    result =
+      :ets.update_element(@table_name, session_id, [
+        {2, bars_processed},
+        {4, now}
+      ])
 
     if result do
       :ok

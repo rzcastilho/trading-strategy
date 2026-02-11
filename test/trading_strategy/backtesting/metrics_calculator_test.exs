@@ -63,7 +63,8 @@ defmodule TradingStrategy.Backtesting.MetricsCalculatorTest do
       assert metrics.win_rate == 1.0
       assert metrics.average_win == 150.0
       assert metrics.average_loss == 0.0
-      assert metrics.profit_factor == 999.99  # Infinity case
+      # Infinity case
+      assert metrics.profit_factor == 999.99
       assert metrics.total_return_abs == 450.0
       assert metrics.max_consecutive_wins == 3
       assert metrics.max_consecutive_losses == 0

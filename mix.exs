@@ -61,6 +61,8 @@ defmodule TradingStrategy.MixProject do
       {:decimal, "~> 2.1"},
       {:swoosh, "~> 1.16"},
       {:hackney, "~> 1.9"},
+      # Feature 005: Bidirectional Strategy Editor Synchronization
+      {:sourceror, "~> 1.0"},
       # Test dependencies
       {:floki, ">= 0.30.0", only: :test},
       {:lazy_html, ">= 0.1.0", only: :test}

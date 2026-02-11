@@ -42,7 +42,10 @@ defmodule TradingStrategy.Backtesting.Supervisor do
         {:ok, pid}
 
       {:error, reason} = error ->
-        Logger.error("Failed to start backtest task for session #{session_id}: #{inspect(reason)}")
+        Logger.error(
+          "Failed to start backtest task for session #{session_id}: #{inspect(reason)}"
+        )
+
         error
     end
   end

@@ -15,9 +15,12 @@ defmodule TradingStrategy.BacktestingTest do
       {:ok, strategy_id: strategy.id}
     end
 
-    test "get_backtest_result includes equity curve from performance_metrics", %{strategy_id: strategy_id} do
+    test "get_backtest_result includes equity curve from performance_metrics", %{
+      strategy_id: strategy_id
+    } do
       # Create a trading session directly
-      {:ok, session} = %TradingSession{}
+      {:ok, session} =
+        %TradingSession{}
         |> TradingSession.changeset(%{
           strategy_id: strategy_id,
           mode: "backtest",
@@ -34,6 +37,7 @@ defmodule TradingStrategy.BacktestingTest do
           }
         })
         |> Repo.insert()
+
       session_id = session.id
 
       # Create performance metrics with equity curve
@@ -53,7 +57,8 @@ defmodule TradingStrategy.BacktestingTest do
       }
 
       # Create performance metrics with equity curve
-      {:ok, _metrics} = %PerformanceMetrics{}
+      {:ok, _metrics} =
+        %PerformanceMetrics{}
         |> PerformanceMetrics.changeset(%{
           trading_session_id: session_id,
           total_return: Decimal.new("450.00"),
@@ -84,8 +89,8 @@ defmodule TradingStrategy.BacktestingTest do
 
       # Verify equity curve format
       assert Enum.all?(result.equity_curve, fn point ->
-        Map.has_key?(point, "timestamp") and Map.has_key?(point, "value")
-      end)
+               Map.has_key?(point, "timestamp") and Map.has_key?(point, "value")
+             end)
 
       # Verify first and last values match initial and final capital
       assert hd(result.equity_curve)["value"] == 10000.0
@@ -94,12 +99,17 @@ defmodule TradingStrategy.BacktestingTest do
       # Verify configuration is complete
       assert Map.has_key?(result, :config)
       assert result.config[:trading_pair] == "BTC/USD" or result.config.trading_pair == "BTC/USD"
-      assert Decimal.eq?(result.config[:initial_capital] || result.config.initial_capital, Decimal.new("10000.00"))
+
+      assert Decimal.eq?(
+               result.config[:initial_capital] || result.config.initial_capital,
+               Decimal.new("10000.00")
+             )
     end
 
     test "backtest result with sampled equity curve (>1000 points)", %{strategy_id: strategy_id} do
       # Create a trading session directly
-      {:ok, session} = %TradingSession{}
+      {:ok, session} =
+        %TradingSession{}
         |> TradingSession.changeset(%{
           strategy_id: strategy_id,
           mode: "backtest",
@@ -120,18 +130,21 @@ defmodule TradingStrategy.BacktestingTest do
       session_id = session.id
 
       # Create large equity curve (simulating 5000 points)
-      large_curve = Enum.map(1..5000, fn i ->
-        timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
-        value = 10000.0 + i * 0.5
-        %{
-          "timestamp" => DateTime.to_iso8601(timestamp),
-          "value" => value
-        }
-      end)
+      large_curve =
+        Enum.map(1..5000, fn i ->
+          timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
+          value = 10000.0 + i * 0.5
+
+          %{
+            "timestamp" => DateTime.to_iso8601(timestamp),
+            "value" => value
+          }
+        end)
 
       equity_curve_metadata = %{
         sampled: true,
-        sample_rate: 5,  # Every 5th point included
+        # Every 5th point included
+        sample_rate: 5,
         original_length: 5000,
         trade_points_included: 20
       }
@@ -140,7 +153,8 @@ defmodule TradingStrategy.BacktestingTest do
       sampled_curve = Enum.take_every(large_curve, 5) |> Enum.take(1000)
 
       # Create performance metrics
-      {:ok, _metrics} = %PerformanceMetrics{}
+      {:ok, _metrics} =
+        %PerformanceMetrics{}
         |> PerformanceMetrics.changeset(%{
           trading_session_id: session_id,
           total_return: Decimal.new("2500.00"),
@@ -164,9 +178,10 @@ defmodule TradingStrategy.BacktestingTest do
 
       # Verify metadata indicates sampling (keys are strings in JSONB)
       assert result.performance_metrics.equity_curve_metadata["sampled"] == true or
-             result.performance_metrics.equity_curve_metadata[:sampled] == true
+               result.performance_metrics.equity_curve_metadata[:sampled] == true
+
       assert result.performance_metrics.equity_curve_metadata["original_length"] == 5000 or
-             result.performance_metrics.equity_curve_metadata[:original_length] == 5000
+               result.performance_metrics.equity_curve_metadata[:original_length] == 5000
     end
   end
 
@@ -199,8 +214,29 @@ defmodule TradingStrategy.BacktestingTest do
       max_concurrent = Application.get_env(:trading_strategy, :max_concurrent_backtests, 5)
 
       # Start enough backtests to fill all slots
-      running_sessions = for _ <- 1..max_concurrent do
-        {:ok, session} = Backtesting.create_backtest(%{
+      running_sessions =
+        for _ <- 1..max_concurrent do
+          {:ok, session} =
+            Backtesting.create_backtest(%{
+              strategy_id: strategy_id,
+              trading_pair: "BTC/USD",
+              start_time: ~U[2024-01-01 00:00:00Z],
+              end_time: ~U[2024-01-02 00:00:00Z],
+              initial_capital: Decimal.new("10000.00"),
+              timeframe: "1h"
+            })
+
+          # Start the backtest
+          {:ok, started_session} = Backtesting.start_backtest(session.id)
+          started_session
+        end
+
+      # Verify all are running
+      assert Enum.all?(running_sessions, fn s -> s.status == "running" end)
+
+      # Try to start one more backtest - should be queued
+      {:ok, queued_session} =
+        Backtesting.create_backtest(%{
           strategy_id: strategy_id,
           trading_pair: "BTC/USD",
           start_time: ~U[2024-01-01 00:00:00Z],
@@ -208,39 +244,40 @@ defmodule TradingStrategy.BacktestingTest do
           initial_capital: Decimal.new("10000.00"),
           timeframe: "1h"
         })
-
-        # Start the backtest
-        {:ok, started_session} = Backtesting.start_backtest(session.id)
-        started_session
-      end
-
-      # Verify all are running
-      assert Enum.all?(running_sessions, fn s -> s.status == "running" end)
-
-      # Try to start one more backtest - should be queued
-      {:ok, queued_session} = Backtesting.create_backtest(%{
-        strategy_id: strategy_id,
-        trading_pair: "BTC/USD",
-        start_time: ~U[2024-01-01 00:00:00Z],
-        end_time: ~U[2024-01-02 00:00:00Z],
-        initial_capital: Decimal.new("10000.00"),
-        timeframe: "1h"
-      })
 
       {:ok, queued_result} = Backtesting.start_backtest(queued_session.id)
 
       # Verify it was queued
       assert queued_result.status == "queued"
       assert not is_nil(queued_result.queued_at)
-      assert queued_result.metadata["queue_position"] > 0 or queued_result.metadata[:queue_position] > 0
+
+      assert queued_result.metadata["queue_position"] > 0 or
+               queued_result.metadata[:queue_position] > 0
     end
 
     test "starts queued backtest when slot becomes available", %{strategy_id: strategy_id} do
       max_concurrent = Application.get_env(:trading_strategy, :max_concurrent_backtests, 5)
 
       # Fill all slots
-      running_sessions = for _ <- 1..max_concurrent do
-        {:ok, session} = Backtesting.create_backtest(%{
+      running_sessions =
+        for _ <- 1..max_concurrent do
+          {:ok, session} =
+            Backtesting.create_backtest(%{
+              strategy_id: strategy_id,
+              trading_pair: "BTC/USD",
+              start_time: ~U[2024-01-01 00:00:00Z],
+              end_time: ~U[2024-01-02 00:00:00Z],
+              initial_capital: Decimal.new("10000.00"),
+              timeframe: "1h"
+            })
+
+          {:ok, started_session} = Backtesting.start_backtest(session.id)
+          started_session
+        end
+
+      # Queue one
+      {:ok, queued_session} =
+        Backtesting.create_backtest(%{
           strategy_id: strategy_id,
           trading_pair: "BTC/USD",
           start_time: ~U[2024-01-01 00:00:00Z],
@@ -248,20 +285,6 @@ defmodule TradingStrategy.BacktestingTest do
           initial_capital: Decimal.new("10000.00"),
           timeframe: "1h"
         })
-
-        {:ok, started_session} = Backtesting.start_backtest(session.id)
-        started_session
-      end
-
-      # Queue one
-      {:ok, queued_session} = Backtesting.create_backtest(%{
-        strategy_id: strategy_id,
-        trading_pair: "BTC/USD",
-        start_time: ~U[2024-01-01 00:00:00Z],
-        end_time: ~U[2024-01-02 00:00:00Z],
-        initial_capital: Decimal.new("10000.00"),
-        timeframe: "1h"
-      })
 
       {:ok, queued_result} = Backtesting.start_backtest(queued_session.id)
       assert queued_result.status == "queued"
@@ -311,39 +334,43 @@ defmodule TradingStrategy.BacktestingTest do
       max_concurrent = Application.get_env(:trading_strategy, :max_concurrent_backtests, 5)
 
       # Fill all slots
-      running_sessions = for _ <- 1..max_concurrent do
-        {:ok, session} = Backtesting.create_backtest(%{
-          strategy_id: strategy_id,
-          trading_pair: "BTC/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-02 00:00:00Z],
-          initial_capital: Decimal.new("10000.00"),
-          timeframe: "1h"
-        })
+      running_sessions =
+        for _ <- 1..max_concurrent do
+          {:ok, session} =
+            Backtesting.create_backtest(%{
+              strategy_id: strategy_id,
+              trading_pair: "BTC/USD",
+              start_time: ~U[2024-01-01 00:00:00Z],
+              end_time: ~U[2024-01-02 00:00:00Z],
+              initial_capital: Decimal.new("10000.00"),
+              timeframe: "1h"
+            })
 
-        {:ok, started_session} = Backtesting.start_backtest(session.id)
-        started_session
-      end
+          {:ok, started_session} = Backtesting.start_backtest(session.id)
+          started_session
+        end
 
       # Queue multiple backtests
-      queued_ids = for i <- 1..3 do
-        {:ok, session} = Backtesting.create_backtest(%{
-          strategy_id: strategy_id,
-          trading_pair: "BTC/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-02 00:00:00Z],
-          initial_capital: Decimal.new("10000.00"),
-          timeframe: "1h"
-        })
+      queued_ids =
+        for i <- 1..3 do
+          {:ok, session} =
+            Backtesting.create_backtest(%{
+              strategy_id: strategy_id,
+              trading_pair: "BTC/USD",
+              start_time: ~U[2024-01-01 00:00:00Z],
+              end_time: ~U[2024-01-02 00:00:00Z],
+              initial_capital: Decimal.new("10000.00"),
+              timeframe: "1h"
+            })
 
-        {:ok, queued} = Backtesting.start_backtest(session.id)
-        assert queued.status == "queued"
-        # Check queue position in metadata (handle both string and atom keys)
-        queue_pos = queued.metadata["queue_position"] || queued.metadata[:queue_position]
-        assert queue_pos == i, "Expected queue position #{i}, got #{inspect(queue_pos)}"
+          {:ok, queued} = Backtesting.start_backtest(session.id)
+          assert queued.status == "queued"
+          # Check queue position in metadata (handle both string and atom keys)
+          queue_pos = queued.metadata["queue_position"] || queued.metadata[:queue_position]
+          assert queue_pos == i, "Expected queue position #{i}, got #{inspect(queue_pos)}"
 
-        session.id
-      end
+          session.id
+        end
 
       # Create minimal result for finalize_backtest
       minimal_result = %{
@@ -381,8 +408,9 @@ defmodule TradingStrategy.BacktestingTest do
 
         # Verify correct queued backtest started (FIFO)
         started_session = Repo.get(TradingSession, expected_queued_id)
+
         assert started_session.status == "running",
-          "Expected session #{expected_queued_id} to be running, got #{started_session.status}"
+               "Expected session #{expected_queued_id} to be running, got #{started_session.status}"
       end
     end
   end
@@ -393,48 +421,54 @@ defmodule TradingStrategy.BacktestingTest do
       TradingStrategy.Backtesting.ConcurrencyManager.reset()
 
       # Create a test strategy with valid content
-      {:ok, strategy} = create_test_strategy(%{
-        name: "Test Strategy",
-        description: "For restart testing"
-      })
+      {:ok, strategy} =
+        create_test_strategy(%{
+          name: "Test Strategy",
+          description: "For restart testing"
+        })
 
       {:ok, strategy_id: strategy.id}
     end
 
     test "detects stale running sessions on application start", %{strategy_id: strategy_id} do
       # Create sessions with "running" status (simulating crash scenario)
-      stale_sessions = for _ <- 1..3 do
-        {:ok, session} = %TradingSession{}
-          |> TradingSession.changeset(%{
-            strategy_id: strategy_id,
-            mode: "backtest",
-            status: "running",  # Stale status
-            initial_capital: Decimal.new("10000.00"),
-            current_capital: Decimal.new("10000.00"),
-            started_at: DateTime.utc_now() |> DateTime.add(-3600, :second),  # Started 1 hour ago
-            config: %{
-              "trading_pair" => "BTC/USD",
-              "start_time" => ~U[2024-01-01 00:00:00Z],
-              "end_time" => ~U[2024-01-02 00:00:00Z],
-              "timeframe" => "1h"
-            },
-            metadata: %{
-              checkpoint: %{
-                bar_index: 500,
-                bars_processed: 500,
-                total_bars: 1000,
-                last_equity: Decimal.new("10050.00"),
-                checkpointed_at: DateTime.utc_now() |> DateTime.add(-1800, :second)
+      stale_sessions =
+        for _ <- 1..3 do
+          {:ok, session} =
+            %TradingSession{}
+            |> TradingSession.changeset(%{
+              strategy_id: strategy_id,
+              mode: "backtest",
+              # Stale status
+              status: "running",
+              initial_capital: Decimal.new("10000.00"),
+              current_capital: Decimal.new("10000.00"),
+              # Started 1 hour ago
+              started_at: DateTime.utc_now() |> DateTime.add(-3600, :second),
+              config: %{
+                "trading_pair" => "BTC/USD",
+                "start_time" => ~U[2024-01-01 00:00:00Z],
+                "end_time" => ~U[2024-01-02 00:00:00Z],
+                "timeframe" => "1h"
+              },
+              metadata: %{
+                checkpoint: %{
+                  bar_index: 500,
+                  bars_processed: 500,
+                  total_bars: 1000,
+                  last_equity: Decimal.new("10050.00"),
+                  checkpointed_at: DateTime.utc_now() |> DateTime.add(-1800, :second)
+                }
               }
-            }
-          })
-          |> Repo.insert()
+            })
+            |> Repo.insert()
 
-        session
-      end
+          session
+        end
 
       # Create a completed session (should not be affected)
-      {:ok, completed_session} = %TradingSession{}
+      {:ok, completed_session} =
+        %TradingSession{}
         |> TradingSession.changeset(%{
           strategy_id: strategy_id,
           mode: "backtest",
@@ -479,7 +513,8 @@ defmodule TradingStrategy.BacktestingTest do
         checkpointed_at: DateTime.utc_now() |> DateTime.add(-900, :second)
       }
 
-      {:ok, session} = %TradingSession{}
+      {:ok, session} =
+        %TradingSession{}
         |> TradingSession.changeset(%{
           strategy_id: strategy_id,
           mode: "backtest",
@@ -498,11 +533,12 @@ defmodule TradingStrategy.BacktestingTest do
         |> Repo.insert()
 
       # Mark as failed
-      {:ok, failed_session} = Backtesting.mark_as_failed(
-        session.id,
-        "application_restart",
-        "Backtest interrupted by application restart at 50% completion"
-      )
+      {:ok, failed_session} =
+        Backtesting.mark_as_failed(
+          session.id,
+          "application_restart",
+          "Backtest interrupted by application restart at 50% completion"
+        )
 
       # Verify checkpoint data is preserved
       assert failed_session.status == "error"
@@ -524,7 +560,8 @@ defmodule TradingStrategy.BacktestingTest do
 
     test "completed sessions are not affected by restart detection", %{strategy_id: strategy_id} do
       # Create multiple sessions with different statuses
-      {:ok, completed1} = %TradingSession{}
+      {:ok, completed1} =
+        %TradingSession{}
         |> TradingSession.changeset(%{
           strategy_id: strategy_id,
           mode: "backtest",
@@ -537,7 +574,8 @@ defmodule TradingStrategy.BacktestingTest do
         })
         |> Repo.insert()
 
-      {:ok, stopped} = %TradingSession{}
+      {:ok, stopped} =
+        %TradingSession{}
         |> TradingSession.changeset(%{
           strategy_id: strategy_id,
           mode: "backtest",
@@ -550,7 +588,8 @@ defmodule TradingStrategy.BacktestingTest do
         })
         |> Repo.insert()
 
-      {:ok, error} = %TradingSession{}
+      {:ok, error} =
+        %TradingSession{}
         |> TradingSession.changeset(%{
           strategy_id: strategy_id,
           mode: "backtest",

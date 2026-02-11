@@ -68,3 +68,9 @@ config :trading_strategy, TradingStrategy.Mailer, adapter: Swoosh.Adapters.Local
 # Swoosh API client is used to communicate with adapters that support HTTP.
 # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
 config :swoosh, :api_client, false
+
+# Feature 005: Bidirectional Strategy Editor Synchronization
+config :trading_strategy, :strategy_editor,
+  debounce_delay: 300,
+  sync_timeout: 500,
+  max_undo_stack_size: 100

@@ -92,7 +92,11 @@ defmodule TradingStrategy.Backtesting.EquityCurve do
       period_return =
         if index > 0 do
           {_prev_ts, prev_equity} = Enum.at(equity_history, index - 1)
-          prev_float = if is_struct(prev_equity, Decimal), do: Decimal.to_float(prev_equity), else: prev_equity
+
+          prev_float =
+            if is_struct(prev_equity, Decimal),
+              do: Decimal.to_float(prev_equity),
+              else: prev_equity
 
           if prev_float > 0 do
             (equity_float - prev_float) / prev_float
@@ -104,7 +108,11 @@ defmodule TradingStrategy.Backtesting.EquityCurve do
         end
 
       # Calculate cumulative return from start
-      first_float = if is_struct(first_equity, Decimal), do: Decimal.to_float(first_equity), else: first_equity
+      first_float =
+        if is_struct(first_equity, Decimal),
+          do: Decimal.to_float(first_equity),
+          else: first_equity
+
       cumulative_return =
         if first_float > 0 do
           (equity_float - first_float) / first_float
@@ -161,8 +169,10 @@ defmodule TradingStrategy.Backtesting.EquityCurve do
     # Sample middle points
     middle_points =
       curve
-      |> Enum.drop(1)  # Skip first
-      |> Enum.drop(-1)  # Skip last
+      # Skip first
+      |> Enum.drop(1)
+      # Skip last
+      |> Enum.drop(-1)
       |> Enum.with_index()
       |> Enum.filter(fn {_point, index} ->
         rem(index, sample_rate) == 0
@@ -176,7 +186,10 @@ defmodule TradingStrategy.Backtesting.EquityCurve do
     if length(result) > max_points do
       # Aggressively sample from middle
       new_sample_rate = div(length(middle_points), max_points - 2) + 1
-      sampled_middle = Enum.take_every(middle_points, new_sample_rate) |> Enum.take(max_points - 2)
+
+      sampled_middle =
+        Enum.take_every(middle_points, new_sample_rate) |> Enum.take(max_points - 2)
+
       [first | sampled_middle] ++ [last]
     else
       result

@@ -10,7 +10,8 @@ defmodule TradingStrategy.Backtesting.PositionManagerTest do
       exit_time = ~U[2024-01-01 11:00:00Z]
 
       # Open long position at $50,000
-      {:ok, manager} = PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
+      {:ok, manager} =
+        PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
 
       # Close at $51,000 (profit)
       {:ok, updated_manager, pnl} = PositionManager.close_position(manager, 51000, exit_time)
@@ -26,7 +27,8 @@ defmodule TradingStrategy.Backtesting.PositionManagerTest do
       exit_time = ~U[2024-01-01 11:00:00Z]
 
       # Open long position at $50,000
-      {:ok, manager} = PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
+      {:ok, manager} =
+        PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
 
       # Close at $49,000 (loss)
       {:ok, updated_manager, pnl} = PositionManager.close_position(manager, 49000, exit_time)
@@ -42,7 +44,8 @@ defmodule TradingStrategy.Backtesting.PositionManagerTest do
       exit_time = ~U[2024-01-01 11:00:00Z]
 
       # Open long position at $50,000
-      {:ok, manager} = PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
+      {:ok, manager} =
+        PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
 
       # Close at $50,000 (breakeven)
       {:ok, updated_manager, pnl} = PositionManager.close_position(manager, 50000, exit_time)
@@ -57,7 +60,9 @@ defmodule TradingStrategy.Backtesting.PositionManagerTest do
       entry_time = ~U[2024-01-01 10:00:00Z]
       exit_time = ~U[2024-01-01 11:00:00Z]
 
-      {:ok, manager} = PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
+      {:ok, manager} =
+        PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
+
       {:ok, updated_manager, _pnl} = PositionManager.close_position(manager, 51000, exit_time)
 
       [closed_position] = PositionManager.get_closed_positions(updated_manager)
@@ -74,7 +79,8 @@ defmodule TradingStrategy.Backtesting.PositionManagerTest do
       exit_time = ~U[2024-01-01 11:00:00Z]
 
       # Open short position at $50,000
-      {:ok, manager} = PositionManager.open_position(manager, "BTC/USD", :short, 50000, 0.1, entry_time)
+      {:ok, manager} =
+        PositionManager.open_position(manager, "BTC/USD", :short, 50000, 0.1, entry_time)
 
       # Close at $49,000 (profit for short)
       {:ok, updated_manager, pnl} = PositionManager.close_position(manager, 49000, exit_time)
@@ -90,7 +96,8 @@ defmodule TradingStrategy.Backtesting.PositionManagerTest do
       exit_time = ~U[2024-01-01 11:00:00Z]
 
       # Open short position at $50,000
-      {:ok, manager} = PositionManager.open_position(manager, "BTC/USD", :short, 50000, 0.1, entry_time)
+      {:ok, manager} =
+        PositionManager.open_position(manager, "BTC/USD", :short, 50000, 0.1, entry_time)
 
       # Close at $51,000 (loss for short)
       {:ok, updated_manager, pnl} = PositionManager.close_position(manager, 51000, exit_time)
@@ -106,7 +113,8 @@ defmodule TradingStrategy.Backtesting.PositionManagerTest do
       exit_time = ~U[2024-01-01 11:00:00Z]
 
       # Open short position at $50,000
-      {:ok, manager} = PositionManager.open_position(manager, "BTC/USD", :short, 50000, 0.1, entry_time)
+      {:ok, manager} =
+        PositionManager.open_position(manager, "BTC/USD", :short, 50000, 0.1, entry_time)
 
       # Close at $50,000 (breakeven)
       {:ok, updated_manager, pnl} = PositionManager.close_position(manager, 50000, exit_time)
@@ -123,7 +131,9 @@ defmodule TradingStrategy.Backtesting.PositionManagerTest do
       entry_time = ~U[2024-01-01 10:00:00Z]
       exit_time = ~U[2024-01-01 11:00:00Z]
 
-      {:ok, manager} = PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
+      {:ok, manager} =
+        PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
+
       {:ok, updated_manager, _pnl} = PositionManager.close_position(manager, 51000, exit_time)
 
       [closed_position] = PositionManager.get_closed_positions(updated_manager)
@@ -134,7 +144,8 @@ defmodule TradingStrategy.Backtesting.PositionManagerTest do
 
       # Calculate duration
       duration_seconds = DateTime.diff(exit_time, entry_time, :second)
-      assert duration_seconds == 3600  # 1 hour = 3600 seconds
+      # 1 hour = 3600 seconds
+      assert duration_seconds == 3600
     end
 
     test "calculates duration in seconds for position held for 1 day" do
@@ -142,36 +153,47 @@ defmodule TradingStrategy.Backtesting.PositionManagerTest do
       entry_time = ~U[2024-01-01 10:00:00Z]
       exit_time = ~U[2024-01-02 10:00:00Z]
 
-      {:ok, manager} = PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
+      {:ok, manager} =
+        PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time)
+
       {:ok, updated_manager, _pnl} = PositionManager.close_position(manager, 51000, exit_time)
 
       [closed_position] = PositionManager.get_closed_positions(updated_manager)
 
       duration_seconds = DateTime.diff(exit_time, entry_time, :second)
-      assert duration_seconds == 86400  # 1 day = 86400 seconds
+      # 1 day = 86400 seconds
+      assert duration_seconds == 86400
     end
 
     test "calculates duration for multiple positions" do
-      manager = PositionManager.init(100000)
+      manager = PositionManager.init(100_000)
 
       # First position: 1 hour
       entry_time_1 = ~U[2024-01-01 10:00:00Z]
       exit_time_1 = ~U[2024-01-01 11:00:00Z]
-      {:ok, manager} = PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time_1)
+
+      {:ok, manager} =
+        PositionManager.open_position(manager, "BTC/USD", :long, 50000, 0.1, entry_time_1)
+
       {:ok, manager, _pnl} = PositionManager.close_position(manager, 51000, exit_time_1)
 
       # Second position: 2 hours
       entry_time_2 = ~U[2024-01-01 12:00:00Z]
       exit_time_2 = ~U[2024-01-01 14:00:00Z]
-      {:ok, manager} = PositionManager.open_position(manager, "BTC/USD", :long, 52000, 0.1, entry_time_2)
+
+      {:ok, manager} =
+        PositionManager.open_position(manager, "BTC/USD", :long, 52000, 0.1, entry_time_2)
+
       {:ok, updated_manager, _pnl} = PositionManager.close_position(manager, 53000, exit_time_2)
 
       closed_positions = PositionManager.get_closed_positions(updated_manager)
       assert length(closed_positions) == 2
 
       [pos1, pos2] = closed_positions
-      assert DateTime.diff(pos1.exit_timestamp, pos1.entry_timestamp, :second) == 3600   # 1 hour
-      assert DateTime.diff(pos2.exit_timestamp, pos2.entry_timestamp, :second) == 7200   # 2 hours
+      # 1 hour
+      assert DateTime.diff(pos1.exit_timestamp, pos1.entry_timestamp, :second) == 3600
+      # 2 hours
+      assert DateTime.diff(pos2.exit_timestamp, pos2.entry_timestamp, :second) == 7200
     end
   end
 end

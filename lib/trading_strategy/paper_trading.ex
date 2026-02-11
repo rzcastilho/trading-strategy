@@ -277,7 +277,8 @@ defmodule TradingStrategy.PaperTrading do
           {:ok, session_id()} | {:error, :not_found | :data_feed_unavailable | :corrupted_state}
   def restore_paper_session(session_id) do
     with {:ok, session_data} <- SessionPersister.get_session(session_id),
-         strategy when not is_nil(strategy) <- Strategies.get_strategy_admin(session_data.strategy_id),
+         strategy when not is_nil(strategy) <-
+           Strategies.get_strategy_admin(session_data.strategy_id),
          {:ok, session_config} <- build_restore_config(session_id, session_data, strategy) do
       case SessionSupervisor.start_session(session_config) do
         {:ok, _pid} ->

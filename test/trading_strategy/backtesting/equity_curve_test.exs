@@ -33,14 +33,16 @@ defmodule TradingStrategy.Backtesting.EquityCurveTest do
         {~U[2024-01-01 02:00:00Z], Decimal.new("10120.25")},
         {~U[2024-01-01 03:00:00Z], Decimal.new("10300.00")}
       ]
+
       initial_capital = Decimal.new("10000.00")
 
       result = EquityCurve.generate(equity_history, initial_capital)
 
       assert length(result) == 4
+
       assert Enum.all?(result, fn {timestamp, value} ->
-        is_struct(timestamp, DateTime) and is_struct(value, Decimal)
-      end)
+               is_struct(timestamp, DateTime) and is_struct(value, Decimal)
+             end)
     end
 
     test "preserves chronological order of equity points" do
@@ -49,6 +51,7 @@ defmodule TradingStrategy.Backtesting.EquityCurveTest do
         {~U[2024-01-01 01:00:00Z], Decimal.new("10150.50")},
         {~U[2024-01-01 02:00:00Z], Decimal.new("10120.25")}
       ]
+
       initial_capital = Decimal.new("10000.00")
 
       result = EquityCurve.generate(equity_history, initial_capital)
@@ -65,6 +68,7 @@ defmodule TradingStrategy.Backtesting.EquityCurveTest do
         {~U[2024-01-01 01:00:00Z], Decimal.new("10150.50")},
         {~U[2024-01-01 02:00:00Z], Decimal.new("10120.25")}
       ]
+
       max_points = 1000
 
       result = EquityCurve.sample(curve, max_points)
@@ -75,11 +79,12 @@ defmodule TradingStrategy.Backtesting.EquityCurveTest do
 
     test "samples down to max_points when curve exceeds limit" do
       # Create 5000 points
-      curve = Enum.map(1..5000, fn i ->
-        timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
-        value = Decimal.add(Decimal.new("10000.00"), Decimal.new(i))
-        {timestamp, value}
-      end)
+      curve =
+        Enum.map(1..5000, fn i ->
+          timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
+          value = Decimal.add(Decimal.new("10000.00"), Decimal.new(i))
+          {timestamp, value}
+        end)
 
       max_points = 1000
 
@@ -92,11 +97,12 @@ defmodule TradingStrategy.Backtesting.EquityCurveTest do
     end
 
     test "sampling preserves chronological order" do
-      curve = Enum.map(1..5000, fn i ->
-        timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
-        value = Decimal.add(Decimal.new("10000.00"), Decimal.new(i))
-        {timestamp, value}
-      end)
+      curve =
+        Enum.map(1..5000, fn i ->
+          timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
+          value = Decimal.add(Decimal.new("10000.00"), Decimal.new(i))
+          {timestamp, value}
+        end)
 
       max_points = 1000
 
@@ -126,11 +132,12 @@ defmodule TradingStrategy.Backtesting.EquityCurveTest do
 
     test "handles exact max_points boundary correctly" do
       # Create exactly 1000 points
-      curve = Enum.map(1..1000, fn i ->
-        timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
-        value = Decimal.add(Decimal.new("10000.00"), Decimal.new(i))
-        {timestamp, value}
-      end)
+      curve =
+        Enum.map(1..1000, fn i ->
+          timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
+          value = Decimal.add(Decimal.new("10000.00"), Decimal.new(i))
+          {timestamp, value}
+        end)
 
       max_points = 1000
 
@@ -143,11 +150,12 @@ defmodule TradingStrategy.Backtesting.EquityCurveTest do
 
     test "handles very large datasets (10K+ points)" do
       # Create 10,000 points
-      curve = Enum.map(1..10_000, fn i ->
-        timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
-        value = Decimal.add(Decimal.new("10000.00"), Decimal.new(i * 10))
-        {timestamp, value}
-      end)
+      curve =
+        Enum.map(1..10_000, fn i ->
+          timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
+          value = Decimal.add(Decimal.new("10000.00"), Decimal.new(i * 10))
+          {timestamp, value}
+        end)
 
       max_points = 1000
 
@@ -188,11 +196,12 @@ defmodule TradingStrategy.Backtesting.EquityCurveTest do
 
     test "sampling with odd number of points" do
       # Create 999 points (odd number just under 1000)
-      curve = Enum.map(1..999, fn i ->
-        timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
-        value = Decimal.add(Decimal.new("10000.00"), Decimal.new(i))
-        {timestamp, value}
-      end)
+      curve =
+        Enum.map(1..999, fn i ->
+          timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
+          value = Decimal.add(Decimal.new("10000.00"), Decimal.new(i))
+          {timestamp, value}
+        end)
 
       max_points = 1000
 
@@ -218,11 +227,12 @@ defmodule TradingStrategy.Backtesting.EquityCurveTest do
 
     test "sampling respects sample_rate calculation" do
       # Create 5000 points, should sample every 5th point to get 1000
-      curve = Enum.map(1..5000, fn i ->
-        timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
-        value = Decimal.new(10000 + i)
-        {timestamp, value}
-      end)
+      curve =
+        Enum.map(1..5000, fn i ->
+          timestamp = DateTime.add(~U[2024-01-01 00:00:00Z], i * 60, :second)
+          value = Decimal.new(10000 + i)
+          {timestamp, value}
+        end)
 
       max_points = 1000
 

@@ -39,3 +39,9 @@ config :trading_strategy,
 
 # Disable swoosh mailer in tests
 config :trading_strategy, TradingStrategy.Mailer, adapter: Swoosh.Adapters.Test
+
+# Feature 005: Bidirectional Strategy Editor Synchronization
+config :trading_strategy, :strategy_editor,
+  debounce_delay: 300,
+  sync_timeout: 500,
+  max_undo_stack_size: 100

@@ -215,7 +215,10 @@ defmodule TradingStrategyWeb.StrategyLive.Index do
           {:error, :not_found} ->
             {:noreply,
              socket
-             |> put_flash(:error, "Strategy not found or you don't have permission to duplicate it")
+             |> put_flash(
+               :error,
+               "Strategy not found or you don't have permission to duplicate it"
+             )
              |> assign(:strategies, Strategies.list_strategies(current_user))}
 
           {:error, changeset} ->

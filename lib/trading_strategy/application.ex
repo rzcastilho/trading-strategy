@@ -21,6 +21,8 @@ defmodule TradingStrategy.Application do
       TradingStrategy.Backtesting.Supervisor,
       TradingStrategy.PaperTrading.Supervisor,
       TradingStrategy.LiveTrading.Supervisor,
+      # Feature 005: Strategy Editor - Undo/Redo History
+      TradingStrategy.StrategyEditor.EditHistory,
       # Start to serve requests, typically the last entry
       TradingStrategyWeb.Endpoint
     ]
@@ -31,6 +33,9 @@ defmodule TradingStrategy.Application do
 
     case Supervisor.start_link(children, opts) do
       {:ok, pid} = result ->
+        # Feature 005: Attach telemetry handlers for strategy editor
+        TradingStrategy.StrategyEditor.Telemetry.attach_default_handlers()
+
         # Detect and mark stale running sessions from previous application run
         # Skip in test environment to avoid DBConnection.OwnershipError with Sandbox
         if Mix.env() != :test do

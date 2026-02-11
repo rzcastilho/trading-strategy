@@ -14,11 +14,12 @@ defmodule TradingStrategy.Backtesting.Integration.FullBacktestFlowTest do
     @tag timeout: 120_000
     test "complete backtest lifecycle with progress tracking and results" do
       # Step 1: Create a test strategy
-      {:ok, strategy} = create_test_strategy(%{
-        name: "Integration Test Strategy",
-        trading_pair: "BTC/USD",
-        timeframe: "1h"
-      })
+      {:ok, strategy} =
+        create_test_strategy(%{
+          name: "Integration Test Strategy",
+          trading_pair: "BTC/USD",
+          timeframe: "1h"
+        })
 
       # Step 2: Create backtest configuration
       config = %{
@@ -156,29 +157,33 @@ defmodule TradingStrategy.Backtesting.Integration.FullBacktestFlowTest do
     @tag timeout: 120_000
     test "concurrent backtests respect concurrency limits" do
       # Create multiple strategies
-      strategies = Enum.map(1..3, fn i ->
-        {:ok, strategy} = create_test_strategy(%{
-          name: "Concurrent Strategy #{i}",
-          trading_pair: "BTC/USD"
-        })
-        strategy
-      end)
+      strategies =
+        Enum.map(1..3, fn i ->
+          {:ok, strategy} =
+            create_test_strategy(%{
+              name: "Concurrent Strategy #{i}",
+              trading_pair: "BTC/USD"
+            })
+
+          strategy
+        end)
 
       # Create and start multiple backtests
-      sessions = Enum.map(strategies, fn strategy ->
-        config = %{
-          strategy_id: strategy.id,
-          trading_pair: "BTC/USD",
-          start_time: ~U[2024-01-01 00:00:00Z],
-          end_time: ~U[2024-01-01 12:00:00Z],
-          initial_capital: Decimal.new("10000.00"),
-          timeframe: "1h"
-        }
+      sessions =
+        Enum.map(strategies, fn strategy ->
+          config = %{
+            strategy_id: strategy.id,
+            trading_pair: "BTC/USD",
+            start_time: ~U[2024-01-01 00:00:00Z],
+            end_time: ~U[2024-01-01 12:00:00Z],
+            initial_capital: Decimal.new("10000.00"),
+            timeframe: "1h"
+          }
 
-        {:ok, session} = Backtesting.create_backtest(config)
-        {:ok, started} = Backtesting.start_backtest(session.id)
-        started
-      end)
+          {:ok, session} = Backtesting.create_backtest(config)
+          {:ok, started} = Backtesting.start_backtest(session.id)
+          started
+        end)
 
       # At least one should be queued if concurrency limit is enforced
       statuses = Enum.map(sessions, & &1.status)
@@ -192,9 +197,10 @@ defmodule TradingStrategy.Backtesting.Integration.FullBacktestFlowTest do
       end)
 
       # All should eventually complete
-      final_sessions = Enum.map(sessions, fn session ->
-        Repo.get(TradingSession, session.id)
-      end)
+      final_sessions =
+        Enum.map(sessions, fn session ->
+          Repo.get(TradingSession, session.id)
+        end)
 
       Enum.each(final_sessions, fn session ->
         assert session.status in ["completed", "failed", "stopped"]
@@ -204,38 +210,44 @@ defmodule TradingStrategy.Backtesting.Integration.FullBacktestFlowTest do
     @tag timeout: 60_000
     test "backtest with zero trades completes successfully" do
       # Create strategy that never generates signals
-      {:ok, strategy} = create_test_strategy(%{
-        name: "No Signal Strategy",
-        trading_pair: "BTC/USD"
-      })
+      {:ok, strategy} =
+        create_test_strategy(%{
+          name: "No Signal Strategy",
+          trading_pair: "BTC/USD"
+        })
 
       # Override strategy content to never generate signals
-      strategy = %{strategy | content: """
-      name: No Signal Strategy
-      trading_pair: BTC/USD
-      timeframe: 1h
+      strategy = %{
+        strategy
+        | content: """
+          name: No Signal Strategy
+          trading_pair: BTC/USD
+          timeframe: 1h
 
-      indicators: []
+          indicators: []
 
-      entry_conditions: "false"
+          entry_conditions: "false"
 
-      exit_conditions: ""
+          exit_conditions: ""
 
-      stop_conditions: ""
+          stop_conditions: ""
 
-      position_sizing:
-        type: percentage
-        percentage_of_capital: 0.10
+          position_sizing:
+            type: percentage
+            percentage_of_capital: 0.10
 
-      risk_parameters:
-        max_daily_loss: 0.03
-        max_position_size: 1.0
-        max_drawdown: 0.20
-        stop_loss_percentage: 0.05
-        take_profit_percentage: 0.10
-      """}
+          risk_parameters:
+            max_daily_loss: 0.03
+            max_position_size: 1.0
+            max_drawdown: 0.20
+            stop_loss_percentage: 0.05
+            take_profit_percentage: 0.10
+          """
+      }
 
-      Repo.update!(TradingStrategy.Strategies.Strategy.changeset(strategy, %{content: strategy.content}))
+      Repo.update!(
+        TradingStrategy.Strategies.Strategy.changeset(strategy, %{content: strategy.content})
+      )
 
       config = %{
         strategy_id: strategy.id,
@@ -259,8 +271,10 @@ defmodule TradingStrategy.Backtesting.Integration.FullBacktestFlowTest do
 
         # Metrics should handle zero trades gracefully
         assert results.performance_metrics.trade_count == 0
-        assert results.performance_metrics.win_rate == nil  # N/A
-        assert results.performance_metrics.profit_factor == nil  # N/A
+        # N/A
+        assert results.performance_metrics.win_rate == nil
+        # N/A
+        assert results.performance_metrics.profit_factor == nil
 
         # Equity curve should be flat
         if length(results.equity_curve) > 0 do
@@ -275,10 +289,11 @@ defmodule TradingStrategy.Backtesting.Integration.FullBacktestFlowTest do
 
     @tag timeout: 60_000
     test "backtest handles insufficient data gracefully" do
-      {:ok, strategy} = create_test_strategy(%{
-        name: "High Requirement Strategy",
-        trading_pair: "BTC/USD"
-      })
+      {:ok, strategy} =
+        create_test_strategy(%{
+          name: "High Requirement Strategy",
+          trading_pair: "BTC/USD"
+        })
 
       # Strategy requires many bars for indicators (e.g., SMA 200)
       # But we provide insufficient data
@@ -286,7 +301,8 @@ defmodule TradingStrategy.Backtesting.Integration.FullBacktestFlowTest do
         strategy_id: strategy.id,
         trading_pair: "BTC/USD",
         start_time: ~U[2024-01-01 00:00:00Z],
-        end_time: ~U[2024-01-01 02:00:00Z],  # Only 2 hours of data
+        # Only 2 hours of data
+        end_time: ~U[2024-01-01 02:00:00Z],
         initial_capital: Decimal.new("10000.00"),
         timeframe: "1h"
       }

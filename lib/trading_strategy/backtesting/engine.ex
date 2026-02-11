@@ -76,7 +76,10 @@ defmodule TradingStrategy.Backtesting.Engine do
       if session_id do
         total_bars = length(market_data)
         ProgressTracker.track(session_id, total_bars)
-        Logger.debug("Initialized progress tracking for session #{session_id}: #{total_bars} bars")
+
+        Logger.debug(
+          "Initialized progress tracking for session #{session_id}: #{total_bars} bars"
+        )
       end
 
       # Run backtest loop
@@ -180,8 +183,9 @@ defmodule TradingStrategy.Backtesting.Engine do
   defp timeframe_to_seconds("2h"), do: 7200
   defp timeframe_to_seconds("4h"), do: 14400
   defp timeframe_to_seconds("1d"), do: 86400
-  defp timeframe_to_seconds("1w"), do: 604800
-  defp timeframe_to_seconds(_), do: 3600  # Default to 1h
+  defp timeframe_to_seconds("1w"), do: 604_800
+  # Default to 1h
+  defp timeframe_to_seconds(_), do: 3600
 
   # Calculate how often to update progress (every 100 bars or 1% of total, whichever is less frequent)
   defp calculate_update_interval(total_bars) do
@@ -199,7 +203,8 @@ defmodule TradingStrategy.Backtesting.Engine do
     historical_data = Enum.take(all_data, index + 1)
 
     # Build position context if there's an open position
-    position_context = build_position_context(state.position_manager, get_close_price(current_bar))
+    position_context =
+      build_position_context(state.position_manager, get_close_price(current_bar))
 
     # Evaluate signals
     case SignalEvaluator.evaluate_signals(
@@ -218,7 +223,6 @@ defmodule TradingStrategy.Backtesting.Engine do
         state
     end
   end
-
 
   defp process_signals(signal_result, current_bar, state) do
     %{entry: entry, exit: exit, stop: stop} = signal_result
@@ -293,10 +297,14 @@ defmodule TradingStrategy.Backtesting.Engine do
               timestamp: timestamp,
               signal_type: :entry,
               signal_context: signal_result.context,
-              pnl: 0.0,  # Entry trades have zero PnL
-              duration_seconds: nil,  # No duration for entry
-              entry_price: trade.executed_price,  # Store entry price
-              exit_price: nil  # No exit price for entry
+              # Entry trades have zero PnL
+              pnl: 0.0,
+              # No duration for entry
+              duration_seconds: nil,
+              # Store entry price
+              entry_price: trade.executed_price,
+              # No exit price for entry
+              exit_price: nil
             })
 
           # Update state
@@ -345,10 +353,14 @@ defmodule TradingStrategy.Backtesting.Engine do
             timestamp: timestamp,
             signal_type: exit_type,
             signal_context: signal_result.context,
-            pnl: pnl,  # Net PnL from PositionManager (T069)
-            duration_seconds: duration_seconds,  # Time held (T066)
-            entry_price: position.entry_price,  # Entry price from position (T067)
-            exit_price: trade.executed_price  # Exit price from trade (T067)
+            # Net PnL from PositionManager (T069)
+            pnl: pnl,
+            # Time held (T066)
+            duration_seconds: duration_seconds,
+            # Entry price from position (T067)
+            entry_price: position.entry_price,
+            # Exit price from trade (T067)
+            exit_price: trade.executed_price
           })
 
         # Update state
@@ -460,19 +472,23 @@ defmodule TradingStrategy.Backtesting.Engine do
 
     # Calculate equity curve metadata
     trade_count = length(trades)
-    equity_curve_metadata = EquityCurve.sampling_metadata(
-      length(equity_curve),
-      length(sampled_curve),
-      trade_count
-    )
+
+    equity_curve_metadata =
+      EquityCurve.sampling_metadata(
+        length(equity_curve),
+        length(sampled_curve),
+        trade_count
+      )
 
     result = %{
       trades: trades,
-      metrics: Map.merge(metrics, %{
-        equity_curve: json_curve,
-        equity_curve_metadata: equity_curve_metadata
-      }),
-      equity_curve: json_curve,  # For backward compatibility
+      metrics:
+        Map.merge(metrics, %{
+          equity_curve: json_curve,
+          equity_curve_metadata: equity_curve_metadata
+        }),
+      # For backward compatibility
+      equity_curve: json_curve,
       signals: Enum.reverse(state.signals),
       config: config
     }
@@ -495,16 +511,30 @@ defmodule TradingStrategy.Backtesting.Engine do
 
   defp build_position_context(position_manager, current_price) do
     if PositionManager.has_open_position?(position_manager) do
-      {:ok, unrealized_pnl} = PositionManager.calculate_unrealized_pnl(position_manager, current_price)
+      {:ok, unrealized_pnl} =
+        PositionManager.calculate_unrealized_pnl(position_manager, current_price)
+
       position = position_manager.current_position
 
       # Calculate unrealized PnL percentage (handle both Decimal and float types)
-      entry_price = if is_struct(position.entry_price, Decimal), do: Decimal.to_float(position.entry_price), else: position.entry_price
-      quantity = if is_struct(position.quantity, Decimal), do: Decimal.to_float(position.quantity), else: position.quantity
-      pnl = if is_struct(unrealized_pnl, Decimal), do: Decimal.to_float(unrealized_pnl), else: unrealized_pnl
+      entry_price =
+        if is_struct(position.entry_price, Decimal),
+          do: Decimal.to_float(position.entry_price),
+          else: position.entry_price
+
+      quantity =
+        if is_struct(position.quantity, Decimal),
+          do: Decimal.to_float(position.quantity),
+          else: position.quantity
+
+      pnl =
+        if is_struct(unrealized_pnl, Decimal),
+          do: Decimal.to_float(unrealized_pnl),
+          else: unrealized_pnl
 
       cost = entry_price * quantity
-      unrealized_pnl_pct = if cost > 0, do: (pnl / cost) * 100.0, else: 0.0  # Return as percentage (e.g., 5.0 for 5%)
+      # Return as percentage (e.g., 5.0 for 5%)
+      unrealized_pnl_pct = if cost > 0, do: pnl / cost * 100.0, else: 0.0
 
       %{
         "unrealized_pnl" => pnl,
@@ -514,7 +544,8 @@ defmodule TradingStrategy.Backtesting.Engine do
         "quantity" => quantity,
         "current_price" => current_price,
         "has_position" => true,
-        "drawdown" => 0.0  # TODO: Implement drawdown calculation
+        # TODO: Implement drawdown calculation
+        "drawdown" => 0.0
       }
     else
       # Provide default values when no position is open
@@ -567,7 +598,9 @@ defmodule TradingStrategy.Backtesting.Engine do
         |> TradingStrategy.Backtesting.TradingSession.changeset(%{metadata: updated_metadata})
         |> TradingStrategy.Repo.update()
 
-        Logger.debug("Saved checkpoint for session #{state.session_id} at bar #{bar_index}/#{total_bars}")
+        Logger.debug(
+          "Saved checkpoint for session #{state.session_id} at bar #{bar_index}/#{total_bars}"
+        )
     end
   rescue
     error ->

@@ -14,7 +14,8 @@ defmodule TradingStrategy.Backtesting.EngineTest do
         "description" => "Never generates any signals",
         "indicators" => [],
         "entry_conditions" => %{
-          "long" => "false",  # Never enter
+          # Never enter
+          "long" => "false",
           "short" => nil
         },
         "exit_conditions" => %{
@@ -60,8 +61,10 @@ defmodule TradingStrategy.Backtesting.EngineTest do
         assert result.metrics.total_return == Decimal.new("0")
         assert result.metrics.total_return_pct == Decimal.new("0")
         assert result.metrics.total_trades == 0
-        assert result.metrics.win_rate == nil  # N/A for zero trades
-        assert result.metrics.profit_factor == nil  # N/A for zero trades
+        # N/A for zero trades
+        assert result.metrics.win_rate == nil
+        # N/A for zero trades
+        assert result.metrics.profit_factor == nil
       end)
     end
 
@@ -106,9 +109,12 @@ defmodule TradingStrategy.Backtesting.EngineTest do
       strategy = create_simple_strategy()
 
       # Create bars with a time gap
-      bars_before = create_sample_bars(50, base_price: 50000.0, start_time: ~U[2024-01-01 00:00:00Z])
+      bars_before =
+        create_sample_bars(50, base_price: 50000.0, start_time: ~U[2024-01-01 00:00:00Z])
+
       # Gap of 4 hours (missing 4 bars)
-      bars_after = create_sample_bars(50, base_price: 50100.0, start_time: ~U[2024-01-01 06:00:00Z])
+      bars_after =
+        create_sample_bars(50, base_price: 50100.0, start_time: ~U[2024-01-01 06:00:00Z])
 
       bars = bars_before ++ bars_after
 
@@ -138,16 +144,19 @@ defmodule TradingStrategy.Backtesting.EngineTest do
         "description" => "Takes large positions that can deplete capital",
         "indicators" => [],
         "entry_conditions" => %{
-          "long" => "true",  # Always try to enter
+          # Always try to enter
+          "long" => "true",
           "short" => nil
         },
         "exit_conditions" => %{
-          "long" => "false",  # Never exit normally
+          # Never exit normally
+          "long" => "false",
           "short" => nil
         },
         "position_sizing" => %{
           "type" => "percentage",
-          "percentage_of_capital" => 0.95  # Use 95% of capital per trade
+          # Use 95% of capital per trade
+          "percentage_of_capital" => 0.95
         }
       }
 
@@ -159,7 +168,8 @@ defmodule TradingStrategy.Backtesting.EngineTest do
         start_time: ~U[2024-01-01 00:00:00Z],
         end_time: ~U[2024-01-01 08:00:00Z],
         initial_capital: Decimal.new("10000.00"),
-        commission_rate: 0.002,  # Higher commission to accelerate capital depletion
+        # Higher commission to accelerate capital depletion
+        commission_rate: 0.002,
         slippage_bps: 10,
         timeframe: "1h",
         session_id: Ecto.UUID.generate()
@@ -227,7 +237,8 @@ defmodule TradingStrategy.Backtesting.EngineTest do
         trading_pair: "BTCUSDT",
         start_time: ~U[2024-01-01 00:00:00Z],
         end_time: ~U[2024-01-01 04:00:00Z],
-        initial_capital: Decimal.new("10.00"),  # Very small capital
+        # Very small capital
+        initial_capital: Decimal.new("10.00"),
         commission_rate: 0.001,
         timeframe: "1h"
       ]
@@ -238,7 +249,8 @@ defmodule TradingStrategy.Backtesting.EngineTest do
         # Should handle small capital gracefully
         # May not be able to take positions due to minimum order size
         assert is_map(result)
-        assert length(result.trades) >= 0  # May be zero trades due to small capital
+        # May be zero trades due to small capital
+        assert length(result.trades) >= 0
       end)
     end
 
@@ -266,7 +278,8 @@ defmodule TradingStrategy.Backtesting.EngineTest do
         # Verify equity curve has no invalid values
         Enum.each(result.equity_curve, fn point ->
           assert is_float(point["value"]) or is_integer(point["value"])
-          assert point["value"] >= 0  # Equity should never be negative
+          # Equity should never be negative
+          assert point["value"] >= 0
         end)
       end)
     end
@@ -384,7 +397,7 @@ defmodule TradingStrategy.Backtesting.EngineTest do
     Enum.map(0..(count - 1), fn i ->
       timestamp = DateTime.add(start_time, i * 3600, :second)
       # Sine wave oscillation
-      price = base_price + amplitude * :math.sin(i * :math.pi / 10)
+      price = base_price + amplitude * :math.sin(i * :math.pi() / 10)
 
       %{
         timestamp: timestamp,

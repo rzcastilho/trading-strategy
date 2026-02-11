@@ -369,7 +369,9 @@ defmodule TradingStrategyWeb.BacktestController do
     # Equity curve is already in JSON format from EquityCurve.to_json_format/1
     # Just return it as-is if it has the correct format
     if Enum.all?(curve, &is_map/1) and
-       Enum.all?(curve, fn point -> Map.has_key?(point, "timestamp") and Map.has_key?(point, "value") end) do
+         Enum.all?(curve, fn point ->
+           Map.has_key?(point, "timestamp") and Map.has_key?(point, "value")
+         end) do
       curve
     else
       # Legacy format - convert to new format

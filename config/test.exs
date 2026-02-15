@@ -19,10 +19,11 @@ config :trading_strategy, TradingStrategy.Repo,
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
+# For Wallaby tests (Feature 007), server is enabled conditionally
 config :trading_strategy, TradingStrategyWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "ZNPaJiqxZUUKs7QlbmsNx0tFz9dF7vbs5Uwonc1eYeEWOXiuNEeYuU26mbzensEZ",
-  server: false
+  server: System.get_env("WALLABY_TEST") == "true"
 
 # Print only warnings and errors during test
 config :logger, level: :warning
@@ -45,3 +46,18 @@ config :trading_strategy, :strategy_editor,
   debounce_delay: 300,
   sync_timeout: 500,
   max_undo_stack_size: 100
+
+# Feature 007: Browser automation testing with Wallaby
+config :wallaby,
+  driver: Wallaby.Chrome,
+  # Headless mode for CI environments
+  hackney_options: [timeout: :infinity, recv_timeout: :infinity],
+  # Chrome options for headless testing
+  chromedriver: [
+    headless: System.get_env("WALLABY_HEADLESS", "true") == "true"
+  ],
+  # Screenshot path for failed tests
+  screenshot_on_failure: true,
+  screenshot_dir: "tmp/wallaby_screenshots",
+  # Maximum wait time for elements (default 3000ms, increased for stability)
+  max_wait_time: 5_000

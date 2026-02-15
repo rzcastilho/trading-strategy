@@ -341,10 +341,24 @@ defmodule TradingStrategyWeb.StrategyLive.IndicatorBuilder do
   end
 
   @impl true
-  def handle_event("update_param", %{"key" => key, "value" => value}, socket) do
-    # Update parameter value in socket assigns
-    updated_params = Map.put(socket.assigns.new_indicator_params, key, parse_param_value(value))
-    {:noreply, assign(socket, :new_indicator_params, updated_params)}
+  def handle_event("update_param", params, socket) when is_map(params) do
+    # Handle form change events where params come as %{"indicator_param_<key>" => value}
+    # Extract the parameter key and value from the form field name
+    {key, value} =
+      params
+      |> Enum.find_value(fn
+        {"indicator_param_" <> param_key, param_value} -> {param_key, param_value}
+        {_other_key, _other_value} -> nil
+      end) || {nil, nil}
+
+    if key do
+      # Update parameter value in socket assigns
+      updated_params = Map.put(socket.assigns.new_indicator_params, key, parse_param_value(value))
+      {:noreply, assign(socket, :new_indicator_params, updated_params)}
+    else
+      # Fallback: no valid parameter found, return socket unchanged
+      {:noreply, socket}
+    end
   end
 
   @impl true

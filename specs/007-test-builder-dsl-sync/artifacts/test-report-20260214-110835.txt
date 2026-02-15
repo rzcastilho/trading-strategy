@@ -1,0 +1,1762 @@
+     warning: variable "metadata" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 165 │   def log_backtest_completed(backtest_id, status, duration_ms, metrics, metadata \\ %{}) do
+     │                                                                         ~~~~~~~~
+     │
+     └─ lib/trading_strategy/logging.ex:165:73: TradingStrategy.Logging.log_backtest_completed/5
+
+     warning: UUID.uuid4/0 is undefined (module UUID is not available or is yet to be defined). Make sure the module name is correct and has been specified in full (or that an alias has been defined)
+     │
+ 359 │     UUID.uuid4()
+     │          ~
+     │
+     └─ lib/trading_strategy/logging.ex:359:10: TradingStrategy.Logging.generate_correlation_id/0
+
+     warning: Decimal.is_decimal/1 is undefined or private. However, there is a macro with the same name and arity. Be sure to require Decimal if you intend to invoke this macro
+     │
+ 390 │     if Decimal.is_decimal(value) do
+     │                ~
+     │
+     └─ lib/trading_strategy/logging.ex:390:16: TradingStrategy.Logging.format_decimal/1
+
+     warning: variable "pair" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 140 │   def create_sample_market_data(pair, start_time, end_time, timeframe \\ "1h") do
+     │                                 ~~~~
+     │
+     └─ test/support/backtest_helpers.ex:140:33: TradingStrategy.BacktestHelpers.create_sample_market_data/4
+
+    warning: unused alias Strategy
+    │
+ 10 │   alias TradingStrategy.Strategies.Strategy
+    │   ~
+    │
+    └─ test/support/backtest_helpers.ex:10:3
+
+    warning: module attribute @sync_timeout was set but never used
+    │
+ 39 │   @sync_timeout Application.compile_env(:trading_strategy, [:strategy_editor, :sync_timeout], 500)
+    │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/trading_strategy_web/live/strategy_live/edit.ex:39: TradingStrategyWeb.StrategyLive.Edit (module)
+
+    warning: unused alias JS
+    │
+  7 │   alias Phoenix.LiveView.JS
+    │   ~
+    │
+    └─ lib/trading_strategy_web/live/user_live/settings.ex:7:3
+
+    warning: defp generate_id/0 is private, @doc attribute is always discarded for private functions/macros/types
+    │
+ 74 │   @doc """
+    │   ~~~~~~~~
+    │
+    └─ test/support/fixtures/strategy_fixtures.ex:74: TradingStrategy.StrategyFixtures.generate_id/0
+
+warning: 1..-2 has a default step of -1, please write 1..-2//-1 instead
+  lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:124: TradingStrategy.StrategyEditor.DslParserSimple.parse_value/1
+
+     warning: def dsl_to_builder/2 has multiple clauses and also declares default values. In such cases, the default values should be defined in a header. Instead of:
+
+         def foo(:first_clause, b \\ :default) do ... end
+         def foo(:second_clause, b) do ... end
+
+     one should write:
+
+         def foo(a, b \\ :default)
+         def foo(:first_clause, b) do ... end
+         def foo(:second_clause, b) do ... end
+
+     │
+ 208 │   def dsl_to_builder(_invalid_input, _opts) do
+     │       ~
+     │
+     └─ lib/trading_strategy/strategy_editor/synchronizer.ex:208:7
+
+     warning: default values for the optional arguments in build_state_from_map/3 are never used
+     │
+ 561 │   defp build_state_from_map(strategy_map, comments, prev_version \\ 0) do
+     │        ~
+     │
+     └─ lib/trading_strategy/strategy_editor/synchronizer.ex:561:8: TradingStrategy.StrategyEditor.Synchronizer (module)
+
+    warning: unused alias CommentPreserver
+    │
+ 24 │   alias TradingStrategy.StrategyEditor.{
+    │   ~
+    │
+    └─ lib/trading_strategy/strategy_editor/synchronizer.ex:24:3
+
+    warning: do not use "length(data) > 0" to check if a list is not empty since length always traverses the whole list. Prefer to pattern match on a non-empty list, such as [_ | _], or use "data != []" as a guard
+    │
+ 47 │       {:ok, data} when length(data) > 0 ->
+    │                                     ~
+    │
+    └─ lib/trading_strategy/market_data.ex:47:37
+
+     warning: variable "param_name" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 108 │   defp convert_type(param_name, value, %{type: :integer}) when is_integer(value) do
+     │                     ~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/strategies/indicators/param_validator.ex:108:21: TradingStrategy.Strategies.Indicators.ParamValidator.convert_type/3
+
+     warning: variable "param_name" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 123 │   defp convert_type(param_name, value, %{type: :float})
+     │                     ~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/strategies/indicators/param_validator.ex:123:21: TradingStrategy.Strategies.Indicators.ParamValidator.convert_type/3
+
+     warning: variable "value" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 176 │   defp validate_range(_param_name, value, %{min: nil, max: nil}), do: :ok
+     │                                    ~~~~~
+     │
+     └─ lib/trading_strategy/strategies/indicators/param_validator.ex:176:36: TradingStrategy.Strategies.Indicators.ParamValidator.validate_range/3
+
+    warning: unused alias JS
+    │
+ 23 │   alias Phoenix.LiveView.JS
+    │   ~
+    │
+    └─ lib/trading_strategy_web/live/strategy_live/indicator_builder.ex:23:3
+
+    warning: variable "strategy_id" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 36 │   def start_strategy(strategy_id) do
+    │                      ~~~~~~~~~~~
+    │
+    └─ lib/trading_strategy/strategies/supervisor.ex:36:22: TradingStrategy.Strategies.Supervisor.start_strategy/1
+
+    warning: variable "strategy_id" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 50 │   def stop_strategy(strategy_id) do
+    │                     ~~~~~~~~~~~
+    │
+    └─ lib/trading_strategy/strategies/supervisor.ex:50:21: TradingStrategy.Strategies.Supervisor.stop_strategy/1
+
+    warning: variable "f" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 99 │             :let={f}
+    │             ~~~~~~~~
+    │
+    └─ lib/trading_strategy_web/live/strategy_live/condition_builder.ex:99: TradingStrategyWeb.StrategyLive.ConditionBuilder.render/1
+
+    warning: unused import TradingStrategyWeb.CoreComponents
+    │
+ 13 │   import TradingStrategyWeb.CoreComponents
+    │   ~
+    │
+    └─ lib/trading_strategy_web/live/strategy_live/components/unsupported_features_banner.ex:13:3
+
+    warning: no route path for TradingStrategyWeb.Router matches "/"
+    │
+ 19 │         <.link href={~p"/"} class="btn btn-ghost text-xl">Trading Strategy</.link>
+    │         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/trading_strategy_web/components/layouts/root.html.heex:19: TradingStrategyWeb.Layouts.root/1
+
+     warning: variable "reason" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 254 │           {:error, reason} = error ->
+     │                    ~
+     │
+     └─ lib/trading_strategy/orders/order_tracker.ex:254:20: TradingStrategy.Orders.OrderTracker.handle_call/3
+
+     warning: variable "balances" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 173 │             {:ok, balances} = Exchange.get_balance(user_id)
+     │                   ~
+     │
+     └─ lib/trading_strategy/live_trading/session_manager.ex:173:19: TradingStrategy.LiveTrading.SessionManager.init/1
+
+     warning: variable "correlation_id" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 330 │         correlation_id =
+     │         ~
+     │
+     └─ lib/trading_strategy/live_trading/session_manager.ex:330:9: TradingStrategy.LiveTrading.SessionManager.handle_call/3
+
+     warning: variable "order" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 474 │   defp handle_order_status_change(state, order, :filled) do
+     │                                          ~~~~~
+     │
+     └─ lib/trading_strategy/live_trading/session_manager.ex:474:42: TradingStrategy.LiveTrading.SessionManager.handle_order_status_change/3
+
+    warning: unused alias Cache
+    │
+ 32 │   alias TradingStrategy.MarketData.Cache
+    │   ~
+    │
+    └─ lib/trading_strategy/live_trading/session_manager.ex:32:3
+
+    warning: unused alias PositionSizer
+    │
+ 21 │   alias TradingStrategy.Risk.{RiskManager, PositionSizer}
+    │   ~
+    │
+    └─ lib/trading_strategy/live_trading/session_manager.ex:21:3
+
+    warning: unused alias ReconnectionHandler
+    │
+ 23 │   alias TradingStrategy.LiveTrading.{
+    │   ~
+    │
+    └─ lib/trading_strategy/live_trading/session_manager.ex:23:3
+
+     warning: TradingStrategy.Strategies.RealtimeIndicatorEngine.new/1 is undefined or private
+     │
+ 419 │     indicator_engine = RealtimeIndicatorEngine.new(state.strategy)
+     │                                                ~
+     │
+     └─ lib/trading_strategy/live_trading/session_manager.ex:419:48: TradingStrategy.LiveTrading.SessionManager.initialize_realtime_components/1
+
+     warning: TradingStrategy.Strategies.RealtimeSignalDetector.new/1 is undefined or private
+     │
+ 422 │     signal_detector = RealtimeSignalDetector.new(state.strategy)
+     │                                              ~
+     │
+     └─ lib/trading_strategy/live_trading/session_manager.ex:422:46: TradingStrategy.LiveTrading.SessionManager.initialize_realtime_components/1
+
+     warning: TradingStrategy.Strategies.RealtimeIndicatorEngine.update/2 is undefined or private. Did you mean:
+
+           * update_candle/2
+           * update_price/2
+           * update_price/3
+
+     │
+ 432 │       RealtimeIndicatorEngine.update(
+     │                               ~
+     │
+     └─ lib/trading_strategy/live_trading/session_manager.ex:432:31: TradingStrategy.LiveTrading.SessionManager.process_market_update/2
+
+     warning: variable "fun" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 163 │          fun,
+     │          ~~~
+     │
+     └─ lib/trading_strategy/exchanges/retry_handler.ex:163:10: TradingStrategy.Exchanges.RetryHandler.do_retry/7
+
+     warning: default values for the optional arguments in build_context/3 are never used
+     │
+ 241 │   defp build_context(current_bar, indicator_values, position_context \\ %{}) do
+     │        ~
+     │
+     └─ lib/trading_strategy/strategies/signal_evaluator.ex:241:8: TradingStrategy.Strategies.SignalEvaluator (module)
+
+    warning: unused import TradingStrategyWeb.CoreComponents
+    │
+ 13 │   import TradingStrategyWeb.CoreComponents
+    │   ~
+    │
+    └─ lib/trading_strategy_web/live/strategy_live/components/validation_errors.ex:13:3
+
+    warning: variable "exchange" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 47 │   def start_provider(exchange, symbol, timeframe) do
+    │                      ~~~~~~~~
+    │
+    └─ lib/trading_strategy/market_data/supervisor.ex:47:22: TradingStrategy.MarketData.Supervisor.start_provider/3
+
+    warning: variable "symbol" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 47 │   def start_provider(exchange, symbol, timeframe) do
+    │                                ~~~~~~
+    │
+    └─ lib/trading_strategy/market_data/supervisor.ex:47:32: TradingStrategy.MarketData.Supervisor.start_provider/3
+
+    warning: variable "timeframe" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 47 │   def start_provider(exchange, symbol, timeframe) do
+    │                                        ~~~~~~~~~
+    │
+    └─ lib/trading_strategy/market_data/supervisor.ex:47:40: TradingStrategy.MarketData.Supervisor.start_provider/3
+
+    warning: variable "provider_id" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 61 │   def stop_provider(provider_id) do
+    │                     ~~~~~~~~~~~
+    │
+    └─ lib/trading_strategy/market_data/supervisor.ex:61:21: TradingStrategy.MarketData.Supervisor.stop_provider/1
+
+    warning: redefining module TradingStrategy.TestReporter (current version loaded from _build/test/lib/trading_strategy/ebin/Elixir.TradingStrategy.TestReporter.beam)
+    │
+  1 │ defmodule TradingStrategy.TestReporter do
+    │ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ test/support/test_reporter.ex:1: TradingStrategy.TestReporter (module)
+
+     warning: variable "test" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 124 │   def handle_cast({:test_finished, %ExUnit.Test{state: {:excluded, _reason}} = test}, config) do
+     │                                                                                ~~~~
+     │
+     └─ test/support/test_reporter.ex:124:80: TradingStrategy.TestReporter.handle_cast/2
+
+     warning: variable "config" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 217 │   defp print_performance_metrics(config) do
+     │                                  ~~~~~~
+     │
+     └─ test/support/test_reporter.ex:217:34: TradingStrategy.TestReporter.print_performance_metrics/1
+
+    warning: module ExUnit.Formatter is not a behaviour (in module TradingStrategy.TestReporter)
+    │
+  1 │ defmodule TradingStrategy.TestReporter do
+    │ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ test/support/test_reporter.ex:1: TradingStrategy.TestReporter (module)
+
+    warning: unused import TradingStrategyWeb.CoreComponents
+    │
+  7 │   import TradingStrategyWeb.CoreComponents
+    │   ~
+    │
+    └─ lib/trading_strategy_web/components/strategy_components.ex:7:3
+
+     warning: incompatible types given to Decimal.to_float/1:
+
+         Decimal.to_float(unrealized_pnl)
+
+     given types:
+
+         -float()-
+
+     but expected one of:
+
+         dynamic(%Decimal{coef: term(), exp: term(), sign: term()})
+
+     where "unrealized_pnl" was given the type:
+
+         # type: float()
+         # from: lib/trading_strategy/backtesting/engine.ex:514:29
+         {:ok, unrealized_pnl} =
+           TradingStrategy.Backtesting.PositionManager.calculate_unrealized_pnl(
+             position_manager,
+             current_price
+           )
+
+     typing violation found at:
+     │
+ 532 │           do: Decimal.to_float(unrealized_pnl),
+     │                       ~
+     │
+     └─ lib/trading_strategy/backtesting/engine.ex:532:23: TradingStrategy.Backtesting.Engine.build_position_context/2
+
+    warning: redefining module TradingStrategy.SyncTestHelpers (current version loaded from _build/test/lib/trading_strategy/ebin/Elixir.TradingStrategy.SyncTestHelpers.beam)
+    │
+  1 │ defmodule TradingStrategy.SyncTestHelpers do
+    │ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ test/support/sync_test_helpers.ex:1: TradingStrategy.SyncTestHelpers (module)
+
+     warning: variable "quantity" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 231 │   defp check_min_quantity(quantity, nil), do: :ok
+     │                           ~~~~~~~~
+     │
+     └─ lib/trading_strategy/orders/order_validator.ex:231:27: TradingStrategy.Orders.OrderValidator.check_min_quantity/2
+
+     warning: variable "quantity" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 243 │   defp check_max_quantity(quantity, nil), do: :ok
+     │                           ~~~~~~~~
+     │
+     └─ lib/trading_strategy/orders/order_validator.ex:243:27: TradingStrategy.Orders.OrderValidator.check_max_quantity/2
+
+     warning: variable "quantity" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 259 │   defp check_quantity_step(quantity, nil), do: :ok
+     │                            ~~~~~~~~
+     │
+     └─ lib/trading_strategy/orders/order_validator.ex:259:28: TradingStrategy.Orders.OrderValidator.check_quantity_step/2
+
+     warning: variable "price" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 286 │   defp check_min_price(price, nil), do: :ok
+     │                        ~~~~~
+     │
+     └─ lib/trading_strategy/orders/order_validator.ex:286:24: TradingStrategy.Orders.OrderValidator.check_min_price/2
+
+     warning: variable "price" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 298 │   defp check_max_price(price, nil), do: :ok
+     │                        ~~~~~
+     │
+     └─ lib/trading_strategy/orders/order_validator.ex:298:24: TradingStrategy.Orders.OrderValidator.check_max_price/2
+
+     warning: variable "price" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 314 │   defp check_price_tick(price, nil), do: :ok
+     │                         ~~~~~
+     │
+     └─ lib/trading_strategy/orders/order_validator.ex:314:25: TradingStrategy.Orders.OrderValidator.check_price_tick/2
+
+    warning: variable "strategy" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 42 │     with {:ok, strategy} <- load_strategy(config.strategy_id),
+    │                ~
+    │
+    └─ lib/trading_strategy/backtesting.ex:42:16: TradingStrategy.Backtesting.create_backtest/1
+
+     warning: redefining @doc attribute previously set at line 73.
+
+     Please remove the duplicate docs. If instead you want to override a previously defined @doc, attach the @doc attribute to a function head (the function signature not followed by any do-block). For example:
+
+         @doc """
+         new docs
+         """
+         def start_backtest(...)
+
+     │
+ 136 │   @doc """
+     │   ~~~~~~~~
+     │
+     └─ lib/trading_strategy/backtesting.ex:136: TradingStrategy.Backtesting.start_backtest/1
+
+     warning: variable "final_equity" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 319 │   def calculate_metrics(trades, initial_capital, final_equity) do
+     │                                                  ~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/backtesting.ex:319:50: TradingStrategy.Backtesting.calculate_metrics/3
+
+     warning: variable "data_source" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 367 │   def validate_data_quality(trading_pair, start_date, end_date, timeframe, data_source) do
+     │                                                                            ~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/backtesting.ex:367:76: TradingStrategy.Backtesting.validate_data_quality/5
+
+     warning: variable "val" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 575 │       val -> Decimal.new("0")
+     │       ~
+     │
+     └─ lib/trading_strategy/backtesting.ex:575:7: TradingStrategy.Backtesting.save_backtest_results/2
+
+     warning: function run_backtest_task/3 is unused
+     │
+ 459 │   defp run_backtest_task(session_id, strategy, config) do
+     │        ~
+     │
+     └─ lib/trading_strategy/backtesting.ex:459:8: TradingStrategy.Backtesting (module)
+
+    warning: @behaviour TradingStrategy.Contracts.BacktestAPI does not exist (in module TradingStrategy.Backtesting)
+    │
+  1 │ defmodule TradingStrategy.Backtesting do
+    │ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/trading_strategy/backtesting.ex:1: TradingStrategy.Backtesting (module)
+
+     warning: got "@impl true" for function start_backtest/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 159 │   def start_backtest(config) when is_map(config) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/backtesting.ex:159: TradingStrategy.Backtesting (module)
+
+     warning: got "@impl true" for function get_backtest_progress/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 187 │   def get_backtest_progress(backtest_id) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/backtesting.ex:187: TradingStrategy.Backtesting (module)
+
+     warning: got "@impl true" for function get_backtest_result/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 207 │   def get_backtest_result(backtest_id) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/backtesting.ex:207: TradingStrategy.Backtesting (module)
+
+     warning: got "@impl true" for function cancel_backtest/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 234 │   def cancel_backtest(backtest_id) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/backtesting.ex:234: TradingStrategy.Backtesting (module)
+
+     warning: got "@impl true" for function list_backtests/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 293 │   def list_backtests(opts \\ []) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/backtesting.ex:293: TradingStrategy.Backtesting (module)
+
+     warning: got "@impl true" for function calculate_metrics/3 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 319 │   def calculate_metrics(trades, initial_capital, final_equity) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/backtesting.ex:319: TradingStrategy.Backtesting (module)
+
+     warning: got "@impl true" for function validate_data_quality/5 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 367 │   def validate_data_quality(trading_pair, start_date, end_date, timeframe, data_source) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/backtesting.ex:367: TradingStrategy.Backtesting (module)
+
+     warning: TradingStrategy.MarketData.validate_data_quality/3 is undefined or private
+     │
+ 368 │     MarketData.validate_data_quality(
+     │                ~
+     │
+     └─ lib/trading_strategy/backtesting.ex:368:16: TradingStrategy.Backtesting.validate_data_quality/5
+
+    warning: variable "pid" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 35 │       {:ok, pid} = result ->
+    │             ~
+    │
+    └─ lib/trading_strategy/application.ex:35:13: TradingStrategy.Application.start/2
+
+     warning: variable "user" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 123 │     user = attrs[:user] || user_fixture()
+     │     ~~~~
+     │
+     └─ test/support/fixtures/strategies_fixtures.ex:123:5: TradingStrategy.StrategiesFixtures.active_strategy_fixture/1
+
+     warning: variable "user" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 137 │     user = attrs[:user] || user_fixture()
+     │     ~~~~
+     │
+     └─ test/support/fixtures/strategies_fixtures.ex:137:5: TradingStrategy.StrategiesFixtures.inactive_strategy_fixture/1
+
+     warning: variable "user" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 151 │     user = attrs[:user] || user_fixture()
+     │     ~~~~
+     │
+     └─ test/support/fixtures/strategies_fixtures.ex:151:5: TradingStrategy.StrategiesFixtures.archived_strategy_fixture/1
+
+     warning: defp parse_atom/2 has multiple clauses and also declares default values. In such cases, the default values should be defined in a header. Instead of:
+
+         def foo(:first_clause, b \\ :default) do ... end
+         def foo(:second_clause, b) do ... end
+
+     one should write:
+
+         def foo(a, b \\ :default)
+         def foo(:first_clause, b) do ... end
+         def foo(:second_clause, b) do ... end
+
+     │
+ 290 │   defp parse_atom(value, _default \\ nil) when is_binary(value) do
+     │        ~
+     │
+     └─ lib/trading_strategy_web/controllers/paper_trading_controller.ex:290:8
+
+     warning: defp parse_atom/2 has multiple clauses and also declares default values. In such cases, the default values should be defined in a header. Instead of:
+
+         def foo(:first_clause, b \\ :default) do ... end
+         def foo(:second_clause, b) do ... end
+
+     one should write:
+
+         def foo(a, b \\ :default)
+         def foo(:first_clause, b) do ... end
+         def foo(:second_clause, b) do ... end
+
+     │
+ 296 │   defp parse_atom(value, _default) when is_atom(value), do: value
+     │        ~
+     │
+     └─ lib/trading_strategy_web/controllers/paper_trading_controller.ex:296:8
+
+     warning: variable "state" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 118 │   defp apply_full_replace(state, event) do
+     │                           ~~~~~
+     │
+     └─ lib/trading_strategy/strategy_editor/change_applier.ex:118:27: TradingStrategy.StrategyEditor.ChangeApplier.apply_full_replace/2
+
+     warning: variable "data" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 131 │   defp update_nested(data, [], {_old, new_value}) do
+     │                      ~~~~
+     │
+     └─ lib/trading_strategy/strategy_editor/change_applier.ex:131:22: TradingStrategy.StrategyEditor.ChangeApplier.update_nested/3
+
+     warning: TradingStrategy.PaperTrading.SessionPersister.get_session/1 is undefined or private. Did you mean:
+
+           * create_session/1
+           * stop_session/2
+           * update_session/2
+
+     │
+ 138 │         case SessionPersister.get_session(session_id) do
+     │                               ~
+     │
+     └─ lib/trading_strategy/paper_trading.ex:138:31: TradingStrategy.PaperTrading.get_paper_session_status/1
+
+     warning: TradingStrategy.PaperTrading.SessionPersister.get_session/1 is undefined or private. Did you mean:
+
+           * create_session/1
+           * stop_session/2
+           * update_session/2
+
+     │
+ 279 │     with {:ok, session_data} <- SessionPersister.get_session(session_id),
+     │                                                  ~
+     │
+     └─ lib/trading_strategy/paper_trading.ex:279:50: TradingStrategy.PaperTrading.restore_paper_session/1
+
+     warning: TradingStrategy.PaperTrading.SessionPersister.get_session_trades/2 is undefined or private
+     │
+ 240 │         SessionPersister.get_session_trades(session_id, opts)
+     │                          ~
+     │
+     └─ lib/trading_strategy/paper_trading.ex:240:26: TradingStrategy.PaperTrading.get_paper_session_trades/2
+
+     warning: TradingStrategy.PaperTrading.SessionPersister.list_sessions/1 is undefined or private. Did you mean:
+
+           * list_active_sessions/0
+           * stop_session/2
+
+     │
+ 259 │     SessionPersister.list_sessions(opts)
+     │                      ~
+     │
+     └─ lib/trading_strategy/paper_trading.ex:259:22: TradingStrategy.PaperTrading.list_paper_sessions/1
+
+     warning: TradingStrategy.PaperTrading.SessionPersister.get_session_metrics/1 is undefined or private
+     │
+ 338 │         SessionPersister.get_session_metrics(session_id)
+     │                          ~
+     │
+     └─ lib/trading_strategy/paper_trading.ex:338:26: TradingStrategy.PaperTrading.get_paper_session_metrics/1
+
+     warning: UUID.uuid4/0 is undefined (module UUID is not available or is yet to be defined). Make sure the module name is correct and has been specified in full (or that an alias has been defined)
+     │
+ 355 │     session_id = "paper_" <> UUID.uuid4()
+     │                                   ~
+     │
+     └─ lib/trading_strategy/paper_trading.ex:355:35: TradingStrategy.PaperTrading.generate_session_id/0
+
+     warning: variable "reason" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 133 │           {:error, reason} = error ->
+     │                    ~
+     │
+     └─ lib/trading_strategy/live_trading/balance_monitor.ex:133:20: TradingStrategy.LiveTrading.BalanceMonitor.handle_call/3
+
+    warning: unused alias Cache
+    │
+ 16 │   alias TradingStrategy.MarketData.Cache
+    │   ~
+    │
+    └─ lib/trading_strategy/strategies/realtime_indicator_engine.ex:16:3
+
+    warning: redefining module TradingStrategy.DeterministicTestHelpers (current version loaded from _build/test/lib/trading_strategy/ebin/Elixir.TradingStrategy.DeterministicTestHelpers.beam)
+    │
+  1 │ defmodule TradingStrategy.DeterministicTestHelpers do
+    │ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ test/support/deterministic_test_helpers.ex:1: TradingStrategy.DeterministicTestHelpers (module)
+
+     warning: variable "reason" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 374 │       {:error, reason} when attempt < max_attempts ->
+     │                ~
+     │
+     └─ test/support/deterministic_test_helpers.ex:374:16: TradingStrategy.DeterministicTestHelpers.do_retry/4
+
+    warning: unused alias Exchange
+    │
+ 12 │   alias TradingStrategy.Exchanges.{Exchange, HealthMonitor}
+    │   ~
+    │
+    └─ lib/trading_strategy/live_trading/connectivity_monitor.ex:12:3
+
+     warning: variable "subscription_ref" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 209 │       subscription_ref ->
+     │       ~
+     │
+     └─ lib/trading_strategy/market_data/stream_subscriber.ex:209:7: TradingStrategy.MarketData.StreamSubscriber.handle_call/3
+
+     warning: variable "subscription_ref" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 225 │       subscription_ref ->
+     │       ~
+     │
+     └─ lib/trading_strategy/market_data/stream_subscriber.ex:225:7: TradingStrategy.MarketData.StreamSubscriber.handle_call/3
+
+     warning: CryptoExchange.API.subscribe_to_ticker/1 is undefined (module CryptoExchange.API is not available or is yet to be defined)
+     │
+ 150 │         case CryptoExchange.API.subscribe_to_ticker(symbol) do
+     │                                 ~
+     │
+     └─ lib/trading_strategy/market_data/stream_subscriber.ex:150:33: TradingStrategy.MarketData.StreamSubscriber.handle_call/3
+
+     warning: CryptoExchange.API.subscribe_to_ticker/1 is undefined (module CryptoExchange.API is not available or is yet to be defined)
+     │
+ 281 │     case CryptoExchange.API.subscribe_to_ticker(symbol) do
+     │                             ~
+     │
+     └─ lib/trading_strategy/market_data/stream_subscriber.ex:281:29: TradingStrategy.MarketData.StreamSubscriber.handle_info/2
+
+     warning: CryptoExchange.API.subscribe_to_trades/1 is undefined (module CryptoExchange.API is not available or is yet to be defined)
+     │
+ 179 │         case CryptoExchange.API.subscribe_to_trades(symbol) do
+     │                                 ~
+     │
+     └─ lib/trading_strategy/market_data/stream_subscriber.ex:179:33: TradingStrategy.MarketData.StreamSubscriber.handle_call/3
+
+    warning: variable "first_ts" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 83 │     [{first_ts, first_equity} | _] = equity_history
+    │       ~~~~~~~~
+    │
+    └─ lib/trading_strategy/backtesting/equity_curve.ex:83:7: TradingStrategy.Backtesting.EquityCurve.generate_legacy/1
+
+     warning: variable "state" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 603 │   defp calculate_entry_quantity(state, _price) do
+     │                                 ~~~~~
+     │
+     └─ lib/trading_strategy/paper_trading/session_manager.ex:603:33: TradingStrategy.PaperTrading.SessionManager.calculate_entry_quantity/2
+
+     warning: the following clause will never match:
+
+         {:error, _reason}
+
+     because it attempts to match on the result of:
+
+         TradingStrategy.PaperTrading.PositionTracker.close_positions_for_symbol(
+           state.position_tracker,
+           state.trading_pair,
+           current_price,
+           DateTime.utc_now()
+         )
+
+     which has type:
+
+         dynamic({:ok, term(), term()})
+
+     typing violation found at:
+     │
+ 626 │         {:error, _reason} ->
+     │         ~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/paper_trading/session_manager.ex:626: TradingStrategy.PaperTrading.SessionManager.close_all_positions/1
+
+    warning: unused alias Zipper
+    │
+ 39 │   alias Sourceror.Zipper
+    │   ~
+    │
+    └─ lib/trading_strategy/strategy_editor/comment_preserver.ex:39:3
+
+     warning: variable "task" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 126 │       {task, {:ok, {:ok, order_id}}}, acc ->
+     │        ~
+     │
+     └─ lib/trading_strategy/live_trading/emergency_stop.ex:126:8: TradingStrategy.LiveTrading.EmergencyStop.cancel_orders_parallel/3
+
+     warning: variable "task" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 129 │       {task, {:ok, {:error, order_id}}}, acc ->
+     │        ~
+     │
+     └─ lib/trading_strategy/live_trading/emergency_stop.ex:129:8: TradingStrategy.LiveTrading.EmergencyStop.cancel_orders_parallel/3
+
+    warning: no route path for TradingStrategyWeb.Router matches "/"
+    │
+ 59 │     |> redirect(to: ~p"/")
+    │                       ~
+    │
+    └─ lib/trading_strategy_web/user_auth.ex:59: TradingStrategyWeb.UserAuth.log_out_user/1
+
+     warning: no route path for TradingStrategyWeb.Router matches "/"
+     │
+ 265 │   def signed_in_path(_), do: ~p"/"
+     │                                ~
+     │
+     └─ lib/trading_strategy_web/user_auth.ex:265: TradingStrategyWeb.UserAuth.signed_in_path/1
+
+    warning: CryptoExchange.API.connect_user/3 is undefined (module CryptoExchange.API is not available or is yet to be defined)
+    │
+ 65 │     case CryptoExchange.API.connect_user(user_id, api_key, api_secret) do
+    │                             ~
+    │
+    └─ lib/trading_strategy/exchanges/exchange.ex:65:29: TradingStrategy.Exchanges.Exchange.connect_user/3
+
+     warning: CryptoExchange.API.place_order/2 is undefined (module CryptoExchange.API is not available or is yet to be defined)
+     │
+ 117 │     case CryptoExchange.API.place_order(user_id, order_params) do
+     │                             ~
+     │
+     └─ lib/trading_strategy/exchanges/exchange.ex:117:29: TradingStrategy.Exchanges.Exchange.place_order/2
+
+     warning: CryptoExchange.API.cancel_order/3 is undefined (module CryptoExchange.API is not available or is yet to be defined)
+     │
+ 162 │     case CryptoExchange.API.cancel_order(user_id, symbol, order_id) do
+     │                             ~
+     │
+     └─ lib/trading_strategy/exchanges/exchange.ex:162:29: TradingStrategy.Exchanges.Exchange.cancel_order/3
+
+     warning: CryptoExchange.API.get_balance/1 is undefined (module CryptoExchange.API is not available or is yet to be defined)
+     │
+ 205 │     case CryptoExchange.API.get_balance(user_id) do
+     │                             ~
+     │
+     └─ lib/trading_strategy/exchanges/exchange.ex:205:29: TradingStrategy.Exchanges.Exchange.get_balance/1
+
+     warning: CryptoExchange.API.get_open_orders/2 is undefined (module CryptoExchange.API is not available or is yet to be defined)
+     │
+ 239 │     case CryptoExchange.API.get_open_orders(user_id, symbol) do
+     │                             ~
+     │
+     └─ lib/trading_strategy/exchanges/exchange.ex:239:29: TradingStrategy.Exchanges.Exchange.get_open_orders/2
+
+     warning: CryptoExchange.API.get_order_status/3 is undefined (module CryptoExchange.API is not available or is yet to be defined)
+     │
+ 279 │     case CryptoExchange.API.get_order_status(user_id, symbol, order_id) do
+     │                             ~
+     │
+     └─ lib/trading_strategy/exchanges/exchange.ex:279:29: TradingStrategy.Exchanges.Exchange.get_order_status/3
+
+     warning: variable "module" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 225 │     with {:ok, module} <- Registry.get_indicator_module(type) do
+     │                ~
+     │
+     └─ lib/trading_strategy/strategies/indicator_engine.ex:225:16: TradingStrategy.Strategies.IndicatorEngine.get_indicator_bar_requirement/1
+
+    warning: unused alias MarketData
+    │
+ 10 │   alias TradingStrategy.MarketData
+    │   ~
+    │
+    └─ lib/trading_strategy/strategies/indicator_engine.ex:10:3
+
+    warning: redefining @doc attribute previously set at line 91.
+
+    Please remove the duplicate docs. If instead you want to override a previously defined @doc, attach the @doc attribute to a function head (the function signature not followed by any do-block). For example:
+
+        @doc """
+        new docs
+        """
+        def handle_in(...)
+
+    │
+ 98 │   @doc """
+    │   ~~~~~~~~
+    │
+    └─ lib/trading_strategy_web/channels/trading_channel.ex:98: TradingStrategyWeb.TradingChannel.handle_in/3
+
+     warning: redefining @doc attribute previously set at line 91.
+
+     Please remove the duplicate docs. If instead you want to override a previously defined @doc, attach the @doc attribute to a function head (the function signature not followed by any do-block). For example:
+
+         @doc """
+         new docs
+         """
+         def handle_in(...)
+
+     │
+ 113 │   @doc """
+     │   ~~~~~~~~
+     │
+     └─ lib/trading_strategy_web/channels/trading_channel.ex:113: TradingStrategyWeb.TradingChannel.handle_in/3
+
+     warning: redefining @doc attribute previously set at line 91.
+
+     Please remove the duplicate docs. If instead you want to override a previously defined @doc, attach the @doc attribute to a function head (the function signature not followed by any do-block). For example:
+
+         @doc """
+         new docs
+         """
+         def handle_in(...)
+
+     │
+ 132 │   @doc """
+     │   ~~~~~~~~
+     │
+     └─ lib/trading_strategy_web/channels/trading_channel.ex:132: TradingStrategyWeb.TradingChannel.handle_in/3
+
+     warning: redefining @doc attribute previously set at line 142.
+
+     Please remove the duplicate docs. If instead you want to override a previously defined @doc, attach the @doc attribute to a function head (the function signature not followed by any do-block). For example:
+
+         @doc """
+         new docs
+         """
+         def handle_info(...)
+
+     │
+ 154 │   @doc """
+     │   ~~~~~~~~
+     │
+     └─ lib/trading_strategy_web/channels/trading_channel.ex:154: TradingStrategyWeb.TradingChannel.handle_info/2
+
+     warning: redefining @doc attribute previously set at line 142.
+
+     Please remove the duplicate docs. If instead you want to override a previously defined @doc, attach the @doc attribute to a function head (the function signature not followed by any do-block). For example:
+
+         @doc """
+         new docs
+         """
+         def handle_info(...)
+
+     │
+ 166 │   @doc """
+     │   ~~~~~~~~
+     │
+     └─ lib/trading_strategy_web/channels/trading_channel.ex:166: TradingStrategyWeb.TradingChannel.handle_info/2
+
+     warning: redefining @doc attribute previously set at line 142.
+
+     Please remove the duplicate docs. If instead you want to override a previously defined @doc, attach the @doc attribute to a function head (the function signature not followed by any do-block). For example:
+
+         @doc """
+         new docs
+         """
+         def handle_info(...)
+
+     │
+ 180 │   @doc """
+     │   ~~~~~~~~
+     │
+     └─ lib/trading_strategy_web/channels/trading_channel.ex:180: TradingStrategyWeb.TradingChannel.handle_info/2
+
+     warning: redefining @doc attribute previously set at line 142.
+
+     Please remove the duplicate docs. If instead you want to override a previously defined @doc, attach the @doc attribute to a function head (the function signature not followed by any do-block). For example:
+
+         @doc """
+         new docs
+         """
+         def handle_info(...)
+
+     │
+ 192 │   @doc """
+     │   ~~~~~~~~
+     │
+     └─ lib/trading_strategy_web/channels/trading_channel.ex:192: TradingStrategyWeb.TradingChannel.handle_info/2
+
+     warning: redefining @doc attribute previously set at line 142.
+
+     Please remove the duplicate docs. If instead you want to override a previously defined @doc, attach the @doc attribute to a function head (the function signature not followed by any do-block). For example:
+
+         @doc """
+         new docs
+         """
+         def handle_info(...)
+
+     │
+ 204 │   @doc """
+     │   ~~~~~~~~
+     │
+     └─ lib/trading_strategy_web/channels/trading_channel.ex:204: TradingStrategyWeb.TradingChannel.handle_info/2
+
+     warning: redefining @doc attribute previously set at line 142.
+
+     Please remove the duplicate docs. If instead you want to override a previously defined @doc, attach the @doc attribute to a function head (the function signature not followed by any do-block). For example:
+
+         @doc """
+         new docs
+         """
+         def handle_info(...)
+
+     │
+ 218 │   @doc """
+     │   ~~~~~~~~
+     │
+     └─ lib/trading_strategy_web/channels/trading_channel.ex:218: TradingStrategyWeb.TradingChannel.handle_info/2
+
+     warning: variable "session_id" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 115 │   def cancel_order(session_id, order_id) do
+     │                    ~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:115:20: TradingStrategy.LiveTrading.cancel_order/2
+
+     warning: variable "session_id" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 131 │   def get_order_status(session_id, order_id) do
+     │                        ~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:131:24: TradingStrategy.LiveTrading.get_order_status/2
+
+     warning: variable "session_id" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 155 │   def monitor_and_exit_positions(session_id) do
+     │                                  ~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:155:34: TradingStrategy.LiveTrading.monitor_and_exit_positions/1
+
+     warning: variable "risk_limits" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 222 │         risk_limits = status.risk_limits_status
+     │         ~
+     │
+     └─ lib/trading_strategy/live_trading.ex:222:9: TradingStrategy.LiveTrading.check_risk_limits/2
+
+     warning: variable "opts" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 234 │   def get_live_session_trades(session_id, opts \\ []) do
+     │                                           ~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:234:43: TradingStrategy.LiveTrading.get_live_session_trades/2
+
+     warning: variable "session_id" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 234 │   def get_live_session_trades(session_id, opts \\ []) do
+     │                               ~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:234:31: TradingStrategy.LiveTrading.get_live_session_trades/2
+
+     warning: variable "opts" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 241 │   def list_live_sessions(opts \\ []) do
+     │                          ~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:241:26: TradingStrategy.LiveTrading.list_live_sessions/1
+
+     warning: variable "status" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 280 │       {:ok, status} ->
+     │             ~
+     │
+     └─ lib/trading_strategy/live_trading.ex:280:13: TradingStrategy.LiveTrading.get_session_symbol/1
+
+    warning: @behaviour TradingStrategy.Contracts.LiveTradingAPI does not exist (in module TradingStrategy.LiveTrading)
+    │
+  1 │ defmodule TradingStrategy.LiveTrading do
+    │ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/trading_strategy/live_trading.ex:1: TradingStrategy.LiveTrading (module)
+
+    warning: got "@impl true" for function start_live_session/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+    │
+ 41 │   def start_live_session(config) do
+    │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/trading_strategy/live_trading.ex:41: TradingStrategy.LiveTrading (module)
+
+    warning: got "@impl true" for function get_live_session_status/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+    │
+ 82 │   def get_live_session_status(session_id) do
+    │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/trading_strategy/live_trading.ex:82: TradingStrategy.LiveTrading (module)
+
+    warning: got "@impl true" for function place_order/6 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+    │
+ 90 │   def place_order(session_id, order_type, side, quantity, price, signal_type) do
+    │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    │
+    └─ lib/trading_strategy/live_trading.ex:90: TradingStrategy.LiveTrading (module)
+
+     warning: got "@impl true" for function cancel_order/2 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 115 │   def cancel_order(session_id, order_id) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:115: TradingStrategy.LiveTrading (module)
+
+     warning: got "@impl true" for function get_order_status/2 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 131 │   def get_order_status(session_id, order_id) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:131: TradingStrategy.LiveTrading (module)
+
+     warning: got "@impl true" for function monitor_and_exit_positions/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 155 │   def monitor_and_exit_positions(session_id) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:155: TradingStrategy.LiveTrading (module)
+
+     warning: got "@impl true" for function pause_live_session/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 162 │   def pause_live_session(session_id) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:162: TradingStrategy.LiveTrading (module)
+
+     warning: got "@impl true" for function resume_live_session/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 171 │   def resume_live_session(session_id) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:171: TradingStrategy.LiveTrading (module)
+
+     warning: got "@impl true" for function stop_live_session/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 181 │   def stop_live_session(session_id) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:181: TradingStrategy.LiveTrading (module)
+
+     warning: got "@impl true" for function handle_connectivity_failure/2 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 189 │   def handle_connectivity_failure(session_id, failure_reason) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:189: TradingStrategy.LiveTrading (module)
+
+     warning: got "@impl true" for function check_risk_limits/2 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 205 │   def check_risk_limits(session_id, proposed_trade) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:205: TradingStrategy.LiveTrading (module)
+
+     warning: got "@impl true" for function get_live_session_trades/2 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 234 │   def get_live_session_trades(session_id, opts \\ []) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:234: TradingStrategy.LiveTrading (module)
+
+     warning: got "@impl true" for function list_live_sessions/1 but no behaviour specifies such callback. There are no known callbacks, please specify the proper @behaviour and make sure it defines callbacks
+     │
+ 241 │   def list_live_sessions(opts \\ []) do
+     │   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     │
+     └─ lib/trading_strategy/live_trading.ex:241: TradingStrategy.LiveTrading (module)
+
+You have configured application :wallaby in your configuration file,
+but the application is not available.
+
+This usually means one of:
+
+  1. You have not added the application as a dependency in a mix.exs file.
+
+  2. You are configuring an application that does not really exist.
+
+Please ensure :wallaby exists or remove the configuration.
+
+Running ExUnit with seed: 131725, max_cases: 16
+Excluding tags: [:benchmark, :wallaby]
+
+
+================================================================================
+                   Strategy Editor Synchronization Test Suite
+================================================================================
+
+    warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 45 │   test "US1.001: adding SMA indicator in builder updates DSL within 500ms", %{conn: conn} do
+    │                                                                                     ~~~~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/synchronization_test.exs:45:85: TradingStrategyWeb.StrategyEditorLive.SynchronizationTest."test US1.001: adding SMA indicator in builder updates DSL within 500ms"/1
+
+    warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 47 │   test "US2.001: adding indicator via DSL updates builder form within 500ms", %{conn: conn} do
+    │                                                                                       ~~~~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:47:87: TradingStrategyWeb.StrategyEditorLive.DslToBuilderSyncTest."test US2.001: adding indicator via DSL updates builder form within 500ms"/1
+
+    warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 44 │        %{conn: conn, session: session} do
+    │                ~~~~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:44:16: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.001: syntax error (missing bracket) shows clear error message and builder not updated"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 178 │   test "US5.004: rapid changes (5 edits in 3 seconds) maintain consistency", %{conn: conn} do
+     │                                                                                      ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/performance_test.exs:178:86: TradingStrategyWeb.StrategyEditorLive.PerformanceTest."test US5.004: rapid changes (5 edits in 3 seconds) maintain consistency"/1
+
+    warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 96 │   test "US2.002: changing SMA period from 50 to 100 in DSL updates builder form", %{conn: conn} do
+    │                                                                                           ~~~~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:96:91: TradingStrategyWeb.StrategyEditorLive.DslToBuilderSyncTest."test US2.002: changing SMA period from 50 to 100 in DSL updates builder form"/1
+
+    warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 94 │     conn: conn
+    │           ~~~~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/synchronization_test.exs:94:11: TradingStrategyWeb.StrategyEditorLive.SynchronizationTest."test US1.002: modifying entry condition from crossover to crossunder synchronizes to DSL"/1
+
+    warning: variable "fixture" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 59 │     fixture = simple_sma_strategy()
+    │     ~~~~~~~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:59:5: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.001: syntax error (missing bracket) shows clear error message and builder not updated"/1
+
+     warning: variable "session" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 218 │   test "US5.005: 20-indicator undo/redo operations within 50ms", %{session: session} do
+     │                                                                             ~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/performance_test.exs:218:77: TradingStrategyWeb.StrategyEditorLive.PerformanceTest."test US5.005: 20-indicator undo/redo operations within 50ms"/1
+
+    warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 78 │   test "empty strategy (no indicators) handled gracefully in both editors", %{conn: conn} do
+    │                                                                                     ~~~~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/edge_cases_test.exs:78:85: TradingStrategyWeb.StrategyEditorLive.EdgeCasesTest."test empty strategy (no indicators) handled gracefully in both editors"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 114 │     conn: conn
+     │           ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:114:11: TradingStrategyWeb.StrategyEditorLive.DslToBuilderSyncTest."test US2.003: modifying entry condition logic in DSL updates builder entry rules form"/1
+
+    warning: variable "invalid_dsl" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 65 │     invalid_dsl = """
+    │     ~~~~~~~~~~~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:65:5: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.001: syntax error (missing bracket) shows clear error message and builder not updated"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 106 │   test "US1.003: removing 3 indicators from builder updates DSL within 500ms", %{conn: conn} do
+     │                                                                                        ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/synchronization_test.exs:106:88: TradingStrategyWeb.StrategyEditorLive.SynchronizationTest."test US1.003: removing 3 indicators from builder updates DSL within 500ms"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 133 │     conn: conn
+     │           ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:133:11: TradingStrategyWeb.StrategyEditorLive.DslToBuilderSyncTest."test US2.004: pasting complete strategy DSL populates all builder forms within 500ms"/1
+
+    warning: variable "session" is unused (if the variable is not meant to be used, prefix it with an underscore)
+    │
+ 44 │        %{conn: conn, session: session} do
+    │                               ~~~~~~~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:44:31: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.001: syntax error (missing bracket) shows clear error message and builder not updated"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 360 │     conn: conn
+     │           ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/performance_test.exs:360:11: TradingStrategyWeb.StrategyEditorLive.PerformanceTest."test US5.008: rapid switching between builder and DSL maintains consistency"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 118 │     conn: conn
+     │           ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/synchronization_test.exs:118:11: TradingStrategyWeb.StrategyEditorLive.SynchronizationTest."test US1.004: changing position sizing from fixed to percentage updates DSL configuration"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 132 │   test "strategy with all indicators removed syncs correctly", %{conn: conn} do
+     │                                                                        ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/edge_cases_test.exs:132:72: TradingStrategyWeb.StrategyEditorLive.EdgeCasesTest."test strategy with all indicators removed syncs correctly"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 152 │   test "US2.005: DSL syntax validation provides real-time feedback in editor", %{conn: conn} do
+     │                                                                                        ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:152:88: TradingStrategyWeb.StrategyEditorLive.DslToBuilderSyncTest."test US2.005: DSL syntax validation provides real-time feedback in editor"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 104 │        %{conn: conn, session: session} do
+     │                ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:104:16: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.002: invalid indicator reference shows specific validation error message"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 415 │     conn: conn
+     │           ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/performance_test.exs:415:11: TradingStrategyWeb.StrategyEditorLive.PerformanceTest."test US5.009: changes during active sync queued or provide user feedback"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 171 │        %{conn: conn} do
+     │                ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/synchronization_test.exs:171:16: TradingStrategyWeb.StrategyEditorLive.SynchronizationTest."test US1.007: all strategy components synchronized (indicators, entry, exit, position sizing)"/1
+
+     warning: variable "fixture" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 114 │     fixture = invalid_indicator_ref()
+     │     ~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:114:5: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.002: invalid indicator reference shows specific validation error message"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 173 │     conn: conn
+     │           ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:173:11: TradingStrategyWeb.StrategyEditorLive.DslToBuilderSyncTest."test US2.006: debounce mechanism prevents excessive sync events during rapid typing"/1
+
+     warning: variable "invalid_dsl" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 118 │     invalid_dsl = """
+     │     ~~~~~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:118:5: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.002: invalid indicator reference shows specific validation error message"/1
+
+.     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 224 │   test "US1.010: builder form validation errors prevent DSL update until fixed", %{conn: conn} do
+     │                                                                                          ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/synchronization_test.exs:224:90: TradingStrategyWeb.StrategyEditorLive.SynchronizationTest."test US1.010: builder form validation errors prevent DSL update until fixed"/1
+
+.....     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 194 │   test "US2.007: cursor position preserved in DSL editor after external updates", %{conn: conn} do
+     │                                                                                           ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:194:91: TradingStrategyWeb.StrategyEditorLive.DslToBuilderSyncTest."test US2.007: cursor position preserved in DSL editor after external updates"/1
+
+     warning: variable "session" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 104 │        %{conn: conn, session: session} do
+     │                               ~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:104:31: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.002: invalid indicator reference shows specific validation error message"/1
+
+......     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 234 │     conn: conn
+     │           ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:234:11: TradingStrategyWeb.StrategyEditorLive.DslToBuilderSyncTest."test US2.009: multiple rapid DSL changes queue properly without race conditions"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 159 │        %{conn: conn, session: session} do
+     │                ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:159:16: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.003: syntax error preserves previous valid state in builder"/1
+
+......     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 255 │     conn: conn
+     │           ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:255:11: TradingStrategyWeb.StrategyEditorLive.DslToBuilderSyncTest."test US2.010: DSL-to-builder synchronization maintains correct state for all components"/1
+
+     warning: variable "fixture" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 167 │     fixture = simple_ema_crossover()  # 2 indicators
+     │     ~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:167:5: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.003: syntax error preserves previous valid state in builder"/1
+
+....     warning: variable "invalid_dsl" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 179 │     invalid_dsl = "strategy 'Bad' do\n  indicator :sma # Missing parameters\nend"
+     │     ~~~~~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:179:5: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.003: syntax error preserves previous valid state in builder"/1
+
+..     warning: variable "session" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 159 │        %{conn: conn, session: session} do
+     │                               ~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:159:31: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.003: syntax error preserves previous valid state in builder"/1
+
+......     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 211 │        %{conn: conn, session: session} do
+     │                ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:211:16: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.004: debounce period (300ms) prevents partial input validation errors"/1
+
+..........     warning: variable "partial_inputs" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 230 │     partial_inputs = [
+     │     ~~~~~~~~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:230:5: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.004: debounce period (300ms) prevents partial input validation errors"/1
+
+......     warning: variable "session" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 211 │        %{conn: conn, session: session} do
+     │                               ~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:211:31: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.004: debounce period (300ms) prevents partial input validation errors"/1
+
+..     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 267 │        %{conn: conn, session: session} do
+     │                ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:267:16: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.005: synchronization failure does not result in data loss (previous state recoverable)"/1
+
+     warning: variable "fixture" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 279 │     fixture = medium_5_indicators()  # Complex strategy with 5 indicators
+     │     ~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:279:5: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.005: synchronization failure does not result in data loss (previous state recoverable)"/1
+
+     warning: variable "malformed_dsl" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 289 │     malformed_dsl = """
+     │     ~~~~~~~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:289:5: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.005: synchronization failure does not result in data loss (previous state recoverable)"/1
+
+     warning: variable "session" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 267 │        %{conn: conn, session: session} do
+     │                               ~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:267:31: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.005: synchronization failure does not result in data loss (previous state recoverable)"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 194 │        %{conn: conn} do
+     │                ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/edge_cases_test.exs:194:16: TradingStrategyWeb.StrategyEditorLive.EdgeCasesTest."test concurrent changes in both editors (user typing in both simultaneously) handled safely"/1
+
+     warning: variable "conn" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 330 │        %{conn: conn, session: session} do
+     │                ~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:330:16: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.006: error messages include specific line numbers and actionable guidance"/1
+
+     warning: variable "dsl_with_error" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 342 │     dsl_with_error = """
+     │     ~~~~~~~~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:342:5: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.006: error messages include specific line numbers and actionable guidance"/1
+
+     warning: variable "session" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 330 │        %{conn: conn, session: session} do
+     │                               ~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:330:31: TradingStrategyWeb.StrategyEditorLive.ErrorHandlingTest."test US6.006: error messages include specific line numbers and actionable guidance"/1
+
+     warning: variable "fixture" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 100 │     fixture = medium_5_indicators()
+     │     ~~~~~~~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:100:5: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.001: inline comments above indicators preserved after builder change"/1
+
+     warning: variable "map_fixture" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 187 │       %{name: _} = map_fixture ->
+     │                    ~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:187:20: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.003: 20 comment lines survive 10 round-trips with 90%+ retention (18+ comments remain)"/1
+
+     warning: variable "map_fixture" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 302 │       %{name: _} = map_fixture ->
+     │                    ~
+     │
+     └─ test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:302:20: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.005: comment preservation rate tracked across 100 round-trips validates 90%+ retention"/1
+
+    warning: module attribute @debounce_ms was set but never used
+    │
+ 23 │   @debounce_ms 300
+    │   ~~~~~~~~~~~~~~~~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:23: TradingStrategyWeb.StrategyEditorLive.DslToBuilderSyncTest (module)
+
+    warning: unused import TradingStrategy.StrategyFixtures
+    │
+ 19 │   import TradingStrategy.StrategyFixtures
+    │   ~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/synchronization_test.exs:19:3
+
+    warning: unused import TradingStrategy.SyncTestHelpers
+    │
+ 20 │   import TradingStrategy.SyncTestHelpers
+    │   ~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/synchronization_test.exs:20:3
+
+    warning: unused import TradingStrategy.StrategyFixtures
+    │
+ 22 │   import TradingStrategy.StrategyFixtures
+    │   ~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/performance_test.exs:22:3
+
+    warning: unused import TradingStrategy.SyncTestHelpers
+    │
+ 23 │   import TradingStrategy.SyncTestHelpers
+    │   ~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/performance_test.exs:23:3
+
+    warning: unused import TradingStrategy.SyncTestHelpers
+    │
+ 17 │   import TradingStrategy.SyncTestHelpers
+    │   ~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/error_handling_test.exs:17:3
+
+    warning: unused import TradingStrategy.SyncTestHelpers
+    │
+ 19 │   import TradingStrategy.SyncTestHelpers
+    │   ~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/edge_cases_test.exs:19:3
+
+    warning: unused import TradingStrategy.StrategyFixtures
+    │
+ 18 │   import TradingStrategy.StrategyFixtures
+    │   ~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:18:3
+
+    warning: unused import TradingStrategy.SyncTestHelpers
+    │
+ 19 │   import TradingStrategy.SyncTestHelpers
+    │   ~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/dsl_to_builder_sync_test.exs:19:3
+
+    warning: unused alias CommentPreserver
+    │
+ 20 │   alias TradingStrategy.StrategyEditor.{Synchronizer, CommentPreserver}
+    │   ~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:20:3
+
+    warning: unused import TradingStrategy.SyncTestHelpers
+    │
+ 17 │   import TradingStrategy.SyncTestHelpers
+    │   ~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:17:3
+
+11:08:37.428 [warning] DSL → Builder conversion failed
+FWarning: Fixture has only 3 comments, expected 20+
+warning: negative steps are not supported in String.slice/2, pass 1..-2//1 instead
+  (elixir 1.18.4) lib/string.ex:2427: String.slice/2
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:107: anonymous fn/2 in TradingStrategy.StrategyEditor.DslParserSimple.parse_parameters/1
+  (elixir 1.18.4) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:83: anonymous fn/1 in TradingStrategy.StrategyEditor.DslParserSimple.extract_indicators/1
+  (elixir 1.18.4) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:31: TradingStrategy.StrategyEditor.DslParserSimple.parse/1
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/synchronizer.ex:175: TradingStrategy.StrategyEditor.Synchronizer.dsl_to_builder/2
+  test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:204: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.003: 20 comment lines survive 10 round-trips with 90%+ retention (18+ comments remain)"/1
+  (ex_unit 1.18.4) lib/ex_unit/runner.ex:511: ExUnit.Runner.exec_test/2
+  (stdlib 6.2.2) timer.erl:595: :timer.tc/2
+  (ex_unit 1.18.4) lib/ex_unit/runner.ex:433: anonymous fn/6 in ExUnit.Runner.spawn_test_monitor/4
+
+warning: negative steps are not supported in String.slice/2, pass 1..-2//1 instead
+  (elixir 1.18.4) lib/string.ex:2427: String.slice/2
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:107: anonymous fn/2 in TradingStrategy.StrategyEditor.DslParserSimple.parse_parameters/1
+  (elixir 1.18.4) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:83: anonymous fn/1 in TradingStrategy.StrategyEditor.DslParserSimple.extract_indicators/1
+  (elixir 1.18.4) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+  (elixir 1.18.4) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:31: TradingStrategy.StrategyEditor.DslParserSimple.parse/1
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/synchronizer.ex:175: TradingStrategy.StrategyEditor.Synchronizer.dsl_to_builder/2
+  test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:204: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.003: 20 comment lines survive 10 round-trips with 90%+ retention (18+ comments remain)"/1
+  (ex_unit 1.18.4) lib/ex_unit/runner.ex:511: ExUnit.Runner.exec_test/2
+  (stdlib 6.2.2) timer.erl:595: :timer.tc/2
+  (ex_unit 1.18.4) lib/ex_unit/runner.ex:433: anonymous fn/6 in ExUnit.Runner.spawn_test_monitor/4
+
+warning: negative steps are not supported in String.slice/2, pass 1..-2//1 instead
+  (elixir 1.18.4) lib/string.ex:2427: String.slice/2
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:107: anonymous fn/2 in TradingStrategy.StrategyEditor.DslParserSimple.parse_parameters/1
+  (elixir 1.18.4) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:83: anonymous fn/1 in TradingStrategy.StrategyEditor.DslParserSimple.extract_indicators/1
+  (elixir 1.18.4) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+  (elixir 1.18.4) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:31: TradingStrategy.StrategyEditor.DslParserSimple.parse/1
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/synchronizer.ex:175: TradingStrategy.StrategyEditor.Synchronizer.dsl_to_builder/2
+  test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:204: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.003: 20 comment lines survive 10 round-trips with 90%+ retention (18+ comments remain)"/1
+  (ex_unit 1.18.4) lib/ex_unit/runner.ex:511: ExUnit.Runner.exec_test/2
+  (stdlib 6.2.2) timer.erl:595: :timer.tc/2
+  (ex_unit 1.18.4) lib/ex_unit/runner.ex:433: anonymous fn/6 in ExUnit.Runner.spawn_test_monitor/4
+
+
+
+  1) test US3.007: comment formatting (indentation, spacing) preserved during synchronization (TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest)
+     test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:390
+     ** (MatchError) no match of right hand side value: {:error, "Strategy name is required"}
+     code: {:ok, builder_state} = Synchronizer.dsl_to_builder(dsl_with_formatting)
+     stacktrace:
+       test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:405: (test)
+
+warning: negative steps are not supported in String.slice/2, pass 1..-2//1 instead
+  (elixir 1.18.4) lib/string.ex:2427: String.slice/2
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:107: anonymous fn/2 in TradingStrategy.StrategyEditor.DslParserSimple.parse_parameters/1
+  (elixir 1.18.4) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:83: anonymous fn/1 in TradingStrategy.StrategyEditor.DslParserSimple.extract_indicators/1
+  (elixir 1.18.4) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+  (elixir 1.18.4) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:31: TradingStrategy.StrategyEditor.DslParserSimple.parse/1
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/synchronizer.ex:175: TradingStrategy.StrategyEditor.Synchronizer.dsl_to_builder/2
+  test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:204: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.003: 20 comment lines survive 10 round-trips with 90%+ retention (18+ comments remain)"/1
+  (ex_unit 1.18.4) lib/ex_unit/runner.ex:511: ExUnit.Runner.exec_test/2
+  (stdlib 6.2.2) timer.erl:595: :timer.tc/2
+  (ex_unit 1.18.4) lib/ex_unit/runner.ex:433: anonymous fn/6 in ExUnit.Runner.spawn_test_monitor/4
+
+warning: negative steps are not supported in String.slice/2, pass 1..-2//1 instead
+  (elixir 1.18.4) lib/string.ex:2427: String.slice/2
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:107: anonymous fn/2 in TradingStrategy.StrategyEditor.DslParserSimple.parse_parameters/1
+  (elixir 1.18.4) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:83: anonymous fn/1 in TradingStrategy.StrategyEditor.DslParserSimple.extract_indicators/1
+  (elixir 1.18.4) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+  (elixir 1.18.4) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/dsl_parser_simple.ex:31: TradingStrategy.StrategyEditor.DslParserSimple.parse/1
+  (trading_strategy 0.1.0) lib/trading_strategy/strategy_editor/synchronizer.ex:175: TradingStrategy.StrategyEditor.Synchronizer.dsl_to_builder/2
+  test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:204: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.003: 20 comment lines survive 10 round-trips with 90%+ retention (18+ comments remain)"/1
+  (ex_unit 1.18.4) lib/ex_unit/runner.ex:511: ExUnit.Runner.exec_test/2
+  (stdlib 6.2.2) timer.erl:595: :timer.tc/2
+  (ex_unit 1.18.4) lib/ex_unit/runner.ex:433: anonymous fn/6 in ExUnit.Runner.spawn_test_monitor/4
+
+11:08:37.444 [warning] Undefined indicator references detected
+11:08:37.444 [warning] DSL → Builder conversion failed
+F
+
+  2) test US3.003: 20 comment lines survive 10 round-trips with 90%+ retention (18+ comments remain) (TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest)
+     test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:180
+     ** (MatchError) no match of right hand side value: {:error, "Undefined indicators: and, on, or, overbought, oversold, reverses, trend, uptrend, when, with"}
+     code: {:ok, builder_state} = Synchronizer.dsl_to_builder(initial_dsl)
+     stacktrace:
+       test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:204: (test)
+
+11:08:37.446 [warning] DSL → Builder conversion failed
+F
+
+  3) test US3.006: comments attached to removed indicators are appropriately handled (not orphaned) (TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest)
+     test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:345
+     ** (MatchError) no match of right hand side value: {:error, "Strategy name is required"}
+     code: {:ok, builder_state} = Synchronizer.dsl_to_builder(dsl_with_comments)
+     stacktrace:
+       test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:362: (test)
+
+11:08:37.448 [warning] DSL → Builder conversion failed
+F
+
+  4) test US3.001: inline comments above indicators preserved after builder change (TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest)
+     test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:96
+     ** (MatchError) no match of right hand side value: {:error, "Strategy name is required"}
+     code: {:ok, builder_state} = Synchronizer.dsl_to_builder(dsl_with_comments)
+     stacktrace:
+       test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:122: (test)
+
+11:08:37.450 [warning] DSL → Builder conversion failed
+F
+
+  5) test US3.002: comments documenting entry logic preserved after builder entry condition update (TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest)
+     test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:146
+     ** (MatchError) no match of right hand side value: {:error, "Strategy name is required"}
+     code: {:ok, builder_state} = Synchronizer.dsl_to_builder(dsl_with_comments)
+     stacktrace:
+       test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:162: (test)
+
+11:08:37.452 [warning] DSL → Builder conversion failed
+F
+
+  6) test US3.004: multi-line comment blocks preserved when removing unrelated indicator (TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest)
+     test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:234
+     ** (MatchError) no match of right hand side value: {:error, "Strategy name is required"}
+     code: {:ok, builder_state} = Synchronizer.dsl_to_builder(dsl_with_comments)
+     stacktrace:
+       test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:260: (test)
+
+11:08:37.453 [warning] DSL → Builder conversion failed
+..    warning: unused import TradingStrategy.StrategyFixtures
+    │
+ 16 │   import TradingStrategy.StrategyFixtures
+    │   ~
+    │
+    └─ test/trading_strategy_web/live/strategy_editor_live/undo_redo_test.exs:16:3
+
+..............
+
+
+
+================================================================================
+Finished in 0.5 seconds (0.5s async, 0.00s sync)
+                              Test Results Summary
+56 tests, 6 failures, 18 excluded
+================================================================================
+
+Summary:
+  Total Tests: 38
+  Passed:      32 (84.2%)
+  Failed:      6 (15.8%)
+  Skipped:     0 (0.0%)
+  Duration:    0.5 seconds
+
+Results by User Story:
+  [P2] US3: Comment Preservation        1/7 ✗
+  [P1] US2: DSL-to-Builder Sync        9/9 ✓
+  Edge Cases        3/3 ✓
+  [P3] US6: Error Handling        6/6 ✓
+  [P1] US1: Builder-to-DSL Sync        6/6 ✓
+  [P2] US4: Undo/Redo        7/7 ✓
+
+Performance Metrics:
+  (Performance metrics available with @tag :benchmark tests)
+  Run: mix test --only benchmark
+
+Failed Tests:
+
+  1. test US3.007: comment formatting (indentation, spacing) preserved during synchronization
+     File: /Users/castilho/code/github.com/rzcastilho/trading-strategy/test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:390
+     ** (MatchError) no match of right hand side value: {:error, "Strategy name is required"}
+    test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:405: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.007: comment formatting (indentation, spacing) preserved during synchronization"/1
+
+
+  2. test US3.003: 20 comment lines survive 10 round-trips with 90%+ retention (18+ comments remain)
+     File: /Users/castilho/code/github.com/rzcastilho/trading-strategy/test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:180
+     ** (MatchError) no match of right hand side value: {:error, "Undefined indicators: and, on, or, overbought, oversold, reverses, trend, uptrend, when, with"}
+    test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:204: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.003: 20 comment lines survive 10 round-trips with 90%+ retention (18+ comments remain)"/1
+
+
+  3. test US3.006: comments attached to removed indicators are appropriately handled (not orphaned)
+     File: /Users/castilho/code/github.com/rzcastilho/trading-strategy/test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:345
+     ** (MatchError) no match of right hand side value: {:error, "Strategy name is required"}
+    test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:362: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.006: comments attached to removed indicators are appropriately handled (not orphaned)"/1
+
+
+  4. test US3.001: inline comments above indicators preserved after builder change
+     File: /Users/castilho/code/github.com/rzcastilho/trading-strategy/test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:96
+     ** (MatchError) no match of right hand side value: {:error, "Strategy name is required"}
+    test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:122: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.001: inline comments above indicators preserved after builder change"/1
+
+
+  5. test US3.002: comments documenting entry logic preserved after builder entry condition update
+     File: /Users/castilho/code/github.com/rzcastilho/trading-strategy/test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:146
+     ** (MatchError) no match of right hand side value: {:error, "Strategy name is required"}
+    test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:162: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.002: comments documenting entry logic preserved after builder entry condition update"/1
+
+
+  6. test US3.004: multi-line comment blocks preserved when removing unrelated indicator
+     File: /Users/castilho/code/github.com/rzcastilho/trading-strategy/test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:234
+     ** (MatchError) no match of right hand side value: {:error, "Strategy name is required"}
+    test/trading_strategy_web/live/strategy_editor_live/comment_preservation_test.exs:260: TradingStrategyWeb.StrategyEditorLive.CommentPreservationTest."test US3.004: multi-line comment blocks preserved when removing unrelated indicator"/1
+
+================================================================================
+

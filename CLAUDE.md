@@ -9,6 +9,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-04
 - PostgreSQL (strategy definitions via Ecto) (005-builder-dsl-sync)
 - Elixir 1.17+ (OTP 27+) + Phoenix 1.7+, Phoenix LiveView, TradingIndicators library (external) (006-indicator-value-inspection)
 - None (UI-only feature, metadata fetched from indicator modules) (006-indicator-value-inspection)
+- Elixir 1.17+ (OTP 27+) + ExUnit (test framework), Wallaby (browser automation), Phoenix LiveView (testing target) (007-test-builder-dsl-sync)
+- PostgreSQL (test database), version-controlled `.exs` fixtures for test data (007-test-builder-dsl-sync)
 
 - Elixir 1.17+ (OTP 27+) (001-strategy-dsl-library)
 
@@ -29,9 +31,9 @@ tests/
 Elixir 1.17+ (OTP 27+): Follow standard conventions
 
 ## Recent Changes
+- 007-test-builder-dsl-sync: Added Elixir 1.17+ (OTP 27+) + ExUnit (test framework), Wallaby (browser automation), Phoenix LiveView (testing target)
 - 006-indicator-value-inspection: Added Elixir 1.17+ (OTP 27+) + Phoenix 1.7+, Phoenix LiveView, TradingIndicators library (external)
 - 005-builder-dsl-sync: Added Elixir 1.17+ (OTP 27+)
-- 004-strategy-ui: Added Elixir 1.17+ (OTP 27+) + Phoenix 1.7+, Phoenix LiveView (dashboards), Ecto (database)
 
 
 <!-- MANUAL ADDITIONS START -->
